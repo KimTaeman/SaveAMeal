@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/shared/theme/app_colors.dart';
+import 'package:saveameal/shared/theme/app_colors.dart';
 
 abstract final class AppTheme {
   static const _seed = Color(0xFF1565C0);

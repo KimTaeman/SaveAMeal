@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/app/router.dart';
-import 'package:mobile/shared/theme/app_theme.dart';
+import 'package:saveameal/app/router.dart';
+import 'package:saveameal/shared/theme/app_theme.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -8,7 +8,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Enterprise App',
+      title: 'SaveAMeal',
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       routerConfig: appRouter,

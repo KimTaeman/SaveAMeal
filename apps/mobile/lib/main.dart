@@ -3,7 +3,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile/app/app.dart';
+import 'package:saveameal/app/app.dart';
 
 // Run `flutterfire configure` to generate lib/firebase_options.dart, then
 // replace Firebase.initializeApp() with:
