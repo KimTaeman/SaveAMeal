@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function role() {
+      return get(/databases/$(database)/documents/users/$(uid())).data.role;
+    }
+
+    function isDonor()       { return role() == 'donor'; }
+    function isDriver()      { return role() == 'driver'; }
+    function isBeneficiary() { return role() == 'beneficiary'; }
+
+    // ── users ──────────────────────────────────────────────────────────────────
+    // Each user can only read and write their own document.
+    match /users/{userId} {
+      allow read:   if isSignedIn() && uid() == userId;
+      allow create: if isSignedIn() && uid() == userId;
+      allow update: if isSignedIn() && uid() == userId;
+      allow delete: if false;
+    }
+
+    // ── batches ────────────────────────────────────────────────────────────────
+    // Donors create; all signed-in users read; updates are role-gated.
+    match /batches/{batchId} {
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn() && isDonor()
+                    && request.resource.data.donorId == uid()
+                    && request.resource.data.status == 'open';
+
+      allow update: if isSignedIn() && (
+        // Donor can update their own batch (e.g. edit before claimed)
+        (isDonor() && resource.data.donorId == uid()) ||
+
+        // Driver can claim an open batch (sets status → 'claimed', writes driverId)
+        (isDriver() && resource.data.status == 'open'
+          && request.resource.data.driverId == uid()) ||
+
+        // Driver can advance their own claimed batch through pickup → delivered
+        (isDriver() && resource.data.driverId == uid()
+          && resource.data.status in ['claimed', 'picked_up']) ||
+
+        // Beneficiary can add rating/feedback and close their own batch
+        (isBeneficiary() && resource.data.beneficiaryId == uid()
+          && resource.data.status in ['delivered', 'closed']
+          && request.resource.data.keys().hasOnly(
+               ['status', 'rating', 'feedback', 'updatedAt']))
+      );
+
+      allow delete: if false;
+    }
+
+    // ── driverLocations ────────────────────────────────────────────────────────
+    // Driver writes only their own location doc; signed-in users can read.
+    match /driverLocations/{driverId} {
+      allow read:  if isSignedIn();
+      allow write: if isSignedIn() && isDriver() && uid() == driverId;
+    }
+
+    // ── impactMetrics ──────────────────────────────────────────────────────────
+    // Cloud Functions write these; clients only read own doc + global.
+    match /impactMetrics/{docId} {
+      allow read:  if isSignedIn()
+                   && (docId == 'global' || docId == uid());
+      allow write: if false;
+    }
+  }
+}
