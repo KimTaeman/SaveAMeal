@@ -37,16 +37,59 @@ docs: add ADR for state management choice
 
 ## First-time setup
 
-After cloning, run once from the repo root:
+### 1. Clone and install hooks
 
 ```bash
-sh tools/setup.sh
+git clone git@github.com:KimTaeman/new-flutter-app.git
+cd new-flutter-app
+sh tools/setup.sh   # installs pre-commit hook, runs pub get + codegen
 ```
 
-This will:
-- Install the pre-commit hook (`dart format` + `dart analyze` on every commit)
-- Run `flutter pub get`
-- Run code generation
+### 2. Get Firebase config files (required — do not skip)
+
+These files are gitignored (they are tied to our Firebase project). Download them from the Firebase console:
+
+1. Open [console.firebase.google.com](https://console.firebase.google.com) → select project **saveameal-87187**
+2. Click the **⚙️ gear icon** (top-left) → **Project settings**
+3. Scroll down to **"Your apps"**
+
+**Android** — `google-services.json`
+- Click the Android app entry → **Download google-services.json**
+- Place the file at: `apps/mobile/android/app/google-services.json`
+
+**iOS** — `GoogleService-Info.plist`
+- Click the iOS app entry → **Download GoogleService-Info.plist**
+- Place the file at: `apps/mobile/ios/Runner/GoogleService-Info.plist`
+
+> Without these files the app will crash on launch with a Firebase initialization error.
+
+### 3. Run code generation
+
+Generated files (`*.g.dart`, `*.freezed.dart`) are also gitignored. Regenerate them:
+
+```bash
+cd apps/mobile
+dart run build_runner build --delete-conflicting-outputs
+```
+
+### 4. Run the app
+
+```bash
+cd apps/mobile
+
+flutter run -d chrome          # Web (fastest for dev — no Firebase config needed for web)
+flutter run                    # Connected Android/iOS device
+flutter run -d <device-id>     # Specific device (see: flutter devices)
+```
+
+### 5. Verify everything works
+
+```bash
+cd apps/mobile
+flutter analyze                # Must pass with zero errors
+flutter test                   # Run all unit + widget tests
+dart format . --set-exit-if-changed   # Check formatting
+```
 
 ## Running the app
 
@@ -54,7 +97,7 @@ All Flutter commands run from `apps/mobile/`:
 
 ```bash
 flutter pub get
-dart run build_runner build
+dart run build_runner build --delete-conflicting-outputs
 flutter run -d chrome
 flutter test
 flutter analyze
