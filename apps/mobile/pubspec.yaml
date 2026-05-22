@@ -1,5 +1,5 @@
-name: mobile
-description: Enterprise-grade cross-platform mobile app (iOS, Android, Web).
+name: saveameal
+description: SaveAMeal — food rescue marketplace connecting donors, volunteers, and beneficiaries.
 publish_to: none
 version: 1.0.0+1
 
@@ -12,8 +12,8 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # ── State management ──────────────────────────────────────────────────────────
-  flutter_riverpod: ^2.6.0
-  riverpod_annotation: ^2.6.0
+  flutter_riverpod: ^3.0.0
+  riverpod_annotation: ^4.0.0
 
   # ── Navigation ────────────────────────────────────────────────────────────────
   go_router: ^14.0.0
@@ -28,7 +28,7 @@ dependencies:
   flutter_secure_storage: ^9.2.0
 
   # ── Models ────────────────────────────────────────────────────────────────────
-  freezed_annotation: ^2.4.0
+  freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0
 
   # ── Firebase ──────────────────────────────────────────────────────────────────
@@ -36,6 +36,16 @@ dependencies:
   firebase_auth: ^5.0.0
   cloud_firestore: ^5.0.0
   firebase_crashlytics: ^4.0.0
+  firebase_storage: ^12.0.0
+  firebase_messaging: ^15.0.0
+
+  # ── Maps & Location ───────────────────────────────────────────────────────────
+  google_maps_flutter: ^2.9.0
+  geolocator: ^13.0.0
+
+  # ── QR Code ───────────────────────────────────────────────────────────────────
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -46,13 +56,13 @@ dev_dependencies:
 
   # ── Code generation ───────────────────────────────────────────────────────────
   build_runner: ^2.4.0
-  riverpod_generator: ^2.6.0
-  freezed: ^2.5.0
+  riverpod_generator: ^4.0.0
+  freezed: ^3.0.0
   json_serializable: ^6.9.0
 
   # ── Linting ───────────────────────────────────────────────────────────────────
-  custom_lint: ^0.7.0
-  riverpod_lint: ^2.6.0
+  custom_lint: ^0.8.0
+  riverpod_lint: ^3.0.0
 
 flutter:
   uses-material-design: true
