@@ -4,6 +4,7 @@ import 'package:saveameal/features/driver/domain/repositories/driver_repository.
 class DriverRepositoryImpl implements DriverRepository {
   const DriverRepositoryImpl(this._datasource);
 
+  // ignore: unused_field
   final DriverRemoteDatasource _datasource;
 
   // TODO: implement DriverRepository methods

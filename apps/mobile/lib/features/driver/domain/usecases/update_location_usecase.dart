@@ -4,6 +4,7 @@ import 'package:saveameal/features/driver/domain/repositories/driver_repository.
 class UpdateLocationUsecase {
   const UpdateLocationUsecase(this._repository);
 
+  // ignore: unused_field
   final DriverRepository _repository;
 
   // TODO: implement call method
