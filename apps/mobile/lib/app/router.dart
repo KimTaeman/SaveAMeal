@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show ChangeNotifier;
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
@@ -8,7 +8,9 @@ import 'package:saveameal/features/auth/presentation/screens/register_screen.dar
 import 'package:saveameal/features/auth/presentation/screens/role_router_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/welcome_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/log_batch_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/driver_map_screen.dart';
 
 part 'router.g.dart';
@@ -44,6 +46,32 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/donor',
         builder: (context, state) => const DonorDashboardScreen(),
+        routes: [
+          GoRoute(
+            path: 'log',
+            builder: (context, state) => const LogBatchScreen(),
+          ),
+          GoRoute(
+            path: 'batch/:batchId/qr',
+            builder: (context, state) =>
+                BatchQrScreen(batchId: state.pathParameters['batchId']!),
+          ),
+          GoRoute(
+            path: 'impact',
+            builder: (context, state) =>
+                const Scaffold(body: Center(child: Text('Impact'))),
+          ),
+          GoRoute(
+            path: 'batches',
+            builder: (context, state) =>
+                const Scaffold(body: Center(child: Text('All Batches'))),
+          ),
+          GoRoute(
+            path: 'account',
+            builder: (context, state) =>
+                const Scaffold(body: Center(child: Text('Account'))),
+          ),
+        ],
       ),
       GoRoute(
         path: '/driver',

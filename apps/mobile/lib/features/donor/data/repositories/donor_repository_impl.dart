@@ -1,4 +1,9 @@
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:saveameal/core/models/batch_model.dart' as bm;
+import 'package:saveameal/core/models/impact_metrics_model.dart';
 import 'package:saveameal/features/donor/data/datasources/donor_remote_datasource.dart';
+import 'package:saveameal/features/donor/domain/entities/batch.dart' as domain;
+import 'package:saveameal/features/donor/domain/entities/donor_metrics.dart';
 import 'package:saveameal/features/donor/domain/repositories/donor_repository.dart';
 
 class DonorRepositoryImpl implements DonorRepository {
@@ -6,5 +11,94 @@ class DonorRepositoryImpl implements DonorRepository {
 
   final DonorRemoteDatasource _datasource;
 
-  // TODO: implement DonorRepository methods
+  static const _batchesBox = 'donor_batches';
+  static const _metricsBox = 'donor_metrics';
+
+  @override
+  Stream<List<domain.Batch>> watchActiveBatches(String donorId) async* {
+    final box = Hive.box(_batchesBox);
+    final cached = box.get(donorId);
+    if (cached != null) {
+      yield (cached as List)
+          .map(
+            (m) => _toBatch(
+              bm.BatchModel.fromJson(Map<String, dynamic>.from(m as Map)),
+            ),
+          )
+          .toList();
+    } else {
+      yield [];
+    }
+    await for (final models in _datasource.watchActiveBatches(donorId)) {
+      await box.put(donorId, models.map((m) => m.toJson()).toList());
+      yield models.map(_toBatch).toList();
+    }
+  }
+
+  @override
+  Stream<DonorMetrics> watchMetrics(String donorId) async* {
+    final box = Hive.box(_metricsBox);
+    final cached = box.get(donorId);
+    if (cached != null) {
+      yield _toMetrics(
+        ImpactMetricsModel.fromJson(Map<String, dynamic>.from(cached as Map)),
+      );
+    } else {
+      yield DonorMetrics.empty;
+    }
+    await for (final model in _datasource.watchMetrics(donorId)) {
+      await box.put(donorId, model.toJson());
+      yield _toMetrics(model);
+    }
+  }
+
+  @override
+  Future<void> createBatch(domain.Batch batch) =>
+      _datasource.createBatch(_fromBatch(batch));
+
+  // ── Mappers ────────────────────────────────────────────────────────────────
+
+  domain.Batch _toBatch(bm.BatchModel m) => domain.Batch(
+    id: m.id,
+    donorId: m.donorId,
+    description: m.description,
+    weightKg: m.weightKg,
+    portions: m.portions,
+    pickupAddress: m.pickupAddress,
+    status: domain.BatchStatus.values.byName(m.status.name),
+    driverId: m.driverId,
+    beneficiaryId: m.beneficiaryId,
+    photoUrl: m.photoUrl,
+    qrCode: m.qrCode,
+    rating: m.rating,
+    feedback: m.feedback,
+    createdAt: m.createdAt,
+    updatedAt: m.updatedAt,
+  );
+
+  bm.BatchModel _fromBatch(domain.Batch b) => bm.BatchModel(
+    id: b.id,
+    donorId: b.donorId,
+    description: b.description,
+    weightKg: b.weightKg,
+    portions: b.portions,
+    pickupAddress: b.pickupAddress,
+    status: bm.BatchStatus.values.byName(b.status.name),
+    driverId: b.driverId,
+    beneficiaryId: b.beneficiaryId,
+    photoUrl: b.photoUrl,
+    qrCode: b.qrCode,
+    rating: b.rating,
+    feedback: b.feedback,
+    createdAt: b.createdAt,
+    updatedAt: b.updatedAt,
+  );
+
+  DonorMetrics _toMetrics(ImpactMetricsModel m) => DonorMetrics(
+    donorId: m.id,
+    totalKg: m.totalKg,
+    totalMeals: m.totalMeals,
+    totalCO2e: m.totalCO2e,
+    totalDeliveries: m.totalDeliveries,
+  );
 }

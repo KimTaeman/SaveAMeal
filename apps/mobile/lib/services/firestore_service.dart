@@ -19,8 +19,10 @@ class FirestoreService {
     return UserModel.fromJson(doc.data()!);
   }
 
-  Future<void> createBatch(BatchModel batch) =>
-      throw UnimplementedError('createBatch not implemented');
+  Future<void> createBatch(BatchModel batch) => _db
+      .collection(FirestoreConstants.batches)
+      .doc(batch.id)
+      .set(batch.toJson());
 
   Stream<List<BatchModel>> watchOpenBatches() =>
       throw UnimplementedError('watchOpenBatches not implemented');
@@ -41,6 +43,25 @@ class FirestoreService {
   Stream<DriverLocationModel?> watchDriverLocation(String driverId) =>
       throw UnimplementedError('watchDriverLocation not implemented');
 
-  Stream<ImpactMetricsModel?> watchDonorMetrics(String donorId) =>
-      throw UnimplementedError('watchDonorMetrics not implemented');
+  Stream<ImpactMetricsModel?> watchDonorMetrics(String donorId) => _db
+      .collection(FirestoreConstants.impactMetrics)
+      .doc(donorId)
+      .snapshots()
+      .map(
+        (ds) => ds.exists && ds.data() != null
+            ? ImpactMetricsModel.fromJson({...ds.data()!, 'id': donorId})
+            : ImpactMetricsModel(id: donorId),
+      );
+
+  Stream<List<BatchModel>> watchActiveBatchesForDonor(String donorId) => _db
+      .collection(FirestoreConstants.batches)
+      .where('donorId', isEqualTo: donorId)
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map(
+        (qs) => qs.docs
+            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .where((m) => m.status != BatchStatus.closed)
+            .toList(),
+      );
 }
