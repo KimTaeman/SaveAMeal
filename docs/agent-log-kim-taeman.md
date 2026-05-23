@@ -33,3 +33,15 @@ Outcome: PROP-0003 and SPEC-0003 written and approved. Full log-batch flow imple
 Decisions: BatchSession uses keepAlive: true so state survives "Add Another Item" pop-twice navigation; cleared on submit or scanner PopScope. Barcode passed via go_router extra (no provider). UUID generated once in initState (stable across rebuilds). Photo upload fire-and-forget via unawaited async IIFE. Expiry time: showTimePicker, auto-advance to tomorrow if selected time is past for today.
 Handoff: BatchQrScreen still uses stub layout — QR Code Display.png design confirmed ("Pickup Code" title, BATCH SUMMARY cream card, green accent). pickupAddress and beneficiaryId hardcoded empty strings on submit — these fields should be wired once address/beneficiary selection is implemented. 2 pre-existing unused_field warnings in beneficiary/driver stubs (not from this feature).
 Review: PENDING
+
+---
+Date: 2026-05-23 00:00
+Member: Kim Taeman
+Agent: flutter-engineer
+Task: Fix CI failure — add build_runner step to all CI jobs and suppress deprecated_member_use in form screen
+Prompt: CI was failing with flutter analyze --fatal-infos due to (1) generated .g.dart/.freezed.dart files being gitignored and absent in CI, and (2) deprecated_member_use info warnings on DropdownButtonFormField value: parameter treated as fatal errors.
+
+Outcome: Fixed .github/workflows/ci.yml — added "Generate code" step (dart run build_runner build --delete-conflicting-outputs) to all three jobs (test, build-web, build-android). Added // ignore: deprecated_member_use on both DropdownButtonFormField value: lines in log_surplus_form_screen.dart.
+Decisions: Added code generation to build-web and build-android jobs as well, not just the test job — each CI job starts from a clean checkout with no generated files. Chose ignore comment over migrating to DropdownMenu (deferred — breaking change to UX not needed for this CI fix).
+Handoff: PR ready to merge. When DropdownButtonFormField is eventually removed from Flutter stable, migrate category and beneficiary dropdowns in log_surplus_form_screen.dart to DropdownMenu wrapped in FormField<T>.
+Review: PENDING
