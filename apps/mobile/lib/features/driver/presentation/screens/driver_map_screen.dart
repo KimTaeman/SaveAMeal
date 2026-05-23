@@ -6,8 +6,6 @@ class DriverMapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement
-    return const Scaffold(
-      body: Center(child: Text('TODO: DriverMapScreen')),
-    );
+    return const Scaffold(body: Center(child: Text('TODO: DriverMapScreen')));
   }
 }

@@ -6,8 +6,6 @@ class TrackingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement
-    return const Scaffold(
-      body: Center(child: Text('TODO: TrackingScreen')),
-    );
+    return const Scaffold(body: Center(child: Text('TODO: TrackingScreen')));
   }
 }

@@ -44,15 +44,14 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? onWarning,
     Color? danger,
     Color? onDanger,
-  }) =>
-      AppColors(
-        success: success ?? this.success,
-        onSuccess: onSuccess ?? this.onSuccess,
-        warning: warning ?? this.warning,
-        onWarning: onWarning ?? this.onWarning,
-        danger: danger ?? this.danger,
-        onDanger: onDanger ?? this.onDanger,
-      );
+  }) => AppColors(
+    success: success ?? this.success,
+    onSuccess: onSuccess ?? this.onSuccess,
+    warning: warning ?? this.warning,
+    onWarning: onWarning ?? this.onWarning,
+    danger: danger ?? this.danger,
+    onDanger: onDanger ?? this.onDanger,
+  );
 
   @override
   AppColors lerp(AppColors? other, double t) {

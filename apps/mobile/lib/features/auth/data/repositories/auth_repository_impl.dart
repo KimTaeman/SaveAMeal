@@ -17,8 +17,10 @@ class AuthRepositoryImpl implements AuthRepository {
       });
 
   @override
-  Future<AppUser> signIn(
-          {required String email, required String password}) async =>
+  Future<AppUser> signIn({
+    required String email,
+    required String password,
+  }) async =>
       _toEntity(await _datasource.signIn(email: email, password: password));
 
   @override
@@ -28,34 +30,35 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required UserRole role,
     String? phone,
-  }) async =>
-      _toEntity(await _datasource.signUp(
-        name: name,
-        email: email,
-        password: password,
-        role: _toModelRole(role),
-        phone: phone,
-      ));
+  }) async => _toEntity(
+    await _datasource.signUp(
+      name: name,
+      email: email,
+      password: password,
+      role: _toModelRole(role),
+      phone: phone,
+    ),
+  );
 
   @override
   Future<void> signOut() => _datasource.signOut();
 
   AppUser _toEntity(m.UserModel model) => AppUser(
-        uid: model.uid,
-        name: model.name,
-        email: model.email,
-        role: _toDomainRole(model.role),
-      );
+    uid: model.uid,
+    name: model.name,
+    email: model.email,
+    role: _toDomainRole(model.role),
+  );
 
   UserRole _toDomainRole(m.UserRole r) => switch (r) {
-        m.UserRole.donor => UserRole.donor,
-        m.UserRole.driver => UserRole.driver,
-        m.UserRole.beneficiary => UserRole.beneficiary,
-      };
+    m.UserRole.donor => UserRole.donor,
+    m.UserRole.driver => UserRole.driver,
+    m.UserRole.beneficiary => UserRole.beneficiary,
+  };
 
   m.UserRole _toModelRole(UserRole r) => switch (r) {
-        UserRole.donor => m.UserRole.donor,
-        UserRole.driver => m.UserRole.driver,
-        UserRole.beneficiary => m.UserRole.beneficiary,
-      };
+    UserRole.donor => m.UserRole.donor,
+    UserRole.driver => m.UserRole.driver,
+    UserRole.beneficiary => m.UserRole.beneficiary,
+  };
 }

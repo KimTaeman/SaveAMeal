@@ -6,8 +6,6 @@ class BatchQrScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement
-    return const Scaffold(
-      body: Center(child: Text('TODO: BatchQrScreen')),
-    );
+    return const Scaffold(body: Center(child: Text('TODO: BatchQrScreen')));
   }
 }

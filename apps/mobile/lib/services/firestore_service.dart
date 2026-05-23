@@ -10,14 +10,11 @@ class FirestoreService {
 
   final FirebaseFirestore _db;
 
-  Future<void> createUser(UserModel user) => _db
-      .collection(FirestoreConstants.users)
-      .doc(user.uid)
-      .set(user.toJson());
+  Future<void> createUser(UserModel user) =>
+      _db.collection(FirestoreConstants.users).doc(user.uid).set(user.toJson());
 
   Future<UserModel?> getUser(String uid) async {
-    final doc =
-        await _db.collection(FirestoreConstants.users).doc(uid).get();
+    final doc = await _db.collection(FirestoreConstants.users).doc(uid).get();
     if (!doc.exists || doc.data() == null) return null;
     return UserModel.fromJson(doc.data()!);
   }
@@ -36,8 +33,7 @@ class FirestoreService {
     BatchStatus status, {
     String? driverId,
     String? beneficiaryId,
-  }) =>
-      throw UnimplementedError('updateBatchStatus not implemented');
+  }) => throw UnimplementedError('updateBatchStatus not implemented');
 
   Future<void> upsertDriverLocation(DriverLocationModel loc) =>
       throw UnimplementedError('upsertDriverLocation not implemented');

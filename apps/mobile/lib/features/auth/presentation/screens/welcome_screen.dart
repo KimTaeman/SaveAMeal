@@ -82,8 +82,11 @@ class WelcomeScreen extends StatelessWidget {
                       style: tt.titleMedium?.copyWith(color: cs.onPrimary),
                     ),
                     const SizedBox(width: Spacing.xs),
-                    Icon(Icons.arrow_forward_rounded,
-                        color: cs.onPrimary, size: 18),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: cs.onPrimary,
+                      size: 18,
+                    ),
                   ],
                 ),
               ),

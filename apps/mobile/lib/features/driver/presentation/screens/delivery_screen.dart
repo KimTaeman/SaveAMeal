@@ -6,8 +6,6 @@ class DeliveryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement
-    return const Scaffold(
-      body: Center(child: Text('TODO: DeliveryScreen')),
-    );
+    return const Scaffold(body: Center(child: Text('TODO: DeliveryScreen')));
   }
 }

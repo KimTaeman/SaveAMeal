@@ -13,7 +13,11 @@ abstract final class AppLogger {
   static void warning(String message, {Object? error, StackTrace? stack}) =>
       _log(_Level.warning, message, error: error, stack: stack);
 
-  static void error(String message, {required Object error, StackTrace? stack}) {
+  static void error(
+    String message, {
+    required Object error,
+    StackTrace? stack,
+  }) {
     _log(_Level.error, message, error: error, stack: stack);
     if (!kDebugMode) {
       FirebaseCrashlytics.instance.recordError(error, stack, reason: message);

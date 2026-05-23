@@ -6,8 +6,6 @@ class PickupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement
-    return const Scaffold(
-      body: Center(child: Text('TODO: PickupScreen')),
-    );
+    return const Scaffold(body: Center(child: Text('TODO: PickupScreen')));
   }
 }

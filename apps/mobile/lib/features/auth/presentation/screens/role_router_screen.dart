@@ -31,8 +31,10 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
 
-    _counterClockwiseTurns =
-        Tween(begin: 0.0, end: -1.0).animate(_spinController);
+    _counterClockwiseTurns = Tween(
+      begin: 0.0,
+      end: -1.0,
+    ).animate(_spinController);
     _pulseScale = Tween(begin: 1.0, end: 1.04).animate(_pulseController);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -64,10 +66,7 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.white,
-              cs.primary.withValues(alpha: 0.12),
-            ],
+            colors: [Colors.white, cs.primary.withValues(alpha: 0.12)],
           ),
         ),
         child: Center(
