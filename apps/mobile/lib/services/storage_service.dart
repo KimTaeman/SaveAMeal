@@ -1,11 +1,19 @@
+import 'dart:io';
+
 import 'package:firebase_storage/firebase_storage.dart';
 
-/// Wraps Firebase Storage. All methods throw [UnimplementedError] until wired up.
 class StorageService {
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  StorageService(this._storage);
 
-  /// Uploads a batch photo from [filePath] and returns the download URL.
-  Future<String> uploadBatchPhoto(String batchId, String filePath) =>
-      // TODO: implement
-      throw UnimplementedError('uploadBatchPhoto not implemented');
+  final FirebaseStorage _storage;
+
+  Future<String> uploadBatchPhoto(
+    String batchId,
+    String itemIndex,
+    File photo,
+  ) async {
+    final ref = _storage.ref().child('batches/$batchId/items/$itemIndex.jpg');
+    await ref.putFile(photo);
+    return ref.getDownloadURL();
+  }
 }

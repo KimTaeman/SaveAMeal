@@ -35,9 +35,7 @@ Batch _makeBatch({
 }) => Batch(
   id: id,
   donorId: 'test-donor-uid',
-  description: 'Test food batch',
-  weightKg: 15.0,
-  portions: 3,
+  items: const [],
   pickupAddress: '1 Test Road',
   status: status,
   createdAt: DateTime(2026, 5, 23, 14, 30),

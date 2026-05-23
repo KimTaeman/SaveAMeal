@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:saveameal/core/constants/firestore_constants.dart';
 import 'package:saveameal/core/models/batch_model.dart';
+import 'package:saveameal/core/models/beneficiary_model.dart';
 import 'package:saveameal/core/models/driver_location_model.dart';
 import 'package:saveameal/core/models/impact_metrics_model.dart';
 import 'package:saveameal/core/models/user_model.dart';
@@ -51,6 +52,15 @@ class FirestoreService {
         (ds) => ds.exists && ds.data() != null
             ? ImpactMetricsModel.fromJson({...ds.data()!, 'id': donorId})
             : ImpactMetricsModel(id: donorId),
+      );
+
+  Stream<List<BeneficiaryModel>> getBeneficiaries() => _db
+      .collection(FirestoreConstants.beneficiaries)
+      .snapshots()
+      .map(
+        (qs) => qs.docs
+            .map((d) => BeneficiaryModel.fromJson({...d.data(), 'id': d.id}))
+            .toList(),
       );
 
   // No orderBy here — avoids composite index requirement.

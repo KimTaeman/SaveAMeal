@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:saveameal/core/models/batch_item_model.dart';
 
 part 'batch_model.freezed.dart';
 part 'batch_model.g.dart';
@@ -10,9 +11,7 @@ sealed class BatchModel with _$BatchModel {
   const factory BatchModel({
     required String id,
     required String donorId,
-    required String description,
-    required double weightKg,
-    required int portions,
+    @Default([]) List<BatchItemModel> items,
     required String pickupAddress,
     required BatchStatus status,
     String? driverId,

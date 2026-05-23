@@ -1,4 +1,4 @@
-// Pure Dart entity — no Flutter or backend imports.
+import 'package:saveameal/features/donor/domain/entities/batch_item.dart';
 
 enum BatchStatus { open, claimed, pickedUp, delivered, closed }
 
@@ -6,9 +6,7 @@ class Batch {
   const Batch({
     required this.id,
     required this.donorId,
-    required this.description,
-    required this.weightKg,
-    required this.portions,
+    required this.items,
     required this.pickupAddress,
     required this.status,
     this.driverId,
@@ -23,9 +21,7 @@ class Batch {
 
   final String id;
   final String donorId;
-  final String description;
-  final double weightKg;
-  final int portions;
+  final List<BatchItem> items;
   final String pickupAddress;
   final BatchStatus status;
   final String? driverId;
@@ -36,4 +32,8 @@ class Batch {
   final String? feedback;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  double get weightKg => items.fold(0, (s, i) => s + i.weightKg);
+  int get portions => items.length;
+  String get description => items.map((i) => i.name).join(', ');
 }
