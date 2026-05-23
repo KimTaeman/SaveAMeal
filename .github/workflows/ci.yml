@@ -94,5 +94,18 @@ jobs:
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
 
+      - name: Write google-services.json
+        run: |
+          TARGET=android/app/google-services.json
+          if [ -n "$GOOGLE_SERVICES_JSON_B64" ]; then
+            echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > "$TARGET"
+          else
+            cat > "$TARGET" << 'GSJSON'
+          {"project_info":{"project_number":"000000000000","project_id":"saveameal-ci","storage_bucket":"saveameal-ci.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"com.example.mobile"}},"oauth_client":[],"api_key":[{"current_key":"ci-placeholder"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}
+          GSJSON
+          fi
+        env:
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
       - name: Build Android APK (debug)
         run: flutter build apk --debug
