@@ -1,9 +1,14 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:saveameal/core/models/batch_item_model.dart';
 import 'package:saveameal/core/models/batch_model.dart' as bm;
+import 'package:saveameal/core/models/beneficiary_model.dart';
 import 'package:saveameal/core/models/impact_metrics_model.dart';
 import 'package:saveameal/features/donor/data/datasources/donor_remote_datasource.dart';
 import 'package:saveameal/features/donor/domain/entities/batch.dart' as domain;
+import 'package:saveameal/features/donor/domain/entities/batch_item.dart';
+import 'package:saveameal/features/donor/domain/entities/beneficiary.dart';
 import 'package:saveameal/features/donor/domain/entities/donor_metrics.dart';
+import 'package:saveameal/features/donor/domain/entities/food_category.dart';
 import 'package:saveameal/features/donor/domain/repositories/donor_repository.dart';
 
 class DonorRepositoryImpl implements DonorRepository {
@@ -62,14 +67,17 @@ class DonorRepositoryImpl implements DonorRepository {
   Future<void> createBatch(domain.Batch batch) =>
       _datasource.createBatch(_fromBatch(batch));
 
+  @override
+  Stream<List<Beneficiary>> getBeneficiaries() => _datasource
+      .getBeneficiaries()
+      .map((models) => models.map(_toBeneficiary).toList());
+
   // ── Mappers ────────────────────────────────────────────────────────────────
 
   domain.Batch _toBatch(bm.BatchModel m) => domain.Batch(
     id: m.id,
     donorId: m.donorId,
-    description: m.description,
-    weightKg: m.weightKg,
-    portions: m.portions,
+    items: m.items.map(_toBatchItem).toList(),
     pickupAddress: m.pickupAddress,
     status: domain.BatchStatus.values.byName(m.status.name),
     driverId: m.driverId,
@@ -85,9 +93,7 @@ class DonorRepositoryImpl implements DonorRepository {
   bm.BatchModel _fromBatch(domain.Batch b) => bm.BatchModel(
     id: b.id,
     donorId: b.donorId,
-    description: b.description,
-    weightKg: b.weightKg,
-    portions: b.portions,
+    items: b.items.map(_fromBatchItem).toList(),
     pickupAddress: b.pickupAddress,
     status: bm.BatchStatus.values.byName(b.status.name),
     driverId: b.driverId,
@@ -100,6 +106,22 @@ class DonorRepositoryImpl implements DonorRepository {
     updatedAt: b.updatedAt,
   );
 
+  BatchItem _toBatchItem(BatchItemModel m) => BatchItem(
+    name: m.name,
+    category: FoodCategory.values.byName(m.category),
+    weightKg: m.weightKg,
+    expiryTime: m.expiryTime,
+    photoUrl: m.photoUrl,
+  );
+
+  BatchItemModel _fromBatchItem(BatchItem i) => BatchItemModel(
+    name: i.name,
+    category: i.category.name,
+    weightKg: i.weightKg,
+    expiryTime: i.expiryTime,
+    photoUrl: i.photoUrl,
+  );
+
   DonorMetrics _toMetrics(ImpactMetricsModel m) => DonorMetrics(
     donorId: m.id,
     totalKg: m.totalKg,
@@ -107,4 +129,7 @@ class DonorRepositoryImpl implements DonorRepository {
     totalCO2e: m.totalCO2e,
     totalDeliveries: m.totalDeliveries,
   );
+
+  Beneficiary _toBeneficiary(BeneficiaryModel m) =>
+      Beneficiary(id: m.id, name: m.name, address: m.address);
 }

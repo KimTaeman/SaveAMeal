@@ -9,8 +9,10 @@ import 'package:saveameal/features/auth/presentation/screens/role_router_screen.
 import 'package:saveameal/features/auth/presentation/screens/welcome_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
-import 'package:saveameal/features/donor/presentation/screens/log_batch_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/scanner_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/driver_map_screen.dart';
 
 part 'router.g.dart';
@@ -49,7 +51,19 @@ GoRouter router(Ref ref) {
         routes: [
           GoRoute(
             path: 'log',
-            builder: (context, state) => const LogBatchScreen(),
+            builder: (context, state) => const ScannerScreen(),
+            routes: [
+              GoRoute(
+                path: 'form',
+                builder: (context, state) => LogSurplusFormScreen(
+                  prefillBarcode: state.extra as String?,
+                ),
+              ),
+              GoRoute(
+                path: 'summary',
+                builder: (context, state) => const BatchSummaryScreen(),
+              ),
+            ],
           ),
           GoRoute(
             path: 'batch/:batchId/qr',

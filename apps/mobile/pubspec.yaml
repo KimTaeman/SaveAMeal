@@ -43,9 +43,13 @@ dependencies:
   google_maps_flutter: ^2.9.0
   geolocator: ^13.0.0
 
-  # ── QR Code ───────────────────────────────────────────────────────────────────
+  # ── QR Code / Scanner ─────────────────────────────────────────────────────────
   qr_flutter: ^4.1.0
   mobile_scanner: ^6.0.0
+
+  # ── Media / IDs ───────────────────────────────────────────────────────────────
+  image_picker: ^1.1.0
+  uuid: ^4.5.0
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:saveameal/features/donor/domain/entities/batch.dart';
+import 'package:saveameal/features/donor/domain/entities/beneficiary.dart';
 import 'package:saveameal/features/donor/domain/entities/donor_metrics.dart';
 import 'package:saveameal/features/donor/domain/repositories/donor_repository.dart';
 import 'package:saveameal/features/donor/domain/usecases/get_donor_metrics_usecase.dart';
@@ -18,6 +19,9 @@ class _FakeDonorRepository implements DonorRepository {
 
   @override
   Future<void> createBatch(Batch batch) async {}
+
+  @override
+  Stream<List<Beneficiary>> getBeneficiaries() => const Stream.empty();
 }
 
 void main() {

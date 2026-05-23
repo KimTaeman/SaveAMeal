@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/features/donor/data/datasources/donor_remote_datasource.dart';
 import 'package:saveameal/features/donor/data/repositories/donor_repository_impl.dart';
 import 'package:saveameal/features/donor/domain/entities/batch.dart';
+import 'package:saveameal/features/donor/domain/entities/beneficiary.dart';
 import 'package:saveameal/features/donor/domain/entities/donor_metrics.dart';
 import 'package:saveameal/features/donor/domain/repositories/donor_repository.dart';
 import 'package:saveameal/features/donor/domain/usecases/create_batch_usecase.dart';
@@ -38,3 +39,7 @@ Stream<List<Batch>> activeBatches(Ref ref, String donorId) =>
 @riverpod
 Stream<DonorMetrics> donorMetrics(Ref ref, String donorId) =>
     ref.watch(getDonorMetricsUsecaseProvider).call(donorId);
+
+@riverpod
+Stream<List<Beneficiary>> beneficiaries(Ref ref) =>
+    ref.watch(donorRepositoryProvider).getBeneficiaries();
