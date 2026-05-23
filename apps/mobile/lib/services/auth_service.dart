@@ -1,31 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// Wraps Firebase Auth. All methods throw [UnimplementedError] until wired up.
 class AuthService {
-  // TODO: inject FirebaseAuth instance
+  AuthService(this._auth);
 
-  /// Emits the current [User] (or null) whenever auth state changes.
-  Stream<User?> get authStateChanges =>
-      // TODO: implement
-      throw UnimplementedError('authStateChanges not implemented');
+  final FirebaseAuth _auth;
 
-  /// Signs the user in with email and password.
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
   Future<UserCredential> signIn(String email, String password) =>
-      // TODO: implement
-      throw UnimplementedError('signIn not implemented');
+      _auth.signInWithEmailAndPassword(email: email, password: password);
 
-  /// Creates a new account with email and password.
   Future<UserCredential> signUp(String email, String password) =>
-      // TODO: implement
-      throw UnimplementedError('signUp not implemented');
+      _auth.createUserWithEmailAndPassword(email: email, password: password);
 
-  /// Signs the current user out.
-  Future<void> signOut() =>
-      // TODO: implement
-      throw UnimplementedError('signOut not implemented');
+  Future<void> signOut() => _auth.signOut();
 
-  /// Returns the currently signed-in [User], or null if signed out.
-  User? get currentUser =>
-      // TODO: implement
-      throw UnimplementedError('currentUser not implemented');
+  User? get currentUser => _auth.currentUser;
 }

@@ -4,7 +4,7 @@ part 'driver_location_model.freezed.dart';
 part 'driver_location_model.g.dart';
 
 @freezed
-class DriverLocationModel with _$DriverLocationModel {
+sealed class DriverLocationModel with _$DriverLocationModel {
   const factory DriverLocationModel({
     required String driverId,
     required double lat,

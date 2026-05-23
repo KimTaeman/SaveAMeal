@@ -6,5 +6,5 @@ class SignOutUsecase {
 
   final AuthRepository _repository;
 
-  // TODO: implement call method
+  Future<void> call() => _repository.signOut();
 }

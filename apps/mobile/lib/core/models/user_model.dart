@@ -8,7 +8,7 @@ enum UserRole { donor, driver, beneficiary }
 enum BeneficiaryStatus { accepting, full }
 
 @freezed
-class UserModel with _$UserModel {
+sealed class UserModel with _$UserModel {
   const factory UserModel({
     required String uid,
     required String name,
