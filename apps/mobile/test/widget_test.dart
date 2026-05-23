@@ -12,10 +12,12 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light(),
-          home: Builder(builder: (c) {
-            ctx = c;
-            return const SizedBox.shrink();
-          }),
+          home: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       );
       expect(Theme.of(ctx).extension<AppColors>(), isNotNull);
@@ -27,10 +29,12 @@ void main() {
         MaterialApp(
           darkTheme: AppTheme.dark(),
           themeMode: ThemeMode.dark,
-          home: Builder(builder: (c) {
-            ctx = c;
-            return const SizedBox.shrink();
-          }),
+          home: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       );
       expect(Theme.of(ctx).extension<AppColors>(), isNotNull);

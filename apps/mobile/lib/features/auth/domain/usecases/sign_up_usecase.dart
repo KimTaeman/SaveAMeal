@@ -13,12 +13,11 @@ class SignUpUsecase {
     required String password,
     required UserRole role,
     String? phone,
-  }) =>
-      _repository.signUp(
-        name: name,
-        email: email,
-        password: password,
-        role: role,
-        phone: phone,
-      );
+  }) => _repository.signUp(
+    name: name,
+    email: email,
+    password: password,
+    role: role,
+    phone: phone,
+  );
 }

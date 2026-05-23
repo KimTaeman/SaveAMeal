@@ -31,8 +31,10 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   Stream<User?> watchAuthState() => _authService.authStateChanges;
 
   @override
-  Future<UserModel> signIn(
-      {required String email, required String password}) async {
+  Future<UserModel> signIn({
+    required String email,
+    required String password,
+  }) async {
     final cred = await _authService.signIn(email, password);
     final model = await _firestoreService.getUser(cred.user!.uid);
     if (model == null) {

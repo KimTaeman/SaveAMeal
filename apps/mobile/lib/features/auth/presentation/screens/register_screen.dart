@@ -42,7 +42,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
     try {
       final phone = _phoneController.text.trim();
-      await ref.read(signUpUsecaseProvider).call(
+      await ref
+          .read(signUpUsecaseProvider)
+          .call(
             name: _nameController.text.trim(),
             email: _emailController.text.trim(),
             password: _passwordController.text,
@@ -100,8 +102,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: Spacing.xs),
                 Text(
                   'Join the movement to end food waste.',
-                  style:
-                      tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: Spacing.xl),
@@ -112,10 +113,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   decoration: _inputDecoration(context, 'Full Name'),
                   textInputAction: TextInputAction.next,
                   textCapitalization: TextCapitalization.words,
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty)
-                          ? 'Enter your name'
-                          : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Enter your name'
+                      : null,
                 ),
                 const SizedBox(height: Spacing.md),
 
@@ -125,10 +125,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   decoration: _inputDecoration(context, 'Email'),
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  validator: (v) =>
-                      (v == null || !v.contains('@'))
-                          ? 'Enter a valid email'
-                          : null,
+                  validator: (v) => (v == null || !v.contains('@'))
+                      ? 'Enter a valid email'
+                      : null,
                 ),
                 const SizedBox(height: Spacing.md),
 
@@ -144,8 +143,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 // Password
                 TextFormField(
                   controller: _passwordController,
-                  decoration:
-                      _inputDecoration(context, 'Password').copyWith(
+                  decoration: _inputDecoration(context, 'Password').copyWith(
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -153,17 +151,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             : Icons.visibility_outlined,
                         color: cs.onSurfaceVariant,
                       ),
-                      onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _submit(),
-                  validator: (v) =>
-                      (v == null || v.length < 6)
-                          ? 'Password must be at least 6 characters'
-                          : null,
+                  validator: (v) => (v == null || v.length < 6)
+                      ? 'Password must be at least 6 characters'
+                      : null,
                 ),
                 const SizedBox(height: Spacing.xl),
 
@@ -191,8 +188,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   description: 'I want to volunteer to deliver',
                   icon: Icons.two_wheeler_outlined,
                   selected: _selectedRole == UserRole.driver,
-                  onTap: () =>
-                      setState(() => _selectedRole = UserRole.driver),
+                  onTap: () => setState(() => _selectedRole = UserRole.driver),
                 ),
                 const SizedBox(height: Spacing.sm),
                 _RoleCard(
@@ -219,8 +215,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     child: Text(
                       _error!,
-                      style: tt.bodySmall
-                          ?.copyWith(color: cs.onErrorContainer),
+                      style: tt.bodySmall?.copyWith(color: cs.onErrorContainer),
                     ),
                   ),
                 ],
@@ -245,8 +240,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         )
                       : Text(
                           'Create Account',
-                          style: tt.titleMedium
-                              ?.copyWith(color: cs.onPrimary),
+                          style: tt.titleMedium?.copyWith(color: cs.onPrimary),
                         ),
                 ),
                 const SizedBox(height: Spacing.md),
@@ -365,8 +359,7 @@ class _RoleCard extends StatelessWidget {
                 ),
                 Text(
                   description,
-                  style:
-                      tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                 ),
               ],
             ),

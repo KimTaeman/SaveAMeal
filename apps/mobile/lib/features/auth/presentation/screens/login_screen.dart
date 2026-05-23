@@ -35,7 +35,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _error = null;
     });
     try {
-      await ref.read(signInUsecaseProvider).call(
+      await ref
+          .read(signInUsecaseProvider)
+          .call(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
@@ -47,7 +49,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   String _friendlyError(String raw) {
-    if (raw.contains('user-not-found') || raw.contains('wrong-password') ||
+    if (raw.contains('user-not-found') ||
+        raw.contains('wrong-password') ||
         raw.contains('invalid-credential')) {
       return 'Incorrect email or password.';
     }
@@ -103,10 +106,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     decoration: __inputDecoration(context, 'Email'),
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    validator: (v) =>
-                        (v == null || !v.contains('@'))
-                            ? 'Enter a valid email'
-                            : null,
+                    validator: (v) => (v == null || !v.contains('@'))
+                        ? 'Enter a valid email'
+                        : null,
                   ),
                   const SizedBox(height: Spacing.md),
 
@@ -121,17 +123,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               : Icons.visibility_outlined,
                           color: cs.onSurfaceVariant,
                         ),
-                        onPressed: () =>
-                            setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                       ),
                     ),
                     obscureText: _obscurePassword,
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _submit(),
-                    validator: (v) =>
-                        (v == null || v.length < 6)
-                            ? 'Password must be at least 6 characters'
-                            : null,
+                    validator: (v) => (v == null || v.length < 6)
+                        ? 'Password must be at least 6 characters'
+                        : null,
                   ),
 
                   // Error
@@ -148,8 +150,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       child: Text(
                         _error!,
-                        style:
-                            tt.bodySmall?.copyWith(color: cs.onErrorContainer),
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onErrorContainer,
+                        ),
                       ),
                     ),
                   ],
@@ -174,8 +177,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           )
                         : Text(
                             'Sign In',
-                            style: tt.titleMedium
-                                ?.copyWith(color: cs.onPrimary),
+                            style: tt.titleMedium?.copyWith(
+                              color: cs.onPrimary,
+                            ),
                           ),
                   ),
                   const SizedBox(height: Spacing.md),

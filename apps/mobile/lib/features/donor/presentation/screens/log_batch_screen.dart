@@ -6,8 +6,6 @@ class LogBatchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement
-    return const Scaffold(
-      body: Center(child: Text('TODO: LogBatchScreen')),
-    );
+    return const Scaffold(body: Center(child: Text('TODO: LogBatchScreen')));
   }
 }
