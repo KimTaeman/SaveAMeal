@@ -108,3 +108,26 @@ Files:
   ? apps/mobile/lib/features/auth/presentation/screens/welcome_screen.dart (untracked)
 Summary:  1 file changed, 9 insertions(+), 3 deletions(-)
 
+---
+Date: 2026-05-23 00:00
+Member: KimTaeman
+Agent: architect
+Task: Write Tech Proposal PROP-0002 for the donor dashboard feature
+Prompt: Write Tech Proposal 0002 for the SaveAMeal Flutter app's donor dashboard feature. Cover the hybrid Firestore + Hive data strategy, evaluate alternatives, define acceptance criteria.
+
+Outcome: PROP-0002 written to tech-proposals/0002-donor-dashboard.md. ADR-0006 written to docs/decisions/0006-donor-dashboard-data-strategy.md recording the hybrid data strategy decision.
+Decisions: Recommended hybrid approach (Firestore real-time listeners + Hive write-through cache) over pure Firestore-only (violated ADR-0003 consistency and cold-start guarantee) and polling (violated real-time constraint). Five open questions raised covering metrics document shape, batch scope, Firestore composite index, Cloud Function latency, and empty state behaviour.
+Handoff: PROP-0002 is in DRAFT status. Team must resolve the five open questions before the architect can write SPEC-0002. The most blocking question is OQ-1 (impactMetrics field names) — the Cloud Function author must confirm the document schema before the DonorMetrics domain entity can be finalised.
+Review: PENDING
+
+---
+Date: 2026-05-23 14:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Implement SPEC-0002 donor dashboard — real-time batch tracking, impact metrics, Hive cache, DonorDashboardScreen
+Prompt: Implement the SaveAMeal donor dashboard feature. All stubs exist — fill them in and create the new files listed in the spec. Work from apps/mobile/. Resolved decisions: OQ-7 platform default font, OQ-8 substring(0,8).toUpperCase() short code, OQ-1 client-side closed filter, OQ-2 Hive.initFlutter in main.dart, OQ-3 firestoreServiceProvider injection.
+
+Outcome: SPEC-0002 fully implemented. 15 files written/modified. 15 tests written (5 unit, 10 widget), all passing. flutter analyze: 0 errors (7 pre-existing stub warnings unchanged). dart format: clean.
+Decisions: Used Riverpod 3.x API (AsyncValue.asData?.value, hasValue, isLoading, hasError) instead of valueOrNull which does not exist in v3.x. Used async* generator pattern for Hive seed-then-live streams (no rxdart). Used client-side filter for closed batches in watchActiveBatchesForDonor to avoid composite Firestore index on status. AppUser.name used for orgName (no displayName field on entity). RichText TextSpan for totalKg display — tested with byWidgetPredicate since textContaining doesn't traverse TextSpans.
+Handoff: Run dart run build_runner build before flutter run. Firestore requires a single-field index on batches.createdAt (descending) for the orderBy query — add via Firebase Console or firestore.indexes.json. QA-engineer to validate acceptance criteria against staging instance (real-time updates within 5s, offline banner, empty state). LogBatchScreen and BatchQrScreen are scaffold-only — full implementation deferred.
+Review: PENDING

@@ -115,6 +115,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
             const SizedBox(height: Spacing.md),
             _fieldLabel(context, 'Category'),
             DropdownButtonFormField<FoodCategory>(
+              // ignore: deprecated_member_use
               value: _category,
               decoration: const InputDecoration(hintText: 'Select category'),
               items: FoodCategory.values
@@ -166,6 +167,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
             _fieldLabel(context, 'Assign Beneficiary (optional)'),
             beneficiariesAsync.when(
               data: (items) => DropdownButtonFormField<Beneficiary>(
+                // ignore: deprecated_member_use
                 value: _beneficiary,
                 decoration: InputDecoration(
                   hintText: 'Details of destination...',
