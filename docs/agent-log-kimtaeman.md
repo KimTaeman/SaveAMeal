@@ -103,3 +103,8 @@ Decisions: Used withValues(alpha:) over withOpacity() since withOpacity is also 
 Handoff: Re-run flutter run -d chrome and confirm the TypeError is gone. If the error persists, check the full Flutter error console for the PRIMARY exception (the bool TypeError is a secondary exception thrown inside Flutter's error handler). Widget tests for auth screens still pending per SPEC-0001.
 Review: PENDING
 
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ? apps/mobile/lib/features/auth/presentation/screens/welcome_screen.dart (untracked)
+Summary:  1 file changed, 9 insertions(+), 3 deletions(-)
+
