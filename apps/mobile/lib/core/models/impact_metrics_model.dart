@@ -4,7 +4,7 @@ part 'impact_metrics_model.freezed.dart';
 part 'impact_metrics_model.g.dart';
 
 @freezed
-class ImpactMetricsModel with _$ImpactMetricsModel {
+sealed class ImpactMetricsModel with _$ImpactMetricsModel {
   const factory ImpactMetricsModel({
     required String id,
     @Default(0.0) double totalKg,

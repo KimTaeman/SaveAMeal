@@ -6,7 +6,7 @@ part 'batch_model.g.dart';
 enum BatchStatus { open, claimed, pickedUp, delivered, closed }
 
 @freezed
-class BatchModel with _$BatchModel {
+sealed class BatchModel with _$BatchModel {
   const factory BatchModel({
     required String id,
     required String donorId,
