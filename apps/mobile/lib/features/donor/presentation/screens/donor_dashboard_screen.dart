@@ -99,7 +99,7 @@ class _OfflineBanner extends StatelessWidget {
         vertical: Spacing.xs,
       ),
       child: Text(
-        'You are offline. Showing last known data.',
+        'Unable to reach server. Showing last known data.',
         style: Theme.of(
           context,
         ).textTheme.bodySmall?.copyWith(color: ac.onWarning),
