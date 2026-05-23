@@ -4,6 +4,7 @@ import 'package:saveameal/features/beneficiary/domain/repositories/beneficiary_r
 class BeneficiaryRepositoryImpl implements BeneficiaryRepository {
   const BeneficiaryRepositoryImpl(this._datasource);
 
+  // ignore: unused_field
   final BeneficiaryRemoteDatasource _datasource;
 
   // TODO: implement BeneficiaryRepository methods
