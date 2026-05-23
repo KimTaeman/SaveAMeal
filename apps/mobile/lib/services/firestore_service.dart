@@ -53,10 +53,11 @@ class FirestoreService {
             : ImpactMetricsModel(id: donorId),
       );
 
+  // No orderBy here — avoids composite index requirement.
+  // The repository sorts client-side by createdAt descending.
   Stream<List<BatchModel>> watchActiveBatchesForDonor(String donorId) => _db
       .collection(FirestoreConstants.batches)
       .where('donorId', isEqualTo: donorId)
-      .orderBy('createdAt', descending: true)
       .snapshots()
       .map(
         (qs) => qs.docs

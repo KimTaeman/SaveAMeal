@@ -30,8 +30,14 @@ class DonorRepositoryImpl implements DonorRepository {
       yield [];
     }
     await for (final models in _datasource.watchActiveBatches(donorId)) {
-      await box.put(donorId, models.map((m) => m.toJson()).toList());
-      yield models.map(_toBatch).toList();
+      final sorted = [...models]
+        ..sort(
+          (a, b) => (b.createdAt ?? DateTime(0)).compareTo(
+            a.createdAt ?? DateTime(0),
+          ),
+        );
+      await box.put(donorId, sorted.map((m) => m.toJson()).toList());
+      yield sorted.map(_toBatch).toList();
     }
   }
 
