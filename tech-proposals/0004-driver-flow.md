@@ -1,6 +1,6 @@
 ---
 title: "0004: Driver flow — browse, claim, pickup, and deliver batches"
-description: "Give drivers a map-based UI to find open batches, claim them, confirm pickup via QR scan, share live location, and mark delivery complete."
+description: "Give drivers a map-based UI to find open batches, claim them, confirm pickup via QR scan + safety checklist + photo, share live location, verify delivery, and see impact on completion."
 ---
 
 # PROP-0004: Driver flow — browse, claim, pickup, and deliver batches
@@ -19,31 +19,35 @@ Donors can log surplus batches (SPEC-0003), but there is no mechanism for a driv
 
 ## Proposed Solution
 
-Implement the full driver experience as a single `DriverMapScreen` (map + bottom sheet). Drivers see open batches as map markers, claim one via a Firestore transaction, follow a stepper through pickup and delivery, and share live location every 30 s to `driverLocations/{uid}` so beneficiaries can track progress.
+Implement the full driver experience across 7 screens (per Figma `LIdE6qDQzKpV3L5bAbO24w`): map with food-category markers, job detail, en-route navigation, QR pickup verification, safety checklist + photo upload, delivery handover verification, and a completion screen showing impact and points earned. Live location is shared every 30 s during active delivery.
 
 ## Alternatives Considered
 
-### A — Separate screens per lifecycle step (PickupScreen → DeliveryScreen)
+### A — Single screen with bottom-sheet stepper
 
-Each phase gets its own GoRouter route. **Rejected:** the map disappears between screens, which is disorienting during active delivery. Navigation boilerplate adds complexity without UX benefit.
+All driver logic in `DriverMapScreen`; phases rendered as stepper inside a bottom sheet. **Rejected:** Figma specifies separate full screens per phase, which gives more breathing room for safety checklist and photo upload UX.
 
-### B — Persistent map + wizard overlay (sheet animates forward per step)
+### B — List view instead of map for batch discovery
 
-Map always visible; bottom sheet slides content forward like a wizard. **Rejected:** sheet animation synchronized with map camera is fiddly to implement correctly within the project timeline.
+Scrollable card list of open batches sorted by distance. **Rejected:** Figma specifies map-first with food-category chip markers as the primary browse surface.
 
 ## Open Questions
 
-All resolved during brainstorming session (2026-05-26):
+All resolved via Figma review (2026-05-26):
 
-- `BatchQrScreen` displays a `qr_flutter`-generated QR containing `batchId`. ✓
-- Driver sees donor address at Claimed step and beneficiary address at PickedUp step. ✓
+- QR flow direction: driver **scans** donor's QR (not displays). `scanner_screen.dart` stub handles this. ✓
+- Safety checklist + photo upload required before pickup is confirmed. ✓
+- Completion screen shows CO2 saved, meals provided, and gamification points. ✓
+- Markers use food-category icons (e.g. `local_pizza`, `bakery_dining`), not generic pins. ✓
 
 ## Acceptance Criteria
 
-- Driver can see all `status == "open"` batches as map markers.
-- Claiming a batch uses a Firestore transaction; concurrent claim shows "Batch already taken" snackbar.
+- Driver sees open batches as food-category chip markers on a Google Map.
+- Tapping a marker shows a preview card with "View Job →"; tapping that opens `JobDetailScreen`.
+- Claiming uses a Firestore transaction; concurrent claim shows "Batch already taken" snackbar.
 - Driver location is written to `driverLocations/{uid}` every 30 s while a batch is active.
-- Batch status progresses `open → claimed → picked_up → delivered` via driver actions.
-- `PickupScreen` and `DeliveryScreen` stubs are removed.
-- `BatchQrScreen` is fully implemented (QR display).
+- Pickup requires: QR scan of donor's code → safety checklist (all 3 ticked) → photo upload.
+- Delivery requires: handover verification checkboxes + optional notes.
+- Completion screen shows impact stats (CO2, meals) and points earned.
+- Batch status progresses: `open → claimed → picked_up → delivered`.
 - Every new screen has a widget test.
