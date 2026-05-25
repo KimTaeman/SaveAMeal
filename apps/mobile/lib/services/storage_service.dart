@@ -16,4 +16,10 @@ class StorageService {
     await ref.putFile(photo);
     return ref.getDownloadURL();
   }
+
+  Future<String> uploadPickupPhoto(String batchId, String localPath) async {
+    final ref = _storage.ref().child('batch_photos/$batchId/pickup.jpg');
+    await ref.putFile(File(localPath));
+    return ref.getDownloadURL();
+  }
 }
