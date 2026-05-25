@@ -8,7 +8,7 @@ import 'package:saveameal/features/driver/presentation/providers/driver_state.da
 
 part 'driver_notifier.g.dart';
 
-@Riverpod(name: 'driverNotifierProvider')
+@riverpod
 class DriverNotifier extends _$DriverNotifier {
   Timer? _locationTimer;
 
