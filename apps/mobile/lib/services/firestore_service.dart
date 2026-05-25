@@ -65,6 +65,8 @@ class FirestoreService {
       .collection(FirestoreConstants.batches)
       .where('driverId', isEqualTo: driverId)
       .snapshots()
+      // Status filter is applied client-side to avoid a composite Firestore index
+      // (driverId + status). A driver will rarely have more than one active batch.
       .map((qs) {
         final active = qs.docs
             .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
@@ -81,8 +83,9 @@ class FirestoreService {
     final ref = _db.collection(FirestoreConstants.batches).doc(batchId);
     await _db.runTransaction((tx) async {
       final snap = await tx.get(ref);
-      if (!snap.exists || snap.data() == null)
-        throw Exception('Batch not found');
+      if (!snap.exists || snap.data() == null) {
+        throw BatchNotFoundException(batchId);
+      }
       if (snap.data()!['status'] != 'open') {
         throw const BatchAlreadyClaimedException();
       }
