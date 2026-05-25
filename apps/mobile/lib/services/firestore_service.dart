@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:saveameal/core/constants/firestore_constants.dart';
+import 'package:saveameal/core/exceptions/batch_exceptions.dart';
 import 'package:saveameal/core/models/batch_model.dart';
 import 'package:saveameal/core/models/beneficiary_model.dart';
 import 'package:saveameal/core/models/driver_location_model.dart';
@@ -25,24 +26,104 @@ class FirestoreService {
       .doc(batch.id)
       .set(batch.toJson());
 
-  Stream<List<BatchModel>> watchOpenBatches() =>
-      throw UnimplementedError('watchOpenBatches not implemented');
+  Stream<List<BatchModel>> watchOpenBatches() => _db
+      .collection(FirestoreConstants.batches)
+      .where('status', isEqualTo: 'open')
+      .snapshots()
+      .map(
+        (qs) => qs.docs
+            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .toList(),
+      );
 
-  Stream<BatchModel?> watchBatch(String batchId) =>
-      throw UnimplementedError('watchBatch not implemented');
+  Stream<BatchModel?> watchBatch(String batchId) => _db
+      .collection(FirestoreConstants.batches)
+      .doc(batchId)
+      .snapshots()
+      .map(
+        (ds) => ds.exists && ds.data() != null
+            ? BatchModel.fromJson({...ds.data()!, 'id': ds.id})
+            : null,
+      );
 
   Future<void> updateBatchStatus(
     String batchId,
     BatchStatus status, {
     String? driverId,
     String? beneficiaryId,
-  }) => throw UnimplementedError('updateBatchStatus not implemented');
+  }) async {
+    final data = <String, dynamic>{
+      'status': status.name,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (driverId != null) data['driverId'] = driverId;
+    if (beneficiaryId != null) data['beneficiaryId'] = beneficiaryId;
+    await _db.collection(FirestoreConstants.batches).doc(batchId).update(data);
+  }
 
-  Future<void> upsertDriverLocation(DriverLocationModel loc) =>
-      throw UnimplementedError('upsertDriverLocation not implemented');
+  Stream<BatchModel?> watchActiveBatchForDriver(String driverId) => _db
+      .collection(FirestoreConstants.batches)
+      .where('driverId', isEqualTo: driverId)
+      .snapshots()
+      .map((qs) {
+        final active = qs.docs
+            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .where(
+              (m) =>
+                  m.status == BatchStatus.claimed ||
+                  m.status == BatchStatus.pickedUp,
+            )
+            .toList();
+        return active.isEmpty ? null : active.first;
+      });
 
-  Stream<DriverLocationModel?> watchDriverLocation(String driverId) =>
-      throw UnimplementedError('watchDriverLocation not implemented');
+  Future<void> claimBatch(String batchId, String driverId) async {
+    final ref = _db.collection(FirestoreConstants.batches).doc(batchId);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists || snap.data() == null)
+        throw Exception('Batch not found');
+      if (snap.data()!['status'] != 'open') {
+        throw const BatchAlreadyClaimedException();
+      }
+      tx.update(ref, {
+        'status': 'claimed',
+        'driverId': driverId,
+        'claimedAt': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
+  Future<void> confirmPickup(String batchId, String pickupPhotoUrl) =>
+      _db.collection(FirestoreConstants.batches).doc(batchId).update({
+        'status': 'pickedUp',
+        'pickedUpAt': FieldValue.serverTimestamp(),
+        'pickupPhotoUrl': pickupPhotoUrl,
+      });
+
+  Future<void> confirmDelivery(String batchId, String? notes) async {
+    final data = <String, dynamic>{
+      'status': 'delivered',
+      'deliveredAt': FieldValue.serverTimestamp(),
+    };
+    if (notes != null && notes.isNotEmpty) data['deliveryNotes'] = notes;
+    await _db.collection(FirestoreConstants.batches).doc(batchId).update(data);
+  }
+
+  Future<void> upsertDriverLocation(DriverLocationModel loc) => _db
+      .collection(FirestoreConstants.driverLocations)
+      .doc(loc.driverId)
+      .set(loc.toJson());
+
+  Stream<DriverLocationModel?> watchDriverLocation(String driverId) => _db
+      .collection(FirestoreConstants.driverLocations)
+      .doc(driverId)
+      .snapshots()
+      .map(
+        (ds) => ds.exists && ds.data() != null
+            ? DriverLocationModel.fromJson(ds.data()!)
+            : null,
+      );
 
   Stream<ImpactMetricsModel?> watchDonorMetrics(String donorId) => _db
       .collection(FirestoreConstants.impactMetrics)
@@ -75,4 +156,10 @@ class FirestoreService {
             .where((m) => m.status != BatchStatus.closed)
             .toList(),
       );
+
+  Stream<int> watchUserPoints(String uid) =>
+      _db.collection(FirestoreConstants.users).doc(uid).snapshots().map((ds) {
+        if (!ds.exists || ds.data() == null) return 0;
+        return (ds.data()!['points'] as int?) ?? 0;
+      });
 }
