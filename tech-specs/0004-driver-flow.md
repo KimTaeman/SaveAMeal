@@ -289,7 +289,7 @@ All widget tests override Riverpod providers with fakes. `GoogleMap` replaced by
 
 ---
 
-## Open Questions
+## Resolved Questions
 
-- [ ] Is foreground-only location permission sufficient, or does the assignment require background location?
-- [ ] Points value ("+50") — hardcoded or read from Firestore config? (Assumed: read from `users/{uid}.points` delta after Cloud Function.)
+- [x] **Location permission:** Foreground-only (`ACCESS_FINE_LOCATION` / `NSLocationWhenInUseUsageDescription`). No background service or `ACCESS_BACKGROUND_LOCATION` needed — driver keeps the app in the foreground during delivery.
+- [x] **Points formula:** Computed by the `onDeliveryComplete` Cloud Function as `max(10, batch.totalPortions)` points per delivery. Written to `users/{uid}.points` (running total). The app snapshots `points` before delivery and after the Cloud Function fires, then shows the delta on `DeliveryCompletedScreen`. If the snapshot races (function hasn't fired yet), show a loading indicator and retry once after 2 s.
