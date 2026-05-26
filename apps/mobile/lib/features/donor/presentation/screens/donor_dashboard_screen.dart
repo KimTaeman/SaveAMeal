@@ -362,6 +362,7 @@ class _BatchCard extends StatelessWidget {
     BatchStatus.pickedUp => 'Collected',
     BatchStatus.delivered => 'Delivered',
     BatchStatus.closed => 'Closed',
+    BatchStatus.cancelled => 'Cancelled',
   };
 
   String _formatDate(DateTime? dt) {

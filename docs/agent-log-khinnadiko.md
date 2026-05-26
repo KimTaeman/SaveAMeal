@@ -11,3 +11,58 @@ Outcome: Fixed all 12 audit discrepancies. CI workflow created (3 jobs). pubspec
 Decisions: Hive over Drift (Web compat, ADR-0003). Firebase.initializeApp() deferred pending flutterfire configure. Widget tests bypass Firebase by testing theme/router directly. Secret scan placed in PreToolUse to block before write.
 Handoff: Run flutterfire configure before first flutter run. Choose application theme, then begin /new-proposal for first feature.
 Review: PENDING
+Files:
+  ? apps/mobile/lib/features/beneficiary/data/datasources/intake_remote_datasource.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/data/models/ (untracked)
+  ? apps/mobile/lib/features/beneficiary/data/repositories/firestore_intake_repository.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/entities/intake_request.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/repositories/intake_repository.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/visibility_inactive_card.dart (untracked)
+  ? apps/mobile/lib/features/volunteer/ (untracked)
+
+Files:
+  ? apps/mobile/lib/features/beneficiary/data/datasources/intake_remote_datasource.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/data/models/ (untracked)
+  ? apps/mobile/lib/features/beneficiary/data/repositories/firestore_intake_repository.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/entities/intake_request.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/repositories/intake_repository.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/visibility_inactive_card.dart (untracked)
+  ? apps/mobile/lib/features/volunteer/ (untracked)
+
+Files:
+  ~ apps/mobile/lib/core/models/batch_model.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/providers/beneficiary_provider.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+  ? apps/mobile/lib/features/beneficiary/data/datasources/intake_remote_datasource.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/data/models/ (untracked)
+  ? apps/mobile/lib/features/beneficiary/data/repositories/firestore_intake_repository.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/entities/intake_request.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/repositories/intake_repository.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/widgets/visibility_inactive_card.dart (untracked)
+  ? apps/mobile/lib/features/volunteer/ (untracked)
+Summary:  3 files changed, 208 insertions(+), 7 deletions(-)
+
