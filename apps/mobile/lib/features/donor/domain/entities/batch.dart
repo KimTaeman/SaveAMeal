@@ -1,6 +1,6 @@
 import 'package:saveameal/features/donor/domain/entities/batch_item.dart';
 
-enum BatchStatus { open, claimed, pickedUp, delivered, closed }
+enum BatchStatus { open, claimed, pickedUp, delivered, closed, cancelled }
 
 class Batch {
   const Batch({
