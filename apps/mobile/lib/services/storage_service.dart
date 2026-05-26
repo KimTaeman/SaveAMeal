@@ -20,7 +20,10 @@ class StorageService {
 
   Future<String> uploadPickupPhoto(String batchId, XFile photo) async {
     final ref = _storage.ref().child('batch_photos/$batchId/pickup.jpg');
-    await ref.putData(await photo.readAsBytes());
+    final metadata = SettableMetadata(
+      contentType: photo.mimeType ?? 'image/jpeg',
+    );
+    await ref.putData(await photo.readAsBytes(), metadata);
     return ref.getDownloadURL();
   }
 }
