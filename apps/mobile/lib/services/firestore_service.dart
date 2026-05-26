@@ -12,6 +12,29 @@ class FirestoreService {
 
   final FirebaseFirestore _db;
 
+  // Firestore returns native Timestamp objects for server-side timestamps, but
+  // the Freezed-generated fromJson expects ISO-8601 strings. This helper
+  // converts Timestamps (and recurses into nested maps/lists) before fromJson.
+  static Map<String, dynamic> _normalise(Map<String, dynamic> raw) {
+    return raw.map((key, value) {
+      if (value is Timestamp) {
+        return MapEntry(key, value.toDate().toIso8601String());
+      }
+      if (value is List) {
+        return MapEntry(
+          key,
+          value
+              .map((e) => e is Map<String, dynamic> ? _normalise(e) : e)
+              .toList(),
+        );
+      }
+      if (value is Map<String, dynamic>) {
+        return MapEntry(key, _normalise(value));
+      }
+      return MapEntry(key, value);
+    });
+  }
+
   Future<void> createUser(UserModel user) =>
       _db.collection(FirestoreConstants.users).doc(user.uid).set(user.toJson());
 
@@ -32,7 +55,9 @@ class FirestoreService {
       .snapshots()
       .map(
         (qs) => qs.docs
-            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .map(
+              (d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})),
+            )
             .toList(),
       );
 
@@ -42,7 +67,7 @@ class FirestoreService {
       .snapshots()
       .map(
         (ds) => ds.exists && ds.data() != null
-            ? BatchModel.fromJson({...ds.data()!, 'id': ds.id})
+            ? BatchModel.fromJson(_normalise({...ds.data()!, 'id': ds.id}))
             : null,
       );
 
@@ -69,7 +94,9 @@ class FirestoreService {
       // (driverId + status). A driver will rarely have more than one active batch.
       .map((qs) {
         final active = qs.docs
-            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .map(
+              (d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})),
+            )
             .where(
               (m) =>
                   m.status == BatchStatus.claimed ||
@@ -155,7 +182,9 @@ class FirestoreService {
       .snapshots()
       .map(
         (qs) => qs.docs
-            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .map(
+              (d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})),
+            )
             .where((m) => m.status != BatchStatus.closed)
             .toList(),
       );

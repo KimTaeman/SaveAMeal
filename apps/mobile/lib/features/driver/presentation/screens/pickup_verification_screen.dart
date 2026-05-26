@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
-import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
+import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
 class PickupVerificationScreen extends ConsumerStatefulWidget {
@@ -35,9 +34,8 @@ class _PickupVerificationScreenState
   }
 
   Future<void> _validateAndNavigate(String scannedBatchId) async {
-    final uid = ref.read(authStateProvider).asData?.value?.uid ?? '';
-    final batch = await ref.read(activeBatchForDriverProvider(uid).future);
-    if (batch == null || batch.id != scannedBatchId) {
+    final activeBatch = ref.read(driverProvider).activeBatch;
+    if (activeBatch == null || activeBatch.id != scannedBatchId) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Wrong QR code — try again.')),

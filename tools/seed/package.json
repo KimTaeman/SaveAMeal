@@ -1,0 +1,16 @@
+{
+  "name": "saveameal-seed",
+  "version": "1.0.0",
+  "description": "Firestore seed script for SaveAMeal development and testing",
+  "scripts": {
+    "seed":             "node seed.js --emulator",
+    "seed:clean":       "node seed.js --emulator --clean",
+    "seed:prod":        "node seed.js --key serviceAccountKey.json",
+    "seed:prod:clean":  "node seed.js --key serviceAccountKey.json --clean",
+    "add-driver":       "node seed.js --emulator --add-driver",
+    "add-donor":        "node seed.js --emulator --add-donor"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

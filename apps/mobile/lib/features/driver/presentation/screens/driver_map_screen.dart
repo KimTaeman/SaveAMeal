@@ -23,6 +23,7 @@ class DriverMapScreen extends ConsumerWidget {
     final markers = _buildMarkers(batches, ref);
 
     return Scaffold(
+      bottomNavigationBar: _DriverBottomNav(currentIndex: 0),
       body: Stack(
         children: [
           GoogleMap(
@@ -45,7 +46,6 @@ class DriverMapScreen extends ConsumerWidget {
                     ref.read(driverProvider.notifier).clearSelection(),
               ),
             ),
-          _DriverBottomNav(currentIndex: 0),
         ],
       ),
     );
@@ -175,19 +175,28 @@ class _DriverBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.eco), label: 'Impact'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
-        ],
-        onTap: (i) {
-          if (i == 0) context.go('/driver');
-        },
-      ),
+    return NavigationBar(
+      selectedIndex: currentIndex,
+      onDestinationSelected: (i) {
+        if (i == 0) context.go('/driver');
+      },
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.eco_outlined),
+          selectedIcon: Icon(Icons.eco),
+          label: 'Impact',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.person_outline),
+          selectedIcon: Icon(Icons.person),
+          label: 'Account',
+        ),
+      ],
     );
   }
 }

@@ -274,3 +274,21 @@ Outcome: All bugs resolved; branch passes flutter analyze (0 issues) and 44/44 t
 Decisions: XFile.readAsBytes() + putData() chosen over platform-conditional dart:io File path because putData works on all platforms with no ifdef needed. Emulator toggle kept as a comment in main.dart with ignore annotation to suppress unused-import lint.
 Handoff: To test confirmPickup end-to-end in emulator, run `node seed.js --emulator --add-driver <YOUR_UID>` (UID printed in console on job accept). Web camera picker requires HTTPS or localhost — works on Chrome dev server.
 Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_map_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/pickup_verification_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+Summary:  3 files changed, 59 insertions(+), 23 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_map_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/pickup_verification_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+Summary:  3 files changed, 59 insertions(+), 23 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_map_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/pickup_verification_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+Summary:  3 files changed, 59 insertions(+), 23 deletions(-)
+
