@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:saveameal/core/exceptions/batch_exceptions.dart';
 import 'package:saveameal/core/models/batch_model.dart';
 import 'package:saveameal/features/driver/data/datasources/driver_remote_datasource.dart';
@@ -43,7 +44,7 @@ class _FakeRepo implements DriverRepository {
 
 class _FakeDatasource implements DriverRemoteDatasource {
   @override
-  Future<String> uploadPickupPhoto(String batchId, String localPath) async =>
+  Future<String> uploadPickupPhoto(String batchId, XFile photo) async =>
       'https://fake.url/photo.jpg';
 
   @override
@@ -107,7 +108,7 @@ void main() {
       container.read(driverProvider).rescuePhase,
       ClaimRescuePhase.enRoutePickup,
     );
-    await notifier.confirmPickup('b1', '/fake/path.jpg');
+    await notifier.confirmPickup('b1', XFile('/fake/path.jpg'));
     expect(
       container.read(driverProvider).rescuePhase,
       ClaimRescuePhase.enRouteBeneficiary,

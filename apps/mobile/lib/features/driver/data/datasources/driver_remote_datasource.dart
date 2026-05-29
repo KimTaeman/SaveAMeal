@@ -1,3 +1,4 @@
+import 'package:image_picker/image_picker.dart';
 import 'package:saveameal/core/models/batch_model.dart';
 import 'package:saveameal/core/models/driver_location_model.dart';
 import 'package:saveameal/services/firestore_service.dart';
@@ -10,7 +11,7 @@ abstract class DriverRemoteDatasource {
   Future<void> confirmPickup(String batchId, String pickupPhotoUrl);
   Future<void> confirmDelivery(String batchId, String? notes);
   Future<void> upsertLocation(String driverId, double lat, double lng);
-  Future<String> uploadPickupPhoto(String batchId, String localPath);
+  Future<String> uploadPickupPhoto(String batchId, XFile photo);
   Stream<int> watchPoints(String uid);
 }
 
@@ -46,8 +47,8 @@ class DriverRemoteDatasourceImpl implements DriverRemoteDatasource {
       );
 
   @override
-  Future<String> uploadPickupPhoto(String batchId, String localPath) =>
-      _storage.uploadPickupPhoto(batchId, localPath);
+  Future<String> uploadPickupPhoto(String batchId, XFile photo) =>
+      _storage.uploadPickupPhoto(batchId, photo);
 
   @override
   Stream<int> watchPoints(String uid) => _firestore.watchUserPoints(uid);

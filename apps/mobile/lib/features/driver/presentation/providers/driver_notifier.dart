@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/core/logging/app_logger.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
@@ -28,24 +29,39 @@ class DriverNotifier extends _$DriverNotifier {
 
   Future<void> claimBatch(String batchId, String driverId) async {
     await ref.read(driverRepositoryProvider).claimBatch(batchId, driverId);
+    final batch = state.selectedBatch;
     state = state.copyWith(
       step: DriverStep.claimed,
       rescuePhase: ClaimRescuePhase.enRoutePickup,
       selectedBatch: null,
+      activeBatch: batch,
     );
     _startTracking(driverId);
+    if (batch != null) {
+      AppLogger.info(
+        '[Job Accepted]\n'
+        '  Driver UID (for seed)      : $driverId\n'
+        '  Batch ID (manual QR code) : ${batch.id}\n'
+        '  Donor                     : ${batch.donorName}\n'
+        '  Pickup                    : ${batch.pickupAddress}\n'
+        '  Window                    : ${batch.pickupWindowStart ?? '—'} – ${batch.pickupWindowEnd ?? '—'}\n'
+        '  Beneficiary               : ${batch.beneficiaryName}\n'
+        '  Drop-off                  : ${batch.beneficiaryAddress}\n'
+        '  Portions                  : ${batch.totalPortions}\n'
+        '  Instructions              : ${batch.specialInstructions ?? 'none'}',
+      );
+    }
   }
 
-  Future<void> confirmPickup(String batchId, String localPhotoPath) async {
+  Future<void> confirmPickup(String batchId, XFile photoFile) async {
     String photoUrl;
     try {
       photoUrl = await ref
           .read(driverRemoteDatasourceProvider)
-          .uploadPickupPhoto(batchId, localPhotoPath);
+          .uploadPickupPhoto(batchId, photoFile);
     } catch (e) {
-      // In test environments the datasource is unavailable; use the path as-is.
-      AppLogger.warning('Photo upload skipped, using local path', error: e);
-      photoUrl = localPhotoPath;
+      AppLogger.warning('Photo upload skipped', error: e);
+      photoUrl = photoFile.path;
     }
     await ref.read(driverRepositoryProvider).confirmPickup(batchId, photoUrl);
     state = state.copyWith(
@@ -76,6 +92,9 @@ class DriverNotifier extends _$DriverNotifier {
         await ref
             .read(driverRepositoryProvider)
             .upsertLocation(driverId, pos.latitude, pos.longitude);
+      } on PermissionDeniedException {
+        AppLogger.warning('Location permission denied — stopping tracking');
+        _stopTracking();
       } catch (e) {
         AppLogger.warning('Location write failed', error: e);
       }
