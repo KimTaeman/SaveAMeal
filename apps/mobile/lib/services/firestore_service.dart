@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:saveameal/core/constants/firestore_constants.dart';
 import 'package:saveameal/core/exceptions/batch_exceptions.dart';
@@ -61,6 +63,93 @@ class FirestoreService {
     await _db.collection(FirestoreConstants.batches).doc(batchId).update(data);
   }
 
+  // ── Intake / beneficiary-status methods ────────────────────────────────────
+
+  Stream<List<BatchModel>> watchActiveDeliveriesForBeneficiary(
+    String beneficiaryId,
+  ) => _db
+      .collection(FirestoreConstants.batches)
+      .where('beneficiaryId', isEqualTo: beneficiaryId)
+      .where('status', whereIn: ['open', 'claimed', 'pickedUp'])
+      .snapshots()
+      .map(
+        (qs) => qs.docs
+            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .toList(),
+      );
+
+  // Combines two live Firestore queries: all open (pending) batches system-wide
+  // plus this volunteer's own claimed/pickedUp batches. A StreamController is
+  // used because Firestore does not support cross-field OR queries natively and
+  // rxdart is not a project dependency.
+  Stream<List<BatchModel>> watchVolunteerQueue(String volunteerId) {
+    var pendingBatches = <BatchModel>[];
+    var myBatches = <BatchModel>[];
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? pendingSub;
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? dispatchedSub;
+    late StreamController<List<BatchModel>> controller;
+
+    void emit() => controller.add([...pendingBatches, ...myBatches]);
+
+    controller = StreamController<List<BatchModel>>(
+      onListen: () {
+        pendingSub = _db
+            .collection(FirestoreConstants.batches)
+            .where('status', isEqualTo: 'open')
+            .snapshots()
+            .listen((qs) {
+              pendingBatches = qs.docs
+                  .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+                  .toList();
+              emit();
+            });
+
+        dispatchedSub = _db
+            .collection(FirestoreConstants.batches)
+            .where('driverId', isEqualTo: volunteerId)
+            .where('status', whereIn: ['claimed', 'pickedUp'])
+            .snapshots()
+            .listen((qs) {
+              myBatches = qs.docs
+                  .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+                  .toList();
+              emit();
+            });
+      },
+      onCancel: () {
+        pendingSub?.cancel();
+        dispatchedSub?.cancel();
+      },
+    );
+
+    return controller.stream;
+  }
+
+  Future<void> acceptJob({
+    required String batchId,
+    required String volunteerId,
+    required String volunteerName,
+  }) => _db.collection(FirestoreConstants.batches).doc(batchId).update({
+    'status': BatchStatus.claimed.name,
+    'driverId': volunteerId,
+    'volunteerName': volunteerName,
+    'updatedAt': FieldValue.serverTimestamp(),
+  });
+
+  Future<void> setIntakeAvailability({
+    required String beneficiaryId,
+    required String intakeStatus,
+  }) => _db
+      .collection(FirestoreConstants.beneficiaries)
+      .doc(beneficiaryId)
+      .update({'intakeStatus': intakeStatus});
+
+  Stream<String> watchIntakeAvailability(String beneficiaryId) => _db
+      .collection(FirestoreConstants.beneficiaries)
+      .doc(beneficiaryId)
+      .snapshots()
+      .map((ds) => ds.data()?['intakeStatus'] as String? ?? 'accepting');
+
   Stream<BatchModel?> watchActiveBatchForDriver(String driverId) => _db
       .collection(FirestoreConstants.batches)
       .where('driverId', isEqualTo: driverId)
@@ -104,13 +193,27 @@ class FirestoreService {
         'pickupPhotoUrl': pickupPhotoUrl,
       });
 
+  // Handles claimed → pickedUp → delivered transition. If the batch is still
+  // in claimed state (volunteer accepted but never explicitly marked pickup),
+  // it is promoted to pickedUp first to satisfy Firestore Security Rules.
   Future<void> confirmDelivery(String batchId, String? notes) async {
+    final ref = _db.collection(FirestoreConstants.batches).doc(batchId);
+    final snap = await ref.get();
+    if (!snap.exists || snap.data() == null) {
+      throw Exception('Batch not found: $batchId');
+    }
+    if (snap.data()!['status'] == BatchStatus.claimed.name) {
+      await ref.update({
+        'status': BatchStatus.pickedUp.name,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
     final data = <String, dynamic>{
       'status': 'delivered',
       'deliveredAt': FieldValue.serverTimestamp(),
     };
     if (notes != null && notes.isNotEmpty) data['deliveryNotes'] = notes;
-    await _db.collection(FirestoreConstants.batches).doc(batchId).update(data);
+    await ref.update(data);
   }
 
   Future<void> upsertDriverLocation(DriverLocationModel loc) => _db

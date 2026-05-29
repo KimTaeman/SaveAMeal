@@ -8,6 +8,7 @@ import 'package:saveameal/features/auth/presentation/screens/register_screen.dar
 import 'package:saveameal/features/auth/presentation/screens/role_router_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/welcome_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/delivery_detail_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
@@ -21,6 +22,8 @@ import 'package:saveameal/features/driver/presentation/screens/job_detail_screen
 import 'package:saveameal/features/driver/presentation/screens/pickup_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/safety_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
+import 'package:saveameal/features/volunteer/presentation/screens/volunteer_delivery_scanner_screen.dart';
+import 'package:saveameal/features/volunteer/presentation/screens/volunteer_queue_screen.dart';
 
 part 'router.g.dart';
 
@@ -127,7 +130,26 @@ GoRouter router(Ref ref) {
       ),
       GoRoute(
         path: '/beneficiary',
-        builder: (context, state) => const BeneficiaryDashboardScreen(),
+        builder: (context, state) => const BeneficiaryHomeScreen(),
+        routes: [
+          GoRoute(
+            path: 'delivery/:batchId',
+            builder: (context, state) =>
+                DeliveryDetailScreen(batchId: state.pathParameters['batchId']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/volunteer',
+        builder: (context, state) => const VolunteerQueueScreen(),
+        routes: [
+          GoRoute(
+            path: 'scan/:batchId',
+            builder: (context, state) => VolunteerDeliveryScannerScreen(
+              batchId: state.pathParameters['batchId']!,
+            ),
+          ),
+        ],
       ),
     ],
   );

@@ -4,7 +4,7 @@ import 'package:saveameal/core/models/batch_item_model.dart';
 part 'batch_model.freezed.dart';
 part 'batch_model.g.dart';
 
-enum BatchStatus { open, claimed, pickedUp, delivered, closed }
+enum BatchStatus { open, claimed, pickedUp, delivered, closed, cancelled }
 
 @freezed
 sealed class BatchModel with _$BatchModel {
@@ -15,6 +15,7 @@ sealed class BatchModel with _$BatchModel {
     required String pickupAddress,
     required BatchStatus status,
     String? driverId,
+    String? volunteerName,
     String? beneficiaryId,
     // Denormalised beneficiary info (written at batch creation time)
     String? beneficiaryName,
