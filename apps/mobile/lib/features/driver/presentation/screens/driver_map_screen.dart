@@ -39,10 +39,7 @@ class DriverMapScreen extends ConsumerWidget {
           ],
         ),
         actions: const [
-          IconButton(
-            icon: Icon(Icons.notifications_outlined),
-            onPressed: null,
-          ),
+          IconButton(icon: Icon(Icons.notifications_outlined), onPressed: null),
           LogoutButton(),
         ],
       ),
