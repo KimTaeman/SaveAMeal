@@ -62,10 +62,7 @@ class IntakeRemoteDatasourceImpl implements IntakeRemoteDatasource {
   Future<void> confirmDelivery({
     required String batchId,
     required String volunteerId,
-  }) => _firestoreService.confirmDelivery(
-    batchId: batchId,
-    volunteerId: volunteerId,
-  );
+  }) => _firestoreService.confirmDelivery(batchId, null);
 
   @override
   Future<void> setIntakeAvailability({
