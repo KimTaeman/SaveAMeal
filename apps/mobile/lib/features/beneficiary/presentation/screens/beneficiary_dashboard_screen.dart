@@ -10,6 +10,7 @@ import 'package:saveameal/features/beneficiary/presentation/widgets/intake_statu
 import 'package:saveameal/features/beneficiary/presentation/widgets/visibility_inactive_card.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/logout_button.dart';
 
 class BeneficiaryHomeScreen extends ConsumerWidget {
   const BeneficiaryHomeScreen({super.key});
@@ -55,6 +56,7 @@ class BeneficiaryHomeScreen extends ConsumerWidget {
             icon: const Icon(Icons.notifications_outlined),
             onPressed: null,
           ),
+          const LogoutButton(),
         ],
       ),
       body: SingleChildScrollView(

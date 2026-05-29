@@ -8,6 +8,7 @@ import 'package:saveameal/features/donor/presentation/providers/donor_provider.d
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/logout_button.dart';
 
 class DonorDashboardScreen extends ConsumerWidget {
   const DonorDashboardScreen({super.key});
@@ -135,6 +136,7 @@ class _DashboardHeader extends StatelessWidget {
             icon: const Icon(Icons.notifications_outlined),
             onPressed: null,
           ),
+          const LogoutButton(),
         ],
       ),
     );

@@ -6,6 +6,7 @@ import 'package:saveameal/features/driver/domain/repositories/driver_repository.
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/logout_button.dart';
 
 class DriverMapScreen extends ConsumerWidget {
   const DriverMapScreen({super.key});
@@ -45,6 +46,16 @@ class DriverMapScreen extends ConsumerWidget {
                     ref.read(driverProvider.notifier).clearSelection(),
               ),
             ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Card(
+                margin: const EdgeInsets.all(Spacing.sm),
+                shape: const CircleBorder(),
+                child: const LogoutButton(),
+              ),
+            ),
+          ),
           _DriverBottomNav(currentIndex: 0),
         ],
       ),
