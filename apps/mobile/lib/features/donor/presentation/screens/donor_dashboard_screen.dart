@@ -132,11 +132,15 @@ class _DashboardHeader extends StatelessWidget {
               Text('SaveAMeal', style: textTheme.titleLarge),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: null,
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: null,
+              ),
+              const LogoutButton(),
+            ],
           ),
-          const LogoutButton(),
         ],
       ),
     );

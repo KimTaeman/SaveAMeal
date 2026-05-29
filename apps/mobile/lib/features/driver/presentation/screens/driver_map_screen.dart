@@ -23,7 +23,29 @@ class DriverMapScreen extends ConsumerWidget {
     final batches = batchesAsync.asData?.value ?? [];
     final markers = _buildMarkers(batches, ref);
 
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: cs.surface,
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            Icon(Icons.location_on, color: cs.primary),
+            const SizedBox(width: Spacing.xs),
+            Text('SaveAMeal', style: textTheme.titleLarge),
+          ],
+        ),
+        actions: const [
+          IconButton(
+            icon: Icon(Icons.notifications_outlined),
+            onPressed: null,
+          ),
+          LogoutButton(),
+        ],
+      ),
       bottomNavigationBar: _DriverBottomNav(currentIndex: 0),
       body: Stack(
         children: [
@@ -47,17 +69,6 @@ class DriverMapScreen extends ConsumerWidget {
                     ref.read(driverProvider.notifier).clearSelection(),
               ),
             ),
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topRight,
-              child: Card(
-                margin: const EdgeInsets.all(Spacing.sm),
-                shape: const CircleBorder(),
-                child: const LogoutButton(),
-              ),
-            ),
-          ),
-          _DriverBottomNav(currentIndex: 0),
         ],
       ),
     );
