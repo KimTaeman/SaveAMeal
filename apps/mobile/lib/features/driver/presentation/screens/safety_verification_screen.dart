@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,16 +26,23 @@ class SafetyVerificationScreen extends ConsumerStatefulWidget {
 class _SafetyVerificationScreenState
     extends ConsumerState<SafetyVerificationScreen> {
   final List<bool> _checked = List.filled(3, false);
-  String? _photoPath;
+  XFile? _pickedFile;
+  Uint8List? _pickedBytes;
   bool _loading = false;
 
   bool get _canConfirm =>
-      _checked.every((v) => v) && _photoPath != null && !_loading;
+      _checked.every((v) => v) && _pickedFile != null && !_loading;
 
   Future<void> _pickPhoto() async {
     final picker = ImagePicker();
     final file = await picker.pickImage(source: ImageSource.camera);
-    if (file != null) setState(() => _photoPath = file.path);
+    if (file != null) {
+      final bytes = await file.readAsBytes();
+      setState(() {
+        _pickedFile = file;
+        _pickedBytes = bytes;
+      });
+    }
   }
 
   Future<void> _confirm() async {
@@ -44,7 +53,7 @@ class _SafetyVerificationScreenState
       if (batch == null) return;
       await ref
           .read(driverProvider.notifier)
-          .confirmPickup(batch.id, _photoPath!);
+          .confirmPickup(batch.id, _pickedFile!);
       if (mounted) context.go('/driver/rescue');
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -109,10 +118,10 @@ class _SafetyVerificationScreenState
                 border: Border.all(color: cs.primary),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: _photoPath != null
+              child: _pickedBytes != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(_photoPath!, fit: BoxFit.cover),
+                      child: Image.memory(_pickedBytes!, fit: BoxFit.cover),
                     )
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
