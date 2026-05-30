@@ -50,6 +50,7 @@ jobs:
           GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON }}
 
       - name: Build Android APK (debug)
+        # debug intentional — for team sideload testing, not store distribution
         run: flutter build apk --debug
 
       - name: Rename APK
