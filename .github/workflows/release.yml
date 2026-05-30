@@ -40,8 +40,9 @@ jobs:
         run: |
           TARGET=android/app/google-services.json
           if [ -n "$GOOGLE_SERVICES_JSON_B64" ]; then
-            # Accept either base64-encoded or raw JSON in the secret
-            printf '%s' "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > "$TARGET" 2>/dev/null \
+            # Try base64 decode; if result isn't valid JSON, write raw value instead
+            printf '%s' "$GOOGLE_SERVICES_JSON_B64" | base64 -d > "$TARGET" 2>/dev/null || true
+            python3 -c "import json; json.load(open('$TARGET'))" 2>/dev/null \
               || printf '%s' "$GOOGLE_SERVICES_JSON_B64" > "$TARGET"
           else
             cat > "$TARGET" << 'GSJSON'
