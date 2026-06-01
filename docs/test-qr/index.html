@@ -23,6 +23,7 @@
     .card h3 { font-size: .88rem; margin-bottom: 2px; }
     .card .sub { font-size: .73rem; color: #888; margin-bottom: 10px; }
     .card .code { font-size: .68rem; color: #aaa; margin-top: 8px; font-family: monospace; letter-spacing: 1px; }
+    #qrcodes .card > div[id^="qr-"] img { max-width: 100%; height: auto; }
     .barcode-wrap svg { max-width: 100%; }
     .status-open    { color: #2e7d32; font-weight: 600; }
     .status-claimed { color: #e65100; font-weight: 600; }
@@ -48,6 +49,12 @@
 <div class="grid" id="qrcodes"></div>
 
 <script>
+window.addEventListener('load', () => {
+  if (typeof JsBarcode === 'undefined' || typeof QRCode === 'undefined') {
+    document.body.insertAdjacentHTML('afterbegin',
+      '<p style="color:red;text-align:center;padding:16px">⚠ CDN scripts failed to load. Check your internet connection and refresh.</p>');
+    return;
+  }
 // ── Section A: Food product EAN-13 barcodes ──────────────────────────────────
 const FOODS = [
   { name: 'Mama Tom Yum Noodles', brand: 'Mama',        ean: '8850987130021' },
@@ -73,6 +80,7 @@ FOODS.forEach(f => {
   JsBarcode(`#bc-${f.ean}`, f.ean, {
     format: 'EAN13', displayValue: false, margin: 4, height: 60, lineColor: '#222',
   });
+  document.querySelector(`#bc-${f.ean}`).setAttribute('aria-label', `EAN-13 barcode for ${f.name}: ${f.ean}`);
 });
 
 // ── Section B: Batch QR codes ─────────────────────────────────────────────────
@@ -104,6 +112,7 @@ BATCHES.forEach(b => {
     colorDark: '#222', colorLight: '#ffffff',
     correctLevel: QRCode.CorrectLevel.M,
   });
+});
 });
 </script>
 </body>
