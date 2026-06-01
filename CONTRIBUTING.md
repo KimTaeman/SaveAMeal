@@ -105,6 +105,68 @@ flutter analyze
 dart format .
 ```
 
+## Local development data
+
+### Seeding Firestore
+
+The seed script populates Firestore with realistic Thai food rescue data (10 users, 4 beneficiaries, 12 batches across all statuses, 6 impact metric records).
+
+**Against the emulator (recommended for dev):**
+
+```bash
+# Start the emulator first (from repo root)
+firebase emulators:start --only firestore
+
+# Then seed (from tools/seed/)
+cd tools/seed
+npm install          # first time only
+node seed.js --emulator           # merge into existing data
+node seed.js --emulator --clean   # wipe and re-seed (fresh state)
+```
+
+**Against live Firestore (requires a service account key):**
+
+```bash
+# 1. Download a service account key from:
+#    console.firebase.google.com → saveameal-87187 → Settings → Service accounts → Generate new private key
+# 2. Save as tools/seed/serviceAccountKey.json (gitignored — never commit it)
+
+cd tools/seed
+node seed.js --key serviceAccountKey.json --clean
+```
+
+**Register your own Firebase Auth UID as a donor or driver** (without wiping existing data):
+
+```bash
+node seed.js --emulator --add-driver <your-uid>
+node seed.js --emulator --add-donor  <your-uid>
+```
+
+---
+
+### Test scan codes (`docs/test-qr/index.html`)
+
+A self-contained HTML page for testing barcode and QR scanning on a real device. Open it on a laptop, then use your phone running the app to scan.
+
+**How to use:**
+
+1. Open `docs/test-qr/index.html` in a desktop browser (Chrome/Edge)
+2. Run the app on your phone and navigate to the role you want to test
+
+**Section A — Donor (Log Surplus flow):**
+- In the app: Donor → Log Surplus → tap the camera icon
+- Scan any of the 6 EAN-13 barcodes (Mama noodles, Lay's, Oishi tea, Pocky, Milo, Bear Brand)
+- The scanned barcode prefills the item form
+
+**Section B — Driver (Verify Pickup flow):**
+- In the app: Driver → claim a batch (e.g. `batch_004` or `batch_008`)
+- Navigate to Verify Pickup
+- Scan the matching QR code from Section B — the batch ID must match the one you claimed
+
+> The QR codes encode plain batch IDs (e.g. `batch_004`). If the scanner shows "Wrong QR code", make sure you claimed that specific batch first.
+
+---
+
 ## Architecture rules
 
 - **Domain layer**: zero Flutter or backend imports — pure Dart only
