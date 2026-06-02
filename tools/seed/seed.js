@@ -73,27 +73,35 @@ const daysAgo   = (d) => iso(new Date(now - d * 86400000));
 // ── Seed data ──────────────────────────────────────────────────────────────────
 
 // Collection: beneficiaries/{id}
-// Fields: id (String), name (String), address (String?)
+// Fields: id (String), name (String), address (String?), lat (Number?), lng (Number?)
 const BENEFICIARIES = [
   {
     id:      'ben_001',
     name:    'Baan Saeng Tawan Shelter',
     address: '12 Lat Phrao Soi 15, Chankasem, Chatuchak, Bangkok 10230',
+    lat:     13.8102,
+    lng:     100.5699,
   },
   {
     id:      'ben_002',
     name:    'Klongtoey Community Center',
     address: '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
+    lat:     13.7246,
+    lng:     100.5235,
   },
   {
     id:      'ben_003',
     name:    'Prateep Foundation Elderly Care',
     address: '152/88 Sukhumvit Soi 26, Khlong Toei, Bangkok 10110',
+    lat:     13.7197,
+    lng:     100.5663,
   },
   {
     id:      'ben_004',
     name:    'Bangkapi Community Kitchen',
     address: '45 Ladprao Rd, Wang Thonglang, Bangkok 10310',
+    lat:     13.7814,
+    lng:     100.5956,
   },
 ];
 
