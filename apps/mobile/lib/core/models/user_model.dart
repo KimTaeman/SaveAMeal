@@ -18,6 +18,7 @@ sealed class UserModel with _$UserModel {
     String? orgName,
     BeneficiaryStatus? status,
     @Default(0) int points,
+    String? fcmToken,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
