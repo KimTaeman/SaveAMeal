@@ -52,31 +52,36 @@ void main() {
     await tester.pump();
     expect(find.text('123 Baker St'), findsOneWidget);
     expect(find.text('Arrived at Pick-up'), findsOneWidget);
-    expect(find.text('Arrived at Beneficiary'), findsNothing);
+    expect(find.text('Arrived at Drop-off'), findsNothing);
+    expect(find.textContaining('En Route to Pick-up'), findsOneWidget);
   });
 
-  testWidgets('en_route_beneficiary shows beneficiary address', (tester) async {
-    final notifier = _FakeNotifier(
-      const DriverState(
-        step: DriverStep.pickedUp,
-        rescuePhase: ClaimRescuePhase.enRouteBeneficiary,
-      ),
-    );
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          driverProvider.overrideWith(() => notifier),
-          authStateProvider.overrideWith((_) => const Stream.empty()),
-          activeBatchForDriverProvider(
-            '',
-          ).overrideWith((_) => Stream.value(_fakeBatch)),
-        ],
-        child: const MaterialApp(home: ClaimRescueScreen()),
-      ),
-    );
-    await tester.pump();
-    expect(find.text('1200 Greenway Blvd'), findsOneWidget);
-    expect(find.text('Arrived at Beneficiary'), findsOneWidget);
-    expect(find.text('Arrived at Pick-up'), findsNothing);
-  });
+  testWidgets(
+    'en_route_beneficiary shows shelter address and Arrived at Drop-off',
+    (tester) async {
+      final notifier = _FakeNotifier(
+        const DriverState(
+          step: DriverStep.pickedUp,
+          rescuePhase: ClaimRescuePhase.enRouteBeneficiary,
+        ),
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            driverProvider.overrideWith(() => notifier),
+            authStateProvider.overrideWith((_) => const Stream.empty()),
+            activeBatchForDriverProvider(
+              '',
+            ).overrideWith((_) => Stream.value(_fakeBatch)),
+          ],
+          child: const MaterialApp(home: ClaimRescueScreen()),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('1200 Greenway Blvd'), findsOneWidget);
+      expect(find.text('Arrived at Drop-off'), findsOneWidget);
+      expect(find.text('Arrived at Pick-up'), findsNothing);
+      expect(find.textContaining('En Route to Beneficiary'), findsOneWidget);
+    },
+  );
 }
