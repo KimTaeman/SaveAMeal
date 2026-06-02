@@ -36,7 +36,8 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
         : const AsyncValue<DonorMetrics>.data(DonorMetrics.empty);
 
     final userModel = userModelAsync.asData?.value;
-    final orgName = userModel?.orgName ?? userModel?.name ?? user?.name ?? 'Donor';
+    final orgName =
+        userModel?.orgName ?? userModel?.name ?? user?.name ?? 'Donor';
     final photoUrl = userModel?.photoUrl;
     final metrics = metricsAsync.asData?.value ?? DonorMetrics.empty;
 

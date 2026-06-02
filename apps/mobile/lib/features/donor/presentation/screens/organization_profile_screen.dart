@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/donor/domain/entities/user_profile_update.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
@@ -114,15 +115,21 @@ class _OrganizationProfileScreenState
       final url = await ref
           .read(storageServiceProvider)
           .uploadBannerPhoto(uid, photo);
-      await ref.read(updateUserUsecaseProvider).call(uid, {'bannerUrl': url});
+      await ref
+          .read(updateUserUsecaseProvider)
+          .call(uid, UserProfileUpdate(bannerUrl: url));
       setState(() => _bannerUrl = url);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e is FirebaseException
-              ? 'Upload failed. Please try again.'
-              : 'Something went wrong. Please try again.'),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e is FirebaseException
+                  ? 'Upload failed. Please try again.'
+                  : 'Something went wrong. Please try again.',
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _uploadingBanner = false);
@@ -133,16 +140,20 @@ class _OrganizationProfileScreenState
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     try {
-      final fields = <String, dynamic>{
-        'orgName': _nameController.text.trim(),
-        'managerName': _managerController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'streetAddress': _addressController.text.trim(),
-        'operatingHours': _operatingHours,
-        'surplusTypes': _selectedSurplusTypes.toList(),
-        if (_bannerUrl != null) 'bannerUrl': _bannerUrl,
-      };
-      await ref.read(updateUserUsecaseProvider).call(uid, fields);
+      await ref
+          .read(updateUserUsecaseProvider)
+          .call(
+            uid,
+            UserProfileUpdate(
+              orgName: _nameController.text.trim(),
+              managerName: _managerController.text.trim(),
+              phone: _phoneController.text.trim(),
+              streetAddress: _addressController.text.trim(),
+              operatingHours: _operatingHours,
+              surplusTypes: _selectedSurplusTypes.toList(),
+              bannerUrl: _bannerUrl,
+            ),
+          );
       // Invalidate the cached user so the provider re-fetches fresh data from
       // Firestore. Reset _initialized so controllers are re-seeded if the
       // screen stays mounted, and so the next visit starts from fresh data.
@@ -156,11 +167,15 @@ class _OrganizationProfileScreenState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e is FirebaseException
-              ? 'Upload failed. Please try again.'
-              : 'Something went wrong. Please try again.'),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e is FirebaseException
+                  ? 'Upload failed. Please try again.'
+                  : 'Something went wrong. Please try again.',
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -337,9 +352,7 @@ class _OrganizationProfileScreenState
                               value.text.isNotEmpty
                                   ? value.text
                                   : (userModel?.name ?? ''),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
+                              style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(fontWeight: FontWeight.bold),
                               textAlign: TextAlign.center,
                             ),
@@ -347,9 +360,7 @@ class _OrganizationProfileScreenState
                           const SizedBox(height: 4),
                           Text(
                             'Store ID: #${uid.length >= 8 ? uid.substring(0, 8) : uid}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(color: cs.onSurfaceVariant),
                             textAlign: TextAlign.center,
                           ),

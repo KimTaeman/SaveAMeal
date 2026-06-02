@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/donor/domain/entities/user_profile_update.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
@@ -300,9 +301,9 @@ class _PersonalInformationScreenState
           .read(storageServiceProvider)
           .uploadProfilePhoto(authUser.uid, photo);
 
-      await ref.read(updateUserUsecaseProvider).call(authUser.uid, {
-        'photoUrl': downloadUrl,
-      });
+      await ref
+          .read(updateUserUsecaseProvider)
+          .call(authUser.uid, UserProfileUpdate(photoUrl: downloadUrl));
 
       if (!mounted) return;
       setState(() {
@@ -312,11 +313,15 @@ class _PersonalInformationScreenState
     } catch (e) {
       if (!mounted) return;
       setState(() => _uploadingPhoto = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e is FirebaseException
-            ? 'Upload failed. Please try again.'
-            : 'Something went wrong. Please try again.'),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is FirebaseException
+                ? 'Upload failed. Please try again.'
+                : 'Something went wrong. Please try again.',
+          ),
+        ),
+      );
     }
   }
 
@@ -330,11 +335,15 @@ class _PersonalInformationScreenState
           '${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e is FirebaseException
-              ? 'Upload failed. Please try again.'
-              : 'Something went wrong. Please try again.'),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e is FirebaseException
+                  ? 'Upload failed. Please try again.'
+                  : 'Something went wrong. Please try again.',
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _gettingLocation = false);
@@ -348,11 +357,16 @@ class _PersonalInformationScreenState
 
     setState(() => _saving = true);
     try {
-      await ref.read(updateUserUsecaseProvider).call(authUser.uid, {
-        'name': _nameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'location': _locationController.text.trim(),
-      });
+      await ref
+          .read(updateUserUsecaseProvider)
+          .call(
+            authUser.uid,
+            UserProfileUpdate(
+              name: _nameController.text.trim(),
+              phone: _phoneController.text.trim(),
+              location: _locationController.text.trim(),
+            ),
+          );
       ref.invalidate(currentUserProvider);
       setState(() => _initialized = false);
       if (!mounted) return;
@@ -362,11 +376,15 @@ class _PersonalInformationScreenState
       context.pop();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e is FirebaseException
-            ? 'Upload failed. Please try again.'
-            : 'Something went wrong. Please try again.'),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is FirebaseException
+                ? 'Upload failed. Please try again.'
+                : 'Something went wrong. Please try again.',
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }

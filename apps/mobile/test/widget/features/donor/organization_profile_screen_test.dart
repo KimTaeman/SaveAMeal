@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:saveameal/core/models/user_model.dart' as um;
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/donor/domain/entities/user_profile_update.dart';
 import 'package:saveameal/features/donor/domain/repositories/donor_account_repository.dart';
 import 'package:saveameal/features/donor/domain/usecases/update_user_usecase.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
@@ -24,7 +25,7 @@ const _testUser = AppUser(
 
 class _FakeDonorAccountRepository implements DonorAccountRepository {
   @override
-  Future<void> updateUser(String uid, Map<String, dynamic> fields) async {}
+  Future<void> updateUser(String uid, UserProfileUpdate update) async {}
 
   @override
   Future<um.UserModel?> getUser(String uid) async => um.UserModel(
