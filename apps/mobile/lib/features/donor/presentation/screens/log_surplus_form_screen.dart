@@ -12,9 +12,14 @@ import 'package:saveameal/features/donor/presentation/providers/donor_provider.d
 import 'package:saveameal/shared/theme/spacing.dart';
 
 class LogSurplusFormScreen extends ConsumerStatefulWidget {
-  const LogSurplusFormScreen({super.key, this.prefillBarcode});
+  const LogSurplusFormScreen({
+    super.key,
+    this.prefillBarcode,
+    this.prefillName,
+  });
 
   final String? prefillBarcode;
+  final String? prefillName;
 
   @override
   ConsumerState<LogSurplusFormScreen> createState() =>
@@ -35,7 +40,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.prefillBarcode ?? '');
+    _nameController = TextEditingController(text: widget.prefillName ?? '');
   }
 
   @override

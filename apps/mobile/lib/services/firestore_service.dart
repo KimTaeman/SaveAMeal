@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:saveameal/core/constants/firestore_constants.dart';
+import 'package:saveameal/core/exceptions/batch_exceptions.dart';
 import 'package:saveameal/core/models/batch_model.dart';
 import 'package:saveameal/core/models/beneficiary_model.dart';
 import 'package:saveameal/core/models/driver_location_model.dart';
@@ -12,6 +13,29 @@ class FirestoreService {
   FirestoreService(this._db);
 
   final FirebaseFirestore _db;
+
+  // Firestore returns native Timestamp objects for server-side timestamps, but
+  // the Freezed-generated fromJson expects ISO-8601 strings. This helper
+  // converts Timestamps (and recurses into nested maps/lists) before fromJson.
+  static Map<String, dynamic> _normalise(Map<String, dynamic> raw) {
+    return raw.map((key, value) {
+      if (value is Timestamp) {
+        return MapEntry(key, value.toDate().toIso8601String());
+      }
+      if (value is List) {
+        return MapEntry(
+          key,
+          value
+              .map((e) => e is Map<String, dynamic> ? _normalise(e) : e)
+              .toList(),
+        );
+      }
+      if (value is Map<String, dynamic>) {
+        return MapEntry(key, _normalise(value));
+      }
+      return MapEntry(key, value);
+    });
+  }
 
   Future<void> createUser(UserModel user) =>
       _db.collection(FirestoreConstants.users).doc(user.uid).set(user.toJson());
@@ -33,7 +57,9 @@ class FirestoreService {
       .snapshots()
       .map(
         (qs) => qs.docs
-            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .map(
+              (d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})),
+            )
             .toList(),
       );
 
@@ -43,7 +69,7 @@ class FirestoreService {
       .snapshots()
       .map(
         (ds) => ds.exists && ds.data() != null
-            ? BatchModel.fromJson({...ds.data()!, 'id': ds.id})
+            ? BatchModel.fromJson(_normalise({...ds.data()!, 'id': ds.id}))
             : null,
       );
 
@@ -52,14 +78,15 @@ class FirestoreService {
     BatchStatus status, {
     String? driverId,
     String? beneficiaryId,
-  }) => _db.collection(FirestoreConstants.batches).doc(batchId).update({
-    'status': status.name,
-    // ignore: use_null_aware_elements
-    if (driverId != null) 'driverId': driverId,
-    // ignore: use_null_aware_elements
-    if (beneficiaryId != null) 'beneficiaryId': beneficiaryId,
-    'updatedAt': DateTime.now().toIso8601String(),
-  });
+  }) async {
+    final data = <String, dynamic>{
+      'status': status.name,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (driverId != null) data['driverId'] = driverId;
+    if (beneficiaryId != null) data['beneficiaryId'] = beneficiaryId;
+    await _db.collection(FirestoreConstants.batches).doc(batchId).update(data);
+  }
 
   // ── Intake / beneficiary-status methods ────────────────────────────────────
 
@@ -131,34 +158,8 @@ class FirestoreService {
     'status': BatchStatus.claimed.name,
     'driverId': volunteerId,
     'volunteerName': volunteerName,
-    'updatedAt': DateTime.now().toIso8601String(),
+    'updatedAt': FieldValue.serverTimestamp(),
   });
-
-  // Transitions the batch to delivered. If the batch is still in claimed state
-  // (volunteer accepted but hasn't explicitly marked pickup), it is first moved
-  // to pickedUp so the transition satisfies Firestore Security Rules which
-  // require pickedUp → delivered.
-  Future<void> confirmDelivery({
-    required String batchId,
-    required String volunteerId,
-  }) async {
-    final ref = _db.collection(FirestoreConstants.batches).doc(batchId);
-    final snap = await ref.get();
-    if (!snap.exists || snap.data() == null) {
-      throw Exception('Batch not found: $batchId');
-    }
-    final currentStatus = snap.data()!['status'] as String?;
-    if (currentStatus == BatchStatus.claimed.name) {
-      await ref.update({
-        'status': BatchStatus.pickedUp.name,
-        'updatedAt': DateTime.now().toIso8601String(),
-      });
-    }
-    await ref.update({
-      'status': BatchStatus.delivered.name,
-      'updatedAt': DateTime.now().toIso8601String(),
-    });
-  }
 
   Future<void> setIntakeAvailability({
     required String beneficiaryId,
@@ -174,11 +175,88 @@ class FirestoreService {
       .snapshots()
       .map((ds) => ds.data()?['intakeStatus'] as String? ?? 'accepting');
 
-  Future<void> upsertDriverLocation(DriverLocationModel loc) =>
-      throw UnimplementedError('upsertDriverLocation not implemented');
+  Stream<BatchModel?> watchActiveBatchForDriver(String driverId) => _db
+      .collection(FirestoreConstants.batches)
+      .where('driverId', isEqualTo: driverId)
+      .snapshots()
+      // Status filter is applied client-side to avoid a composite Firestore index
+      // (driverId + status). A driver will rarely have more than one active batch.
+      .map((qs) {
+        final active = qs.docs
+            .map(
+              (d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})),
+            )
+            .where(
+              (m) =>
+                  m.status == BatchStatus.claimed ||
+                  m.status == BatchStatus.pickedUp,
+            )
+            .toList();
+        return active.isEmpty ? null : active.first;
+      });
 
-  Stream<DriverLocationModel?> watchDriverLocation(String driverId) =>
-      throw UnimplementedError('watchDriverLocation not implemented');
+  Future<void> claimBatch(String batchId, String driverId) async {
+    final ref = _db.collection(FirestoreConstants.batches).doc(batchId);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists || snap.data() == null) {
+        throw BatchNotFoundException(batchId);
+      }
+      if (snap.data()!['status'] != 'open') {
+        throw const BatchAlreadyClaimedException();
+      }
+      tx.update(ref, {
+        'status': 'claimed',
+        'driverId': driverId,
+        'claimedAt': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
+  Future<void> confirmPickup(String batchId, String pickupPhotoUrl) =>
+      _db.collection(FirestoreConstants.batches).doc(batchId).update({
+        'status': 'pickedUp',
+        'pickedUpAt': FieldValue.serverTimestamp(),
+        'pickupPhotoUrl': pickupPhotoUrl,
+      });
+
+  // Handles claimed → pickedUp → delivered transition. If the batch is still
+  // in claimed state (volunteer accepted but never explicitly marked pickup),
+  // it is promoted to pickedUp first to satisfy Firestore Security Rules.
+  Future<void> confirmDelivery(String batchId, String? notes) async {
+    final ref = _db.collection(FirestoreConstants.batches).doc(batchId);
+    final snap = await ref.get();
+    if (!snap.exists || snap.data() == null) {
+      throw Exception('Batch not found: $batchId');
+    }
+    if (snap.data()!['status'] == BatchStatus.claimed.name) {
+      await ref.update({
+        'status': BatchStatus.pickedUp.name,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+    final data = <String, dynamic>{
+      'status': 'delivered',
+      'deliveredAt': FieldValue.serverTimestamp(),
+    };
+    if (notes != null && notes.isNotEmpty) data['deliveryNotes'] = notes;
+    await ref.update(data);
+  }
+
+  Future<void> upsertDriverLocation(DriverLocationModel loc) => _db
+      .collection(FirestoreConstants.driverLocations)
+      .doc(loc.driverId)
+      .set(loc.toJson());
+
+  Stream<DriverLocationModel?> watchDriverLocation(String driverId) => _db
+      .collection(FirestoreConstants.driverLocations)
+      .doc(driverId)
+      .snapshots()
+      .map(
+        (ds) => ds.exists && ds.data() != null
+            ? DriverLocationModel.fromJson(ds.data()!)
+            : null,
+      );
 
   Stream<ImpactMetricsModel?> watchDonorMetrics(String donorId) => _db
       .collection(FirestoreConstants.impactMetrics)
@@ -207,8 +285,16 @@ class FirestoreService {
       .snapshots()
       .map(
         (qs) => qs.docs
-            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .map(
+              (d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})),
+            )
             .where((m) => m.status != BatchStatus.closed)
             .toList(),
       );
+
+  Stream<int> watchUserPoints(String uid) =>
+      _db.collection(FirestoreConstants.users).doc(uid).snapshots().map((ds) {
+        if (!ds.exists || ds.data() == null) return 0;
+        return (ds.data()!['points'] as int?) ?? 0;
+      });
 }

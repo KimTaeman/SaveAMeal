@@ -11,6 +11,7 @@ import 'package:saveameal/features/beneficiary/presentation/widgets/intake_statu
 import 'package:saveameal/features/beneficiary/presentation/widgets/visibility_inactive_card.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/logout_button.dart'; // Added from incoming
 
 class BeneficiaryHomeScreen extends ConsumerStatefulWidget {
   const BeneficiaryHomeScreen({super.key});
@@ -32,9 +33,6 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
       await ref
           .read(toggleIntakeStatusUseCaseProvider)
           .call(beneficiaryId: uid, availability: newVal);
-      // Do NOT clear here — the Firestore stream lags behind the write.
-      // Clearing now would revert the UI to the stale stream value before
-      // the stream catches up. ref.listen in build() clears it once confirmed.
     } catch (e, st) {
       AppLogger.error('toggleIntakeStatus failed', error: e, stack: st);
       if (mounted) {
@@ -56,8 +54,6 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
     final availabilityAsync = ref.watch(intakeAvailabilityProvider(uid));
     final deliveriesAsync = ref.watch(activeDeliveriesProvider(uid));
 
-    // Once the stream confirms the value we wrote, the optimistic override
-    // is no longer needed — drop it so the stream drives the UI from here.
     ref.listen<AsyncValue<BeneficiaryIntakeAvailability>>(
       intakeAvailabilityProvider(uid),
       (_, next) {
@@ -102,6 +98,7 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
             icon: const Icon(Icons.notifications_outlined),
             onPressed: null,
           ),
+          const LogoutButton(), // Added from incoming
         ],
       ),
       body: SingleChildScrollView(

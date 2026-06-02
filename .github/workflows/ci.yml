@@ -96,14 +96,28 @@ jobs:
 
       - name: Write google-services.json
         run: |
-          TARGET=android/app/google-services.json
-          if [ -n "$GOOGLE_SERVICES_JSON_B64" ]; then
-            echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > "$TARGET"
-          else
-            cat > "$TARGET" << 'GSJSON'
-          {"project_info":{"project_number":"000000000000","project_id":"saveameal-ci","storage_bucket":"saveameal-ci.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"com.example.mobile"}},"oauth_client":[],"api_key":[{"current_key":"ci-placeholder"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}
-          GSJSON
-          fi
+          python3 << 'PYEOF'
+          import os, base64, json, sys
+          secret = os.environ.get('GOOGLE_SERVICES_JSON_B64', '').strip()
+          target = 'android/app/google-services.json'
+          placeholder = '{"project_info":{"project_number":"000000000000","project_id":"saveameal-ci","storage_bucket":"saveameal-ci.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"com.example.mobile"}},"oauth_client":[],"api_key":[{"current_key":"ci-placeholder"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}'
+          content = None
+          if secret:
+              try:
+                  decoded = base64.b64decode(secret).decode('utf-8')
+                  json.loads(decoded)
+                  content = decoded
+              except Exception:
+                  pass
+              if content is None:
+                  try:
+                      json.loads(secret)
+                      content = secret
+                  except Exception:
+                      print('WARNING: GOOGLE_SERVICES_JSON is neither valid base64-JSON nor plain JSON; using CI placeholder', file=sys.stderr)
+          with open(target, 'w') as f:
+              f.write(content if content is not None else placeholder)
+          PYEOF
         env:
           GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON }}
 

@@ -1,3 +1,5 @@
+// ignore: unused_import — uncomment FirestoreEmulator line below to activate
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -11,6 +13,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  if (kDebugMode) {
+    // Toggle: comment the line below to use live Firestore instead of the emulator.
+    // Start emulator: firebase emulators:start --only firestore
+    // Seed data:      cd tools/seed && npm run seed:clean
+    // FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+  }
 
   await Hive.initFlutter();
   await Future.wait([

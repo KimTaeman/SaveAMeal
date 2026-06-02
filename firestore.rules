@@ -46,8 +46,9 @@ service cloud.firestore {
           && request.resource.data.driverId == uid()) ||
 
         // Driver can advance their own claimed batch through pickup → delivered
+        // Status values match the Dart enum serialisation: 'pickedUp' not 'picked_up'
         (isDriver() && resource.data.driverId == uid()
-          && resource.data.status in ['claimed', 'picked_up']) ||
+          && resource.data.status in ['claimed', 'pickedUp']) ||
 
         // Beneficiary can add rating/feedback and close their own batch
         (isBeneficiary() && resource.data.beneficiaryId == uid()

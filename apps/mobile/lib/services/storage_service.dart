@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 class StorageService {
   StorageService(this._storage);
@@ -14,6 +15,15 @@ class StorageService {
   ) async {
     final ref = _storage.ref().child('batches/$batchId/items/$itemIndex.jpg');
     await ref.putFile(photo);
+    return ref.getDownloadURL();
+  }
+
+  Future<String> uploadPickupPhoto(String batchId, XFile photo) async {
+    final ref = _storage.ref().child('batch_photos/$batchId/pickup.jpg');
+    final metadata = SettableMetadata(
+      contentType: photo.mimeType ?? 'image/jpeg',
+    );
+    await ref.putData(await photo.readAsBytes(), metadata);
     return ref.getDownloadURL();
   }
 }

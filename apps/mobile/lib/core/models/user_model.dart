@@ -17,6 +17,7 @@ sealed class UserModel with _$UserModel {
     String? phone,
     String? orgName,
     BeneficiaryStatus? status,
+    @Default(0) int points,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

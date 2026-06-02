@@ -21,11 +21,14 @@ class ActiveDeliveryCard extends StatelessWidget {
 
     final isDispatched = request.status == IntakeStatus.dispatched;
     final badgeLabel = isDispatched ? 'IN TRANSIT' : 'AWAITING VOLUNTEER';
+
+    // Retained your nice tinted aesthetic from current branch
     final badgeColor = isDispatched
         ? ac.warning.withValues(alpha: 0.2)
         : cs.surfaceContainerHigh;
     final badgeTextColor = isDispatched ? ac.warning : cs.onSurfaceVariant;
 
+    // Retained your dynamic avatar initials calculator
     final volunteerInitials = (request.volunteerName ?? 'V')
         .split(' ')
         .take(2)
@@ -41,6 +44,7 @@ class ActiveDeliveryCard extends StatelessWidget {
       child: IntrinsicHeight(
         child: Row(
           children: [
+            // Left-side accent indicator bar
             Container(
               width: 4,
               decoration: BoxDecoration(
@@ -113,8 +117,9 @@ class ActiveDeliveryCard extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
+                              // Unified subtitle displaying portions, meal description, and ETA safely
                               Text(
-                                '${request.portions} portions'
+                                '${request.portions} portions • ${request.mealDescription}'
                                 '${request.estimatedArrivalMinutes != null ? ' • ETA ${request.estimatedArrivalMinutes} min' : ''}',
                                 style: textTheme.bodySmall?.copyWith(
                                   color: cs.onSurfaceVariant,

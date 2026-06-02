@@ -17,8 +17,26 @@ sealed class BatchModel with _$BatchModel {
     String? driverId,
     String? volunteerName,
     String? beneficiaryId,
+    // Denormalised beneficiary info (written at batch creation time)
+    String? beneficiaryName,
+    String? beneficiaryAddress,
+    // Donor display info
+    String? donorName,
+    String? donorContact,
+    // Scheduling
+    String? pickupWindowStart,
+    String? pickupWindowEnd,
+    String? specialInstructions,
+    // Lifecycle timestamps
+    DateTime? claimedAt,
+    DateTime? pickedUpAt,
+    DateTime? deliveredAt,
+    // Photos & QR
     String? photoUrl,
+    String? pickupPhotoUrl,
     String? qrCode,
+    // Delivery outcome
+    String? deliveryNotes,
     int? rating,
     String? feedback,
     DateTime? createdAt,

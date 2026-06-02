@@ -14,7 +14,14 @@ import 'package:saveameal/features/donor/presentation/screens/batch_summary_scre
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/scanner_screen.dart';
+import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
+import 'package:saveameal/features/driver/presentation/screens/claim_rescue_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/delivery_completed_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/driver_map_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/job_detail_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/pickup_verification_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/safety_verification_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
 import 'package:saveameal/features/volunteer/presentation/screens/volunteer_delivery_scanner_screen.dart';
 import 'package:saveameal/features/volunteer/presentation/screens/volunteer_queue_screen.dart';
 
@@ -58,9 +65,13 @@ GoRouter router(Ref ref) {
             routes: [
               GoRoute(
                 path: 'form',
-                builder: (context, state) => LogSurplusFormScreen(
-                  prefillBarcode: state.extra as String?,
-                ),
+                builder: (context, state) {
+                  final extra = state.extra as Map<String, String?>?;
+                  return LogSurplusFormScreen(
+                    prefillBarcode: extra?['barcode'],
+                    prefillName: extra?['name'],
+                  );
+                },
               ),
               GoRoute(
                 path: 'summary',
@@ -93,6 +104,33 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/driver',
         builder: (context, state) => const DriverMapScreen(),
+        routes: [
+          GoRoute(
+            path: 'job/:batchId',
+            builder: (context, state) =>
+                JobDetailScreen(batch: state.extra! as BatchSummary),
+          ),
+          GoRoute(
+            path: 'rescue',
+            builder: (context, state) => const ClaimRescueScreen(),
+          ),
+          GoRoute(
+            path: 'pickup-verify',
+            builder: (context, state) => const PickupVerificationScreen(),
+          ),
+          GoRoute(
+            path: 'safety',
+            builder: (context, state) => const SafetyVerificationScreen(),
+          ),
+          GoRoute(
+            path: 'verify-delivery',
+            builder: (context, state) => const VerifyDeliveryScreen(),
+          ),
+          GoRoute(
+            path: 'completed',
+            builder: (context, state) => const DeliveryCompletedScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: '/beneficiary',
