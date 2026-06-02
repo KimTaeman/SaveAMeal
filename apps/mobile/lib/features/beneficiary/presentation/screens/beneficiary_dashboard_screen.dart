@@ -31,7 +31,9 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
       await ref
           .read(toggleIntakeStatusUseCaseProvider)
           .call(beneficiaryId: uid, availability: newVal);
-      if (mounted) setState(() => _optimisticAvailability = null);
+      // Do NOT clear here — the Firestore stream lags behind the write.
+      // Clearing now would revert the UI to the stale stream value before
+      // the stream catches up. ref.listen in build() clears it once confirmed.
     } catch (_) {
       if (mounted) {
         setState(() => _optimisticAvailability = null);
@@ -51,6 +53,17 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
 
     final availabilityAsync = ref.watch(intakeAvailabilityProvider(uid));
     final deliveriesAsync = ref.watch(activeDeliveriesProvider(uid));
+
+    // Once the stream confirms the value we wrote, the optimistic override
+    // is no longer needed — drop it so the stream drives the UI from here.
+    ref.listen<AsyncValue<BeneficiaryIntakeAvailability>>(
+      intakeAvailabilityProvider(uid),
+      (_, next) {
+        if (_optimisticAvailability != null && next.hasValue) {
+          if (mounted) setState(() => _optimisticAvailability = null);
+        }
+      },
+    );
 
     if (uid.isEmpty ||
         (availabilityAsync.isLoading && !availabilityAsync.hasValue)) {
