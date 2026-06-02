@@ -87,6 +87,20 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
   @override
   Widget build(BuildContext context) {
     final locationAsync = ref.watch(driverLocationProvider(widget.driverId));
+
+    // Animate camera to show the driver pin when their location updates.
+    ref.listen<AsyncValue<DriverLocationModel?>>(
+      driverLocationProvider(widget.driverId),
+      (_, next) {
+        final loc = next.asData?.value;
+        if (loc != null && _mapController != null) {
+          _mapController!.animateCamera(
+            CameraUpdate.newLatLng(LatLng(loc.lat, loc.lng)),
+          );
+        }
+      },
+    );
+
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 

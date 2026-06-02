@@ -145,7 +145,8 @@ GoRouter router(Ref ref) {
           GoRoute(
             path: 'tracking',
             builder: (context, state) {
-              final extra = state.extra! as Map<String, String>;
+              final extra = state.extra as Map<String, String>?;
+              if (extra == null) return const BeneficiaryHomeScreen();
               return TrackingScreen(
                 driverId: extra['driverId']!,
                 beneficiaryId: extra['beneficiaryId']!,

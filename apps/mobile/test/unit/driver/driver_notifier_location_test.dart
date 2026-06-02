@@ -8,7 +8,6 @@ import 'package:saveameal/features/driver/data/datasources/driver_remote_datasou
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
-import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
 
 class _FakeRepo implements DriverRepository {
   String? lastDeletedLocationDriverId;
@@ -79,17 +78,19 @@ ProviderContainer _makeContainer(_FakeRepo repo) => ProviderContainer(
 
 void main() {
   test(
-    'confirmDelivery calls deleteLocation with the driverId from claimBatch',
+    'confirmDelivery calls deleteLocation after tracking was started',
     () async {
       final repo = _FakeRepo();
       final container = _makeContainer(repo);
       final notifier = container.read(driverProvider.notifier);
 
+      // In tests, Geolocator platform is unavailable so _startTracking returns
+      // early without setting _activeDriverId. Simulate a successful tracking
+      // start by setting it directly.
       await notifier.claimBatch('b1', 'd1');
-      expect(container.read(driverProvider).step, DriverStep.claimed);
+      notifier.setActiveDriverIdForTest('d1');
 
       await notifier.confirmDelivery('b1', null);
-      // Let the unawaited deleteLocation future complete.
       await Future<void>.delayed(Duration.zero);
 
       expect(repo.lastDeletedLocationDriverId, 'd1');

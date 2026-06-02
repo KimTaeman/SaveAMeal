@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -84,11 +85,18 @@ class DriverNotifier extends _$DriverNotifier {
   }
 
   void resetToIdle() {
+    _stopTracking();
     state = const DriverState();
   }
 
-  Future<void> _startTracking(String driverId) async {
+  // For testing only — allows tests to simulate a started tracking session
+  // without triggering platform-dependent Geolocator calls.
+  @visibleForTesting
+  void setActiveDriverIdForTest(String driverId) {
     _activeDriverId = driverId;
+  }
+
+  Future<void> _startTracking(String driverId) async {
     try {
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -105,6 +113,9 @@ class DriverNotifier extends _$DriverNotifier {
       return;
     }
 
+    // Set only after permission is confirmed — avoids spurious deleteLocation
+    // calls if permission was denied.
+    _activeDriverId = driverId;
     _locationTimer?.cancel();
     _locationTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
       try {
