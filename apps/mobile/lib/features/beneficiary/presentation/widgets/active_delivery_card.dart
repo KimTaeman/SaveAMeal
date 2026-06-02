@@ -8,10 +8,12 @@ class ActiveDeliveryCard extends StatelessWidget {
     super.key,
     required this.request,
     required this.onViewDetails,
+    this.onTrack,
   });
 
   final IntakeRequest request;
   final VoidCallback onViewDetails;
+  final VoidCallback? onTrack;
 
   @override
   Widget build(BuildContext context) {
@@ -76,12 +78,28 @@ class ActiveDeliveryCard extends StatelessWidget {
               style: textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: Spacing.sm),
-            GestureDetector(
-              onTap: onViewDetails,
-              child: Text(
-                'View Details →',
-                style: textTheme.labelMedium?.copyWith(color: cs.primary),
-              ),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: onViewDetails,
+                  child: Text(
+                    'View Details →',
+                    style: textTheme.labelMedium?.copyWith(color: cs.primary),
+                  ),
+                ),
+                if (onTrack != null && request.volunteerId != null) ...[
+                  const SizedBox(width: Spacing.md),
+                  GestureDetector(
+                    onTap: onTrack,
+                    child: Text(
+                      'Track Delivery →',
+                      style: textTheme.labelMedium?.copyWith(
+                        color: cs.secondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),

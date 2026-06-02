@@ -114,6 +114,15 @@ class BeneficiaryHomeScreen extends ConsumerWidget {
                     onViewDetails: () => context.push(
                       '/beneficiary/delivery/${request.batchId}',
                     ),
+                    onTrack: request.volunteerId != null
+                        ? () => context.push(
+                            '/beneficiary/tracking',
+                            extra: <String, String>{
+                              'driverId': request.volunteerId!,
+                              'beneficiaryId': request.beneficiaryId,
+                            },
+                          )
+                        : null,
                   );
                 },
               ),
