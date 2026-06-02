@@ -1016,3 +1016,7 @@ Handoff:
   - Run `node seed.js --add-beneficiary <uid>` to create both users doc and beneficiaries doc for demo account
 
 Review: PENDING
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
