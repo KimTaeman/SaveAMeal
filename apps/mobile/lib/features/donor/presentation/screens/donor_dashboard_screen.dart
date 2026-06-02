@@ -127,9 +127,15 @@ class _DashboardHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.location_on, color: cs.primary),
+              Image.asset('assets/images/logo.png', height: 28),
               const SizedBox(width: Spacing.xs),
-              Text('SaveAMeal', style: textTheme.titleLarge),
+              Text(
+                'SaveAMeal',
+                style: textTheme.titleLarge?.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           Row(
