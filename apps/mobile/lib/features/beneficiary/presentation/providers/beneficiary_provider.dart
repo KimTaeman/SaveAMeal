@@ -8,6 +8,7 @@ import 'package:saveameal/features/beneficiary/domain/usecases/confirm_delivery_
 import 'package:saveameal/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart';
 import 'package:saveameal/services/service_providers.dart';
+import 'package:saveameal/core/models/driver_location_model.dart';
 
 part 'beneficiary_provider.g.dart';
 
@@ -60,3 +61,8 @@ Stream<BeneficiaryIntakeAvailability> intakeAvailability(
   Ref ref,
   String beneficiaryId,
 ) => ref.watch(intakeRepositoryProvider).watchIntakeAvailability(beneficiaryId);
+
+/// Live driver position — used by TrackingScreen to move the driver pin.
+@riverpod
+Stream<DriverLocationModel?> driverLocation(Ref ref, String driverId) =>
+    ref.watch(firestoreServiceProvider).watchDriverLocation(driverId);
