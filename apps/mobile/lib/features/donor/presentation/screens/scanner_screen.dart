@@ -48,8 +48,13 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       if (data['status'] != 1) return null;
       final product = data['product'] as Map<String, dynamic>?;
-      final name = product?['product_name'] as String?;
-      return (name != null && name.isNotEmpty) ? name : null;
+      // Try English name first, fall back to localised name, then brand
+      final name = [
+        product?['product_name_en'],
+        product?['product_name'],
+        product?['brands'],
+      ].whereType<String>().firstWhere((s) => s.isNotEmpty, orElse: () => '');
+      return name.isNotEmpty ? name : null;
     } catch (_) {
       return null;
     }
