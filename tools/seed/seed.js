@@ -33,10 +33,12 @@ const useEmulator    = args.includes('--emulator');
 const cleanFirst     = args.includes('--clean');
 const keyIdx         = args.indexOf('--key');
 const keyPath        = keyIdx >= 0 ? args[keyIdx + 1] : null;
-const addDriverIdx   = args.indexOf('--add-driver');
-const addDriverUid   = addDriverIdx >= 0 ? args[addDriverIdx + 1] : null;
-const addDonorIdx    = args.indexOf('--add-donor');
-const addDonorUid    = addDonorIdx >= 0 ? args[addDonorIdx + 1] : null;
+const addDriverIdx      = args.indexOf('--add-driver');
+const addDriverUid      = addDriverIdx >= 0 ? args[addDriverIdx + 1] : null;
+const addDonorIdx       = args.indexOf('--add-donor');
+const addDonorUid       = addDonorIdx >= 0 ? args[addDonorIdx + 1] : null;
+const addBeneficiaryIdx = args.indexOf('--add-beneficiary');
+const addBeneficiaryUid = addBeneficiaryIdx >= 0 ? args[addBeneficiaryIdx + 1] : null;
 
 // ── Initialise Firebase ────────────────────────────────────────────────────────
 
@@ -483,6 +485,23 @@ async function main() {
   }
   if (addDonorUid) {
     await registerUser(addDonorUid, 'donor', 'Dev Donor');
+    return;
+  }
+  if (addBeneficiaryUid) {
+    // Creates both the users doc (for login) and the beneficiaries doc (for
+    // intake status + tracking). The UID is used as BOTH document IDs so that
+    // BeneficiaryDashboardScreen can look up deliveries by Auth UID.
+    await registerUser(addBeneficiaryUid, 'beneficiary', 'Demo Shelter');
+    await db.collection('beneficiaries').doc(addBeneficiaryUid).set({
+      id:      addBeneficiaryUid,
+      name:    'Demo Shelter',
+      address: '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
+      lat:     13.7246,
+      lng:     100.5235,
+      intakeStatus: 'accepting',
+    }, { merge: true });
+    console.log(`  ✓  beneficiaries/${addBeneficiaryUid} created (Klongtoey coords)`);
+    console.log(`\n  IMPORTANT: seed any demo batches with beneficiaryId: '${addBeneficiaryUid}'`);
     return;
   }
 
