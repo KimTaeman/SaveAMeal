@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/services/auth_service.dart';
+import 'package:saveameal/services/fcm_service.dart';
 import 'package:saveameal/services/firestore_service.dart';
 import 'package:saveameal/services/storage_service.dart';
 
@@ -18,3 +20,7 @@ FirestoreService firestoreService(Ref ref) =>
 @riverpod
 StorageService storageService(Ref ref) =>
     StorageService(FirebaseStorage.instance);
+
+@riverpod
+FcmService fcmService(Ref ref) =>
+    FirebaseFcmService(FirebaseMessaging.instance);

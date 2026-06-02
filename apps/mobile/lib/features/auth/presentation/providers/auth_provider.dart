@@ -14,6 +14,7 @@ part 'auth_provider.g.dart';
 AuthRemoteDatasource authDatasource(Ref ref) => AuthRemoteDatasourceImpl(
   ref.watch(authServiceProvider),
   ref.watch(firestoreServiceProvider),
+  ref.watch(fcmServiceProvider),
 );
 
 @riverpod
