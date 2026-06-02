@@ -101,6 +101,10 @@
             const LogoutButton(),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => context.push('/notifications'),
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
           child: Column(
@@ -266,6 +270,34 @@
                 child: Icon(Icons.eco_outlined, size: 48, color: ac.success),
               ),
               const SizedBox(height: Spacing.md),
+            ],
+            Text('Active Deliveries', style: textTheme.titleMedium),
+            const SizedBox(height: Spacing.sm),
+            if (deliveries.isEmpty)
+              const _EmptyDeliveriesState()
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: deliveries.length,
+                itemBuilder: (context, index) {
+                  final request = deliveries[index];
+                  return ActiveDeliveryCard(
+                    request: request,
+                    onViewDetails: () => context.push(
+                      '/beneficiary/delivery/${request.batchId}',
+                    ),
+                    onTrack: request.volunteerId != null
+                        ? () => context.push(
+                            '/beneficiary/tracking',
+                            extra: <String, String>{
+                              'driverId': request.volunteerId!,
+                              'beneficiaryId': request.beneficiaryId,
+                            },
+                          )
+                        : null,
+                  );
+                },
               Text(
                 'Accepting Donations',
                 style: textTheme.headlineSmall?.copyWith(

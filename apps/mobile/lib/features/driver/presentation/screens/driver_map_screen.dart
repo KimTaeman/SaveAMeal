@@ -38,9 +38,12 @@ class DriverMapScreen extends ConsumerWidget {
             Text('SaveAMeal', style: textTheme.titleLarge),
           ],
         ),
-        actions: const [
-          IconButton(icon: Icon(Icons.notifications_outlined), onPressed: null),
-          LogoutButton(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => context.push('/notifications'),
+          ),
+          const LogoutButton(),
         ],
       ),
       bottomNavigationBar: _DriverBottomNav(currentIndex: 0),

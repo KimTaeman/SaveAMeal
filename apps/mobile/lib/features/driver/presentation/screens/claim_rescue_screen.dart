@@ -62,7 +62,7 @@ class ClaimRescueScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            onPressed: null,
+            onPressed: () => context.push('/notifications'),
           ),
         ],
       ),

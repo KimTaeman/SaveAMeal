@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
   import 'package:saveameal/shared/theme/app_colors.dart';
   import 'package:saveameal/shared/theme/spacing.dart';
 
-  class ActiveDeliveryCard extends StatelessWidget {
-    const ActiveDeliveryCard({
-      super.key,
-      required this.request,
-      required this.onViewDetails,
-      this.onTrack,
-    });
+class ActiveDeliveryCard extends StatelessWidget {
+  const ActiveDeliveryCard({
+    super.key,
+    required this.request,
+    required this.onViewDetails,
+    this.onTrack,
+  });
 
-    final IntakeRequest request;
-    final VoidCallback onViewDetails;
-    final VoidCallback? onTrack;
+  final IntakeRequest request;
+  final VoidCallback onViewDetails;
+  final VoidCallback? onTrack;
 
     @override
     Widget build(BuildContext context) {

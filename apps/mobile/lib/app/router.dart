@@ -23,6 +23,7 @@ import 'package:saveameal/features/driver/presentation/screens/job_detail_screen
 import 'package:saveameal/features/driver/presentation/screens/pickup_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/safety_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
+import 'package:saveameal/features/notifications/presentation/screens/notifications_screen.dart';
 
 part 'router.g.dart';
 
@@ -152,6 +153,10 @@ GoRouter router(Ref ref) {
             },
           ),
         ],
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
     ],
   );
