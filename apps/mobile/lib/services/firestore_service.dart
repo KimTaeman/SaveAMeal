@@ -302,4 +302,16 @@ class FirestoreService {
       .collection(FirestoreConstants.users)
       .doc(uid)
       .update({'fcmToken': token});
+
+  Future<void> deleteDriverLocation(String driverId) =>
+      _db.collection(FirestoreConstants.driverLocations).doc(driverId).delete();
+
+  Future<BeneficiaryModel?> getBeneficiary(String beneficiaryId) async {
+    final doc = await _db
+        .collection(FirestoreConstants.beneficiaries)
+        .doc(beneficiaryId)
+        .get();
+    if (!doc.exists || doc.data() == null) return null;
+    return BeneficiaryModel.fromJson({...doc.data()!, 'id': doc.id});
+  }
 }
