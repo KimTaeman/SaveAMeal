@@ -112,34 +112,36 @@ class _SafetyVerificationScreenState
           const SizedBox(height: Spacing.sm),
           GestureDetector(
             onTap: _pickPhoto,
-            child: Container(
-              height: 140,
-              decoration: BoxDecoration(
-                border: Border.all(color: cs.primary),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: _pickedBytes != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.memory(_pickedBytes!, fit: BoxFit.cover),
-                    )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_a_photo, color: cs.primary, size: 32),
-                        const SizedBox(height: Spacing.xs),
-                        Text(
-                          'Upload Pickup Photo',
-                          style: textTheme.labelMedium?.copyWith(
-                            color: cs.primary,
+            child: CustomPaint(
+              painter: _DashedBorderPainter(color: cs.primary),
+              child: Container(
+                height: 140,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: _pickedBytes != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.memory(_pickedBytes!, fit: BoxFit.cover),
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_a_photo, color: cs.primary, size: 32),
+                          const SizedBox(height: Spacing.xs),
+                          Text(
+                            'Upload Pickup Photo',
+                            style: textTheme.labelMedium?.copyWith(
+                              color: cs.primary,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Tap to select or take photo',
-                          style: textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
+                          Text(
+                            'Tap to select or take photo',
+                            style: textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
           const SizedBox(height: Spacing.xl),
@@ -162,4 +164,39 @@ class _SafetyVerificationScreenState
       ),
     );
   }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  const _DashedBorderPainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+    const dashWidth = 8.0;
+    const dashSpace = 5.0;
+    const radius = Radius.circular(12);
+    final path = Path()
+      ..addRRect(RRect.fromRectAndRadius(Offset.zero & size, radius));
+    var distance = 0.0;
+    var draw = true;
+    for (final metric in path.computeMetrics()) {
+      while (distance < metric.length) {
+        final len = draw ? dashWidth : dashSpace;
+        if (draw) {
+          canvas.drawPath(metric.extractPath(distance, distance + len), paint);
+        }
+        distance += len;
+        draw = !draw;
+      }
+      distance = 0.0;
+      draw = true;
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedBorderPainter old) => old.color != color;
 }
