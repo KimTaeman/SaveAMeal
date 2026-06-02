@@ -284,31 +284,46 @@ class FirestoreService {
 
   // Aggregates directly from the donor's batches — avoids the dependency on the
   // onDeliveryComplete Cloud Function which pre-computes impactMetrics.
-  Stream<ImpactMetricsModel?> watchDonorMetrics(String donorId) => _db
-      .collection(FirestoreConstants.batches)
-      .where('donorId', isEqualTo: donorId)
-      .snapshots()
-      .map((qs) {
-        double totalKg = 0;
-        int totalDeliveries = 0;
-        for (final doc in qs.docs) {
-          final data = doc.data();
-          if (data['status'] == 'cancelled') continue;
-          for (final item in (data['items'] as List<dynamic>? ?? [])) {
-            final kg = (item as Map<String, dynamic>)['weightKg'];
-            if (kg != null) totalKg += (kg as num).toDouble();
+  // Uses async* so that Firestore permission errors and bad-cast errors in the
+  // aggregation loop are caught and turned into a default (zero) emission rather
+  // than a stream error that trips the dashboard's offline banner.
+  Stream<ImpactMetricsModel?> watchDonorMetrics(String donorId) async* {
+    try {
+      await for (final qs
+          in _db
+              .collection(FirestoreConstants.batches)
+              .where('donorId', isEqualTo: donorId)
+              .snapshots()) {
+        try {
+          double totalKg = 0;
+          int totalDeliveries = 0;
+          for (final doc in qs.docs) {
+            final data = doc.data();
+            if (data['status'] == 'cancelled') continue;
+            for (final raw in (data['items'] as List<dynamic>? ?? [])) {
+              final item = raw as Map<String, dynamic>;
+              final kg = item['weightKg'];
+              if (kg != null) totalKg += (kg as num).toDouble();
+            }
+            final status = data['status'] as String?;
+            if (status == 'delivered' || status == 'closed') totalDeliveries++;
           }
-          final status = data['status'] as String?;
-          if (status == 'delivered' || status == 'closed') totalDeliveries++;
+          yield ImpactMetricsModel(
+            id: donorId,
+            totalKg: totalKg,
+            totalMeals: (totalKg * 2.5).round(),
+            totalCO2e: totalKg * 2.5,
+            totalDeliveries: totalDeliveries,
+          );
+        } catch (_) {
+          yield ImpactMetricsModel(id: donorId);
         }
-        return ImpactMetricsModel(
-          id: donorId,
-          totalKg: totalKg,
-          totalMeals: (totalKg * 2.5).round(),
-          totalCO2e: totalKg * 2.5,
-          totalDeliveries: totalDeliveries,
-        );
-      });
+      }
+    } catch (_) {
+      // Firestore stream error (permission denied, network) — emit default once.
+      yield ImpactMetricsModel(id: donorId);
+    }
+  }
 
   // Queries users with role=beneficiary for full profile data. The beneficiaries
   // collection only stores intakeStatus — name/address live in users.
