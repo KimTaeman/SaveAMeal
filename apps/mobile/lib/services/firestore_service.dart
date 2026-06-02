@@ -297,4 +297,9 @@ class FirestoreService {
         if (!ds.exists || ds.data() == null) return 0;
         return (ds.data()!['points'] as int?) ?? 0;
       });
+
+  Future<void> updateFcmToken(String uid, String token) => _db
+      .collection(FirestoreConstants.users)
+      .doc(uid)
+      .update({'fcmToken': token});
 }
