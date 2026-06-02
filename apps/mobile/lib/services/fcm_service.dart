@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class FcmService {
   Future<void> requestPermission();
@@ -14,21 +15,21 @@ class FirebaseFcmService implements FcmService {
 
   @override
   Future<void> requestPermission() async {
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await _messaging.requestPermission(alert: true, badge: true, sound: true);
   }
 
   @override
   Future<String?> getToken() => _messaging.getToken();
 
   @override
-  Future<void> subscribeToTopic(String topic) =>
-      _messaging.subscribeToTopic(topic);
+  Future<void> subscribeToTopic(String topic) {
+    if (kIsWeb) return Future.value();
+    return _messaging.subscribeToTopic(topic);
+  }
 
   @override
-  Future<void> unsubscribeFromTopic(String topic) =>
-      _messaging.unsubscribeFromTopic(topic);
+  Future<void> unsubscribeFromTopic(String topic) {
+    if (kIsWeb) return Future.value();
+    return _messaging.unsubscribeFromTopic(topic);
+  }
 }

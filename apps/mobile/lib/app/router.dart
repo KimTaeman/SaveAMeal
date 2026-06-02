@@ -23,8 +23,6 @@ import 'package:saveameal/features/driver/presentation/screens/job_detail_screen
 import 'package:saveameal/features/driver/presentation/screens/pickup_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/safety_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
-import 'package:saveameal/features/volunteer/presentation/screens/volunteer_delivery_scanner_screen.dart';
-import 'package:saveameal/features/volunteer/presentation/screens/volunteer_queue_screen.dart';
 
 part 'router.g.dart';
 
@@ -152,18 +150,6 @@ GoRouter router(Ref ref) {
                 beneficiaryId: extra['beneficiaryId']!,
               );
             },
-          ),
-        ],
-      ),
-      GoRoute(
-        path: '/volunteer',
-        builder: (context, state) => const VolunteerQueueScreen(),
-        routes: [
-          GoRoute(
-            path: 'scan/:batchId',
-            builder: (context, state) => VolunteerDeliveryScannerScreen(
-              batchId: state.pathParameters['batchId']!,
-            ),
           ),
         ],
       ),
