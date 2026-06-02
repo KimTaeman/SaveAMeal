@@ -164,10 +164,10 @@ class FirestoreService {
   Future<void> setIntakeAvailability({
     required String beneficiaryId,
     required String intakeStatus,
-  }) => _db
-      .collection(FirestoreConstants.beneficiaries)
-      .doc(beneficiaryId)
-      .update({'intakeStatus': intakeStatus});
+  }) => _db.collection(FirestoreConstants.beneficiaries).doc(beneficiaryId).set(
+    {'intakeStatus': intakeStatus},
+    SetOptions(merge: true),
+  );
 
   Stream<String> watchIntakeAvailability(String beneficiaryId) => _db
       .collection(FirestoreConstants.beneficiaries)

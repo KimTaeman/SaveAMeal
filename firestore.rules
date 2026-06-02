@@ -67,6 +67,16 @@ service cloud.firestore {
       allow write: if isSignedIn() && isDriver() && uid() == driverId;
     }
 
+    // ── beneficiaries ──────────────────────────────────────────────────────────
+    // All signed-in users read (donors need the full list for the map).
+    // Only the owning beneficiary may create or update their own document.
+    match /beneficiaries/{beneficiaryId} {
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn() && isBeneficiary() && uid() == beneficiaryId;
+      allow update: if isSignedIn() && isBeneficiary() && uid() == beneficiaryId;
+      allow delete: if false;
+    }
+
     // ── impactMetrics ──────────────────────────────────────────────────────────
     // Cloud Functions write these; clients only read own doc + global.
     match /impactMetrics/{docId} {
