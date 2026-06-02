@@ -14,11 +14,7 @@ class FirebaseFcmService implements FcmService {
 
   @override
   Future<void> requestPermission() async {
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await _messaging.requestPermission(alert: true, badge: true, sound: true);
   }
 
   @override
