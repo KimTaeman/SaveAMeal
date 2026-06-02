@@ -50,6 +50,8 @@ class _VerifyDeliveryScreenState extends ConsumerState<VerifyDeliveryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final uid = ref.watch(authStateProvider).asData?.value?.uid ?? '';
+    final batch = ref.watch(activeBatchForDriverProvider(uid)).asData?.value;
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -58,6 +60,51 @@ class _VerifyDeliveryScreenState extends ConsumerState<VerifyDeliveryScreen> {
       body: ListView(
         padding: const EdgeInsets.all(Spacing.md),
         children: [
+          if (batch != null) ...[
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(Spacing.md),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'BATCH IDENTIFIER',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          'Batch #${batch.id.split('_').last}',
+                          style: textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'VOLUME',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          '${batch.totalPortions} Portions',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: cs.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: Spacing.md),
+          ],
           Row(
             children: [
               Icon(Icons.verified, color: cs.primary),
