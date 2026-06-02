@@ -37,18 +37,46 @@ class NotificationsScreen extends ConsumerWidget {
       ),
       body: notifications.isEmpty
           ? Center(child: Text('No notifications', style: textTheme.bodyMedium))
-          : ListView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Spacing.md,
-                vertical: Spacing.sm,
-              ),
-              children: _groupByDate(notifications).entries.map((entry) {
-                return _DateGroup(
-                  label: entry.key,
-                  notifications: entry.value,
-                  onTap: (n) => _onCardTap(context, ref, n),
+          : Builder(
+              builder: (context) {
+                final groups = _groupByDate(notifications).entries.toList();
+                // Build a flat list: [header, card, card, header, card, ...]
+                final items =
+                    <
+                      ({
+                        bool isHeader,
+                        String label,
+                        AppNotification? notification,
+                      })
+                    >[];
+                for (final entry in groups) {
+                  items.add((
+                    isHeader: true,
+                    label: entry.key,
+                    notification: null,
+                  ));
+                  for (final n in entry.value) {
+                    items.add((isHeader: false, label: '', notification: n));
+                  }
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Spacing.md,
+                    vertical: Spacing.sm,
+                  ),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    if (item.isHeader) {
+                      return _SectionHeader(label: item.label);
+                    }
+                    return _NotificationCard(
+                      notification: item.notification!,
+                      onTap: () => _onCardTap(context, ref, item.notification!),
+                    );
+                  },
                 );
-              }).toList(),
+              },
             ),
     );
   }
@@ -59,6 +87,7 @@ class NotificationsScreen extends ConsumerWidget {
     final now = DateTime.now();
     final today = <AppNotification>[];
     final yesterday = <AppNotification>[];
+    final earlier = <AppNotification>[];
 
     for (final n in notifications) {
       if (_isSameDay(n.timestamp, now)) {
@@ -68,12 +97,15 @@ class NotificationsScreen extends ConsumerWidget {
         now.subtract(const Duration(days: 1)),
       )) {
         yesterday.add(n);
+      } else {
+        earlier.add(n);
       }
     }
 
     return {
       if (today.isNotEmpty) 'TODAY (${today.length})': today,
       if (yesterday.isNotEmpty) 'YESTERDAY (${yesterday.length})': yesterday,
+      if (earlier.isNotEmpty) 'EARLIER (${earlier.length})': earlier,
     };
   }
 
@@ -100,48 +132,31 @@ class NotificationsScreen extends ConsumerWidget {
   }
 }
 
-// ── Date group ────────────────────────────────────────────────────────────────
+// ── Section header ────────────────────────────────────────────────────────────
 
-class _DateGroup extends StatelessWidget {
-  const _DateGroup({
-    required this.label,
-    required this.notifications,
-    required this.onTap,
-  });
-
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.label});
   final String label;
-  final List<AppNotification> notifications;
-  final void Function(AppNotification) onTap;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
-          child: Row(
-            children: [
-              Text(
-                label,
-                style: textTheme.labelSmall?.copyWith(
-                  color: cs.onSurfaceVariant,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              const SizedBox(width: Spacing.sm),
-              Expanded(child: Divider(color: cs.outlineVariant, thickness: 1)),
-            ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: textTheme.labelSmall?.copyWith(
+              color: cs.onSurfaceVariant,
+              letterSpacing: 1.2,
+            ),
           ),
-        ),
-        ...notifications.map(
-          (n) => _NotificationCard(notification: n, onTap: () => onTap(n)),
-        ),
-        const SizedBox(height: Spacing.sm),
-      ],
+          const SizedBox(width: Spacing.sm),
+          Expanded(child: Divider(color: cs.outlineVariant, thickness: 1)),
+        ],
+      ),
     );
   }
 }
@@ -224,9 +239,26 @@ class _NotificationCard extends StatelessWidget {
     final diff = DateTime.now().difference(timestamp);
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
-    final h = timestamp.hour.toString().padLeft(2, '0');
-    final m = timestamp.minute.toString().padLeft(2, '0');
-    return 'yesterday at $h:$m';
+    if (diff.inDays == 1) {
+      final h = timestamp.hour.toString().padLeft(2, '0');
+      final m = timestamp.minute.toString().padLeft(2, '0');
+      return 'yesterday at $h:$m';
+    }
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${timestamp.day} ${months[timestamp.month - 1]}';
   }
 }
 
