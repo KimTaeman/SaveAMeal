@@ -66,3 +66,7 @@ Files:
   ? apps/mobile/lib/features/volunteer/ (untracked)
 Summary:  3 files changed, 208 insertions(+), 7 deletions(-)
 
+Files:
+  ~ apps/mobile/test/widget/features/beneficiary/widgets/active_delivery_card_test.dart
+Summary:  1 file changed, 2 insertions(+), 2 deletions(-)
+
