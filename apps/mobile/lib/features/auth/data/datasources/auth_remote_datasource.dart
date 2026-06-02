@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:saveameal/core/models/user_model.dart';
 import 'package:saveameal/services/auth_service.dart';
+import 'package:saveameal/services/fcm_service.dart';
 import 'package:saveameal/services/firestore_service.dart';
 
 abstract class AuthRemoteDatasource {
@@ -22,10 +23,15 @@ abstract class AuthRemoteDatasource {
 }
 
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
-  const AuthRemoteDatasourceImpl(this._authService, this._firestoreService);
+  const AuthRemoteDatasourceImpl(
+    this._authService,
+    this._firestoreService,
+    this._fcmService,
+  );
 
   final AuthService _authService;
   final FirestoreService _firestoreService;
+  final FcmService _fcmService;
 
   @override
   Stream<User?> watchAuthState() => _authService.authStateChanges;
@@ -40,6 +46,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     if (model == null) {
       throw Exception('User document not found for uid: ${cred.user!.uid}');
     }
+    await registerFcmForUser(model);
     return model;
   }
 
@@ -61,12 +68,29 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       phone: phone,
     );
     await _firestoreService.createUser(model);
+    await registerFcmForUser(model);
     return model;
   }
 
   @override
-  Future<void> signOut() => _authService.signOut();
+  Future<void> signOut() async {
+    await _fcmService.unsubscribeFromTopic('new_batch_available');
+    await _authService.signOut();
+  }
 
   @override
   Future<UserModel?> getUser(String uid) => _firestoreService.getUser(uid);
+
+  // Registers the device FCM token and subscribes drivers to the broadcast
+  // topic. Exposed (not private) so test code can call it directly.
+  Future<void> registerFcmForUser(UserModel model) async {
+    await _fcmService.requestPermission();
+    final token = await _fcmService.getToken();
+    if (token != null) {
+      await _firestoreService.updateFcmToken(model.uid, token);
+    }
+    if (model.role == UserRole.driver) {
+      await _fcmService.subscribeToTopic('new_batch_available');
+    }
+  }
 }
