@@ -50,7 +50,7 @@ class DeliveryCompletedScreen extends ConsumerWidget {
                     height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: cs.primaryContainer.withOpacity(0.3),
+                      color: cs.primaryContainer.withValues(alpha: 0.3),
                     ),
                   ),
                   Container(
@@ -58,7 +58,7 @@ class DeliveryCompletedScreen extends ConsumerWidget {
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: cs.primaryContainer.withOpacity(0.6),
+                      color: cs.primaryContainer.withValues(alpha: 0.6),
                     ),
                   ),
                   Container(

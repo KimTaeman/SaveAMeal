@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
-import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
@@ -90,6 +89,7 @@ class ClaimRescueScreen extends ConsumerWidget {
                         }
                       : {},
                 ),
+                // TODO(driver): replace with real ETA from Maps Directions API
                 Positioned(
                   right: Spacing.sm,
                   bottom: Spacing.sm,
@@ -103,7 +103,7 @@ class ClaimRescueScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: cs.shadow.withValues(alpha: 0.15),
                           blurRadius: 4,
                         ),
                       ],
@@ -112,7 +112,7 @@ class ClaimRescueScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.access_time, size: 14, color: cs.primary),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: Spacing.xs),
                         Text(
                           '~14 min',
                           style: textTheme.labelSmall?.copyWith(
@@ -200,6 +200,7 @@ class ClaimRescueScreen extends ConsumerWidget {
           ),
         ],
       ),
+      // TODO(driver): wire destinations to router when Impact and Account screens exist
       bottomNavigationBar: NavigationBar(
         selectedIndex: 0,
         onDestinationSelected: (_) {},
