@@ -38,6 +38,13 @@ class _FakeRepo implements DriverRepository {
   @override
   Future<void> upsertLocation(String driverId, double lat, double lng) async {}
 
+  String? lastDeletedLocationDriverId;
+
+  @override
+  Future<void> deleteLocation(String driverId) async {
+    lastDeletedLocationDriverId = driverId;
+  }
+
   @override
   Stream<int> watchPoints(String uid) => const Stream.empty();
 }
@@ -64,6 +71,9 @@ class _FakeDatasource implements DriverRemoteDatasource {
 
   @override
   Future<void> upsertLocation(String driverId, double lat, double lng) async {}
+
+  @override
+  Future<void> deleteLocation(String driverId) async {}
 
   @override
   Stream<int> watchPoints(String uid) => const Stream.empty();
