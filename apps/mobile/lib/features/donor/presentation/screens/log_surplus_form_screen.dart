@@ -88,6 +88,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
       localPhotoPath: _photo?.path,
     );
     ref.read(batchSessionProvider.notifier).add(item);
+    ref.read(batchBeneficiaryProvider.notifier).set(_beneficiary);
     context.push('/donor/log/summary');
   }
 

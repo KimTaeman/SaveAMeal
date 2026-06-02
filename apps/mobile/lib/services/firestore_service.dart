@@ -196,21 +196,45 @@ class FirestoreService {
       });
 
   Future<void> claimBatch(String batchId, String driverId) async {
-    final ref = _db.collection(FirestoreConstants.batches).doc(batchId);
+    final batchRef = _db.collection(FirestoreConstants.batches).doc(batchId);
+
+    // Pre-fetch an available beneficiary outside the transaction — Firestore
+    // only supports doc reads (not collection queries) inside transactions.
+    // The value is only written if the batch has no beneficiaryId yet.
+    final autoId = await findAvailableBeneficiaryId();
+
     await _db.runTransaction((tx) async {
-      final snap = await tx.get(ref);
+      final snap = await tx.get(batchRef);
       if (!snap.exists || snap.data() == null) {
         throw BatchNotFoundException(batchId);
       }
       if (snap.data()!['status'] != 'open') {
         throw const BatchAlreadyClaimedException();
       }
-      tx.update(ref, {
+
+      final update = <String, dynamic>{
         'status': 'claimed',
         'driverId': driverId,
         'claimedAt': FieldValue.serverTimestamp(),
-      });
+      };
+
+      if (snap.data()!['beneficiaryId'] == null && autoId != null) {
+        update['beneficiaryId'] = autoId;
+      }
+
+      tx.update(batchRef, update);
     });
+  }
+
+  /// Returns the ID of the first beneficiary currently accepting food,
+  /// or null if none are available.
+  Future<String?> findAvailableBeneficiaryId() async {
+    final qs = await _db
+        .collection(FirestoreConstants.beneficiaries)
+        .where('intakeStatus', isEqualTo: 'accepting')
+        .limit(1)
+        .get();
+    return qs.docs.isEmpty ? null : qs.docs.first.id;
   }
 
   Future<void> confirmPickup(String batchId, String pickupPhotoUrl) =>
