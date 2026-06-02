@@ -14,14 +14,16 @@ export const onBatchCreated = onDocumentCreated(
     const items = (batch['items'] as Array<{ weightKg: number }>) ?? [];
     const { totalKg } = computeTotals(items);
 
-    await admin.messaging().send({
-      topic: 'new_batch_available',
-      notification: {
-        title: 'New pickup available',
-        body: `${donorName} · ${formatKg(totalKg)} kg`,
-      },
-      data: { type: 'new_batch', batchId },
-    });
+    await admin.messaging()
+      .send({
+        topic: 'new_batch_available',
+        notification: {
+          title: 'New pickup available',
+          body: `${donorName} · ${formatKg(totalKg)} kg`,
+        },
+        data: { type: 'new_batch', batchId },
+      })
+      .catch((e) => logger.warn(`onBatchCreated: topic FCM failed — ${e}`));
 
     logger.info(`onBatchCreated: topic msg sent for batch ${batchId}`);
   },

@@ -1,8 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:saveameal/services/fcm_service.dart';
 
-// Public fake — also imported by auth_remote_datasource_fcm_test.dart.
-class FakeFcmService implements FcmService {
+class _FakeFcmService implements FcmService {
   bool permissionRequested = false;
   String? tokenToReturn;
   final List<String> subscribedTopics = [];
@@ -24,9 +23,9 @@ class FakeFcmService implements FcmService {
 }
 
 void main() {
-  late FakeFcmService sut;
+  late _FakeFcmService sut;
 
-  setUp(() => sut = FakeFcmService());
+  setUp(() => sut = _FakeFcmService());
 
   test('requestPermission sets flag', () async {
     await sut.requestPermission();

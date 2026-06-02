@@ -21,52 +21,53 @@ export const onBatchClaimed = onDocumentUpdated(
     const { totalKg } = computeTotals(items);
 
     const db = admin.firestore();
+
+    // Fetch both user docs in parallel.
+    const [donorSnap, benSnap] = await Promise.all([
+      donorId ? db.collection('users').doc(donorId).get() : Promise.resolve(null),
+      beneficiaryId ? db.collection('users').doc(beneficiaryId).get() : Promise.resolve(null),
+    ]);
+
     const sends: Promise<void>[] = [];
 
     // Notify donor.
-    if (donorId) {
-      const donorSnap = await db.collection('users').doc(donorId).get();
-      const donorToken = donorSnap.data()?.['fcmToken'] as string | undefined;
-      if (donorToken) {
-        sends.push(
-          admin.messaging()
-            .send({
-              token: donorToken,
-              notification: {
-                title: 'Driver is on the way',
-                body: 'Your batch is being picked up',
-              },
-              data: { type: 'driver_assigned', batchId },
-            })
-            .then(() => undefined)
-            .catch((e) => logger.warn(`onBatchClaimed: donor FCM failed — ${e}`)),
-        );
-      } else {
-        logger.warn(`onBatchClaimed: donor ${donorId} has no fcmToken`);
-      }
+    const donorToken = donorSnap?.data()?.['fcmToken'] as string | undefined;
+    if (donorToken) {
+      sends.push(
+        admin.messaging()
+          .send({
+            token: donorToken,
+            notification: {
+              title: 'Driver is on the way',
+              body: 'Your batch is being picked up',
+            },
+            data: { type: 'driver_assigned', batchId },
+          })
+          .then(() => undefined)
+          .catch((e) => logger.warn(`onBatchClaimed: donor FCM failed — ${e}`)),
+      );
+    } else if (donorId) {
+      logger.warn(`onBatchClaimed: donor ${donorId} has no fcmToken`);
     }
 
     // Notify beneficiary.
-    if (beneficiaryId) {
-      const benSnap = await db.collection('users').doc(beneficiaryId).get();
-      const benToken = benSnap.data()?.['fcmToken'] as string | undefined;
-      if (benToken) {
-        sends.push(
-          admin.messaging()
-            .send({
-              token: benToken,
-              notification: {
-                title: 'Delivery incoming',
-                body: `${formatKg(totalKg)} kg from ${donorName}`,
-              },
-              data: { type: 'incoming_delivery', batchId },
-            })
-            .then(() => undefined)
-            .catch((e) => logger.warn(`onBatchClaimed: beneficiary FCM failed — ${e}`)),
-        );
-      } else {
-        logger.warn(`onBatchClaimed: beneficiary ${beneficiaryId} has no fcmToken`);
-      }
+    const benToken = benSnap?.data()?.['fcmToken'] as string | undefined;
+    if (benToken) {
+      sends.push(
+        admin.messaging()
+          .send({
+            token: benToken,
+            notification: {
+              title: 'Delivery incoming',
+              body: `${formatKg(totalKg)} kg from ${donorName}`,
+            },
+            data: { type: 'incoming_delivery', batchId },
+          })
+          .then(() => undefined)
+          .catch((e) => logger.warn(`onBatchClaimed: beneficiary FCM failed — ${e}`)),
+      );
+    } else if (beneficiaryId) {
+      logger.warn(`onBatchClaimed: beneficiary ${beneficiaryId} has no fcmToken`);
     }
 
     await Promise.all(sends);

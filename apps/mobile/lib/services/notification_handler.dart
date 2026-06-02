@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saveameal/core/logging/app_logger.dart';
@@ -7,23 +8,29 @@ class NotificationHandler {
 
   final GoRouter _router;
 
-  void init() {
+  List<StreamSubscription<RemoteMessage>> init() {
+    final subs = <StreamSubscription<RemoteMessage>>[];
+
     // Foreground: app is open and visible.
     // Firestore real-time streams already update the UI, so we just log.
-    FirebaseMessaging.onMessage.listen((message) {
-      AppLogger.info(
-        'FCM foreground: ${message.notification?.title} '
-        '(type=${message.data["type"]})',
-      );
-    });
+    subs.add(
+      FirebaseMessaging.onMessage.listen((message) {
+        AppLogger.info(
+          'FCM foreground: ${message.notification?.title} '
+          '(type=${message.data["type"]})',
+        );
+      }),
+    );
 
     // Background tap: app was minimized, user tapped the system notification.
-    FirebaseMessaging.onMessageOpenedApp.listen(_navigate);
+    subs.add(FirebaseMessaging.onMessageOpenedApp.listen(_navigate));
 
     // Terminated tap: app was closed, user tapped to open it.
     FirebaseMessaging.instance.getInitialMessage().then((message) {
       if (message != null) _navigate(message);
     });
+
+    return subs;
   }
 
   void _navigate(RemoteMessage message) {
