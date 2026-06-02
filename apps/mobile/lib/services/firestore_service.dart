@@ -169,10 +169,10 @@ class FirestoreService {
   Future<void> setIntakeAvailability({
     required String beneficiaryId,
     required String intakeStatus,
-  }) => _db
-      .collection(FirestoreConstants.beneficiaries)
-      .doc(beneficiaryId)
-      .update({'intakeStatus': intakeStatus});
+  }) => _db.collection(FirestoreConstants.beneficiaries).doc(beneficiaryId).set(
+    {'intakeStatus': intakeStatus},
+    SetOptions(merge: true),
+  );
 
   Stream<String> watchIntakeAvailability(String beneficiaryId) => _db
       .collection(FirestoreConstants.beneficiaries)
@@ -302,4 +302,21 @@ class FirestoreService {
         if (!ds.exists || ds.data() == null) return 0;
         return (ds.data()!['points'] as int?) ?? 0;
       });
+
+  Future<void> updateFcmToken(String uid, String token) => _db
+      .collection(FirestoreConstants.users)
+      .doc(uid)
+      .update({'fcmToken': token});
+
+  Future<void> deleteDriverLocation(String driverId) =>
+      _db.collection(FirestoreConstants.driverLocations).doc(driverId).delete();
+
+  Future<BeneficiaryModel?> getBeneficiary(String beneficiaryId) async {
+    final doc = await _db
+        .collection(FirestoreConstants.beneficiaries)
+        .doc(beneficiaryId)
+        .get();
+    if (!doc.exists || doc.data() == null) return null;
+    return BeneficiaryModel.fromJson({...doc.data()!, 'id': doc.id});
+  }
 }

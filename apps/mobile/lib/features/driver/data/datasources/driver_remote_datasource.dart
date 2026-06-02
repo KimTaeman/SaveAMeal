@@ -11,6 +11,7 @@ abstract class DriverRemoteDatasource {
   Future<void> confirmPickup(String batchId, String pickupPhotoUrl);
   Future<void> confirmDelivery(String batchId, String? notes);
   Future<void> upsertLocation(String driverId, double lat, double lng);
+  Future<void> deleteLocation(String driverId);
   Future<String> uploadPickupPhoto(String batchId, XFile photo);
   Stream<int> watchPoints(String uid);
 }
@@ -45,6 +46,10 @@ class DriverRemoteDatasourceImpl implements DriverRemoteDatasource {
       _firestore.upsertDriverLocation(
         DriverLocationModel(driverId: driverId, lat: lat, lng: lng),
       );
+
+  @override
+  Future<void> deleteLocation(String driverId) =>
+      _firestore.deleteDriverLocation(driverId);
 
   @override
   Future<String> uploadPickupPhoto(String batchId, XFile photo) =>

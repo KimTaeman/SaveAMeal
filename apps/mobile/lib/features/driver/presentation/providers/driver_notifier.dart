@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,9 +14,14 @@ part 'driver_notifier.g.dart';
 @riverpod
 class DriverNotifier extends _$DriverNotifier {
   Timer? _locationTimer;
+  String? _activeDriverId;
+  // Cached at build time so _stopTracking can be called safely from onDispose,
+  // where ref.read is no longer permitted.
+  late DriverRepository _repo;
 
   @override
   DriverState build() {
+    _repo = ref.read(driverRepositoryProvider);
     ref.onDispose(_stopTracking);
     return const DriverState();
   }
@@ -28,7 +35,7 @@ class DriverNotifier extends _$DriverNotifier {
   }
 
   Future<void> claimBatch(String batchId, String driverId) async {
-    await ref.read(driverRepositoryProvider).claimBatch(batchId, driverId);
+    await _repo.claimBatch(batchId, driverId);
     final batch = state.selectedBatch;
     state = state.copyWith(
       step: DriverStep.claimed,
@@ -36,7 +43,8 @@ class DriverNotifier extends _$DriverNotifier {
       selectedBatch: null,
       activeBatch: batch,
     );
-    _startTracking(driverId);
+    // unawaited — permission dialog must not block the state transition
+    unawaited(_startTracking(driverId));
     if (batch != null) {
       AppLogger.info(
         '[Job Accepted]\n'
@@ -63,7 +71,7 @@ class DriverNotifier extends _$DriverNotifier {
       AppLogger.warning('Photo upload skipped', error: e);
       photoUrl = photoFile.path;
     }
-    await ref.read(driverRepositoryProvider).confirmPickup(batchId, photoUrl);
+    await _repo.confirmPickup(batchId, photoUrl);
     state = state.copyWith(
       step: DriverStep.pickedUp,
       rescuePhase: ClaimRescuePhase.enRouteBeneficiary,
@@ -71,16 +79,43 @@ class DriverNotifier extends _$DriverNotifier {
   }
 
   Future<void> confirmDelivery(String batchId, String? notes) async {
-    await ref.read(driverRepositoryProvider).confirmDelivery(batchId, notes);
+    await _repo.confirmDelivery(batchId, notes);
     _stopTracking();
     state = state.copyWith(step: DriverStep.delivered);
   }
 
   void resetToIdle() {
+    _stopTracking();
     state = const DriverState();
   }
 
-  void _startTracking(String driverId) {
+  // For testing only — allows tests to simulate a started tracking session
+  // without triggering platform-dependent Geolocator calls.
+  @visibleForTesting
+  void setActiveDriverIdForTest(String driverId) {
+    _activeDriverId = driverId;
+  }
+
+  Future<void> _startTracking(String driverId) async {
+    try {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        AppLogger.warning('Location permission denied — tracking disabled');
+        return;
+      }
+    } catch (e) {
+      // Platform not available (e.g. in unit tests) — skip tracking gracefully.
+      AppLogger.warning('Location permission check unavailable', error: e);
+      return;
+    }
+
+    // Set only after permission is confirmed — avoids spurious deleteLocation
+    // calls if permission was denied.
+    _activeDriverId = driverId;
     _locationTimer?.cancel();
     _locationTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
       try {
@@ -89,9 +124,7 @@ class DriverNotifier extends _$DriverNotifier {
             accuracy: LocationAccuracy.high,
           ),
         );
-        await ref
-            .read(driverRepositoryProvider)
-            .upsertLocation(driverId, pos.latitude, pos.longitude);
+        await _repo.upsertLocation(driverId, pos.latitude, pos.longitude);
       } on PermissionDeniedException {
         AppLogger.warning('Location permission denied — stopping tracking');
         _stopTracking();
@@ -104,5 +137,14 @@ class DriverNotifier extends _$DriverNotifier {
   void _stopTracking() {
     _locationTimer?.cancel();
     _locationTimer = null;
+    if (_activeDriverId != null) {
+      _repo
+          .deleteLocation(_activeDriverId!)
+          .catchError(
+            (Object e) =>
+                AppLogger.warning('Location cleanup failed', error: e),
+          );
+      _activeDriverId = null;
+    }
   }
 }

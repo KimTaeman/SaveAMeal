@@ -82,7 +82,7 @@ class _PersonalInformationScreenState
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             tooltip: 'Notifications',
-            onPressed: null,
+            onPressed: () => context.push('/notifications'),
           ),
         ],
       ),
@@ -120,61 +120,68 @@ class _PersonalInformationScreenState
                   children: [
                     // Upload photo
                     Center(
-                      child: GestureDetector(
-                        onTap: _pickImage,
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              width: 96,
-                              height: 96,
-                              child: Stack(
-                                children: [
-                                  // Solid circle border
-                                  Container(
-                                    width: 96,
-                                    height: 96,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: const Color(0xFF006E2F),
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: _buildAvatarContent(cs, textTheme),
-                                    ),
-                                  ),
-                                  // Badge bottom-right
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      width: 22,
-                                      height: 22,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF006E2F),
+                      child: Semantics(
+                        label: 'Upload profile photo',
+                        button: true,
+                        child: GestureDetector(
+                          onTap: _pickImage,
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                width: 96,
+                                height: 96,
+                                child: Stack(
+                                  children: [
+                                    // Solid circle border
+                                    Container(
+                                      width: 96,
+                                      height: 96,
+                                      decoration: BoxDecoration(
                                         shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color(0xFF006E2F),
+                                          width: 2,
+                                        ),
                                       ),
-                                      child: const Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
-                                        size: 14,
+                                      child: Center(
+                                        child: _buildAvatarContent(
+                                          cs,
+                                          textTheme,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    // Badge bottom-right
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        width: 22,
+                                        height: 22,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF006E2F),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.edit,
+                                          color: Colors.white,
+                                          size: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: Spacing.xs),
-                            const Text(
-                              'Upload Photo',
-                              style: TextStyle(
-                                color: Color(0xFF006E2F),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
+                              const SizedBox(height: Spacing.xs),
+                              const Text(
+                                'Upload Photo',
+                                style: TextStyle(
+                                  color: Color(0xFF006E2F),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

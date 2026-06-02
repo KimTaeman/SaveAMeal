@@ -23,17 +23,4 @@ class UserProfileUpdate {
   final String? bannerUrl;
   final List<Map<String, String>>? operatingHours;
   final List<String>? surplusTypes;
-
-  Map<String, dynamic> toMap() => {
-    if (name != null) 'name': name,
-    if (phone != null) 'phone': phone,
-    if (location != null) 'location': location,
-    if (photoUrl != null) 'photoUrl': photoUrl,
-    if (orgName != null) 'orgName': orgName,
-    if (managerName != null) 'managerName': managerName,
-    if (streetAddress != null) 'streetAddress': streetAddress,
-    if (bannerUrl != null) 'bannerUrl': bannerUrl,
-    if (operatingHours != null) 'operatingHours': operatingHours,
-    if (surplusTypes != null) 'surplusTypes': surplusTypes,
-  };
 }

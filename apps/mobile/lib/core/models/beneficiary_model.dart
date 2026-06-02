@@ -9,6 +9,8 @@ sealed class BeneficiaryModel with _$BeneficiaryModel {
     required String id,
     required String name,
     String? address,
+    double? lat,
+    double? lng,
   }) = _BeneficiaryModel;
 
   factory BeneficiaryModel.fromJson(Map<String, dynamic> json) =>

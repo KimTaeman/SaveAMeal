@@ -25,6 +25,7 @@ sealed class UserModel with _$UserModel {
     @Default(0) int points,
     @Default([]) List<Map<String, String>> operatingHours,
     @Default([]) List<String> surplusTypes,
+    String? fcmToken,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

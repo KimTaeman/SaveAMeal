@@ -42,14 +42,35 @@ class DeliveryCompletedScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.check, color: cs.primary, size: 48),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: cs.primaryContainer.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: cs.primaryContainer.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: cs.primary,
+                    ),
+                    child: Icon(Icons.check, color: cs.onPrimary, size: 32),
+                  ),
+                ],
               ),
               const SizedBox(height: Spacing.lg),
               Text(
@@ -86,6 +107,7 @@ class DeliveryCompletedScreen extends ConsumerWidget {
                         children: [
                           Expanded(
                             child: _ImpactTile(
+                              icon: Icons.cloud_outlined,
                               value: batch != null
                                   ? '${(batch.totalPortions * 0.4).toStringAsFixed(0)} kg'
                                   : '—',
@@ -95,6 +117,7 @@ class DeliveryCompletedScreen extends ConsumerWidget {
                           const SizedBox(width: Spacing.sm),
                           Expanded(
                             child: _ImpactTile(
+                              icon: Icons.restaurant,
                               value: '${batch?.totalPortions ?? 0}',
                               label: 'MEALS PROVIDED',
                             ),
@@ -154,9 +177,10 @@ class DeliveryCompletedScreen extends ConsumerWidget {
 }
 
 class _ImpactTile extends StatelessWidget {
-  const _ImpactTile({required this.value, required this.label});
+  const _ImpactTile({required this.value, required this.label, this.icon});
   final String value;
   final String label;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -170,6 +194,10 @@ class _ImpactTile extends StatelessWidget {
       ),
       child: Column(
         children: [
+          if (icon != null) ...[
+            Icon(icon, color: cs.onSurfaceVariant, size: 22),
+            const SizedBox(height: Spacing.xs),
+          ],
           Text(
             value,
             style: textTheme.headlineSmall?.copyWith(

@@ -136,7 +136,7 @@ class _DashboardHeader extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.notifications_outlined),
-                onPressed: null,
+                onPressed: () => context.push('/notifications'),
               ),
               const LogoutButton(),
             ],

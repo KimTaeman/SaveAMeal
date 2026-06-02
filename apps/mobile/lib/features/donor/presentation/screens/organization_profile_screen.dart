@@ -239,7 +239,7 @@ class _OrganizationProfileScreenState
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             tooltip: 'Notifications',
-            onPressed: null,
+            onPressed: () => context.push('/notifications'),
           ),
         ],
       ),

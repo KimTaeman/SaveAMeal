@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:saveameal/core/models/user_model.dart' as um;
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/domain/repositories/auth_repository.dart';
 import 'package:saveameal/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/donor/domain/entities/donor_metrics.dart';
+import 'package:saveameal/features/donor/domain/entities/donor_profile.dart';
 import 'package:saveameal/features/donor/domain/entities/user_profile_update.dart';
 import 'package:saveameal/features/donor/domain/repositories/donor_account_repository.dart';
 import 'package:saveameal/features/donor/domain/usecases/update_user_usecase.dart';
@@ -58,16 +58,41 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> signOut() async {}
 }
 
+class _TrackingAuthRepository implements AuthRepository {
+  bool signOutCalled = false;
+
+  @override
+  Stream<AppUser?> watchAuthState() => const Stream.empty();
+
+  @override
+  Future<AppUser> signIn({required String email, required String password}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<AppUser> signUp({
+    required String name,
+    required String email,
+    required String password,
+    required UserRole role,
+    String? phone,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> signOut() async {
+    signOutCalled = true;
+  }
+}
+
 class _FakeDonorAccountRepository implements DonorAccountRepository {
   @override
   Future<void> updateUser(String uid, UserProfileUpdate update) async {}
 
   @override
-  Future<um.UserModel?> getUser(String uid) async => um.UserModel(
+  Future<DonorProfile?> getUser(String uid) async => DonorProfile(
     uid: uid,
     name: 'FreshMart Supermarket',
     email: 'freshmart@test.com',
-    role: um.UserRole.donor,
+    role: 'donor',
   );
 }
 
@@ -76,6 +101,10 @@ class _FakeDonorAccountRepository implements DonorAccountRepository {
 GoRouter _buildRouter() => GoRouter(
   initialLocation: '/donor/account',
   routes: [
+    GoRoute(
+      path: '/notifications',
+      builder: (context, state) => const Scaffold(body: Text('Notifications')),
+    ),
     GoRoute(
       path: '/donor',
       builder: (context, state) => const Scaffold(body: Text('Donor Home')),
@@ -283,6 +312,49 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(Scaffold), findsOneWidget);
+    });
+
+    testWidgets('Log Out button calls signOut', (tester) async {
+      final trackingAuthRepo = _TrackingAuthRepository();
+      final fakeDonorAccountRepo = _FakeDonorAccountRepository();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+            currentUserProvider.overrideWith(
+              (ref) async => fakeDonorAccountRepo.getUser(_testUser.uid),
+            ),
+            signOutUsecaseProvider.overrideWithValue(
+              SignOutUsecase(trackingAuthRepo),
+            ),
+            updateUserUsecaseProvider.overrideWithValue(
+              UpdateUserUsecase(fakeDonorAccountRepo),
+            ),
+            if (true)
+              donorMetricsProvider(
+                'test-donor-uid',
+              ).overrideWith((ref) => Stream.value(_testMetrics)),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light(),
+            routerConfig: _buildRouter(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('Log Out'),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Log Out'));
+      await tester.pumpAndSettle();
+
+      expect(trackingAuthRepo.signOutCalled, isTrue);
     });
   });
 }
