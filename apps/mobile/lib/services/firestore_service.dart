@@ -282,23 +282,53 @@ class FirestoreService {
             : null,
       );
 
+  // Aggregates directly from the donor's batches — avoids the dependency on the
+  // onDeliveryComplete Cloud Function which pre-computes impactMetrics.
   Stream<ImpactMetricsModel?> watchDonorMetrics(String donorId) => _db
-      .collection(FirestoreConstants.impactMetrics)
-      .doc(donorId)
+      .collection(FirestoreConstants.batches)
+      .where('donorId', isEqualTo: donorId)
       .snapshots()
-      .map(
-        (ds) => ds.exists && ds.data() != null
-            ? ImpactMetricsModel.fromJson({...ds.data()!, 'id': donorId})
-            : ImpactMetricsModel(id: donorId),
-      );
+      .map((qs) {
+        double totalKg = 0;
+        int totalDeliveries = 0;
+        for (final doc in qs.docs) {
+          final data = doc.data();
+          if (data['status'] == 'cancelled') continue;
+          for (final item in (data['items'] as List<dynamic>? ?? [])) {
+            final kg = (item as Map<String, dynamic>)['weightKg'];
+            if (kg != null) totalKg += (kg as num).toDouble();
+          }
+          final status = data['status'] as String?;
+          if (status == 'delivered' || status == 'closed') totalDeliveries++;
+        }
+        return ImpactMetricsModel(
+          id: donorId,
+          totalKg: totalKg,
+          totalMeals: (totalKg * 2.5).round(),
+          totalCO2e: totalKg * 2.5,
+          totalDeliveries: totalDeliveries,
+        );
+      });
 
+  // Queries users with role=beneficiary for full profile data. The beneficiaries
+  // collection only stores intakeStatus — name/address live in users.
   Stream<List<BeneficiaryModel>> getBeneficiaries() => _db
-      .collection(FirestoreConstants.beneficiaries)
+      .collection(FirestoreConstants.users)
+      .where('role', isEqualTo: 'beneficiary')
       .snapshots()
       .map(
-        (qs) => qs.docs
-            .map((d) => BeneficiaryModel.fromJson({...d.data(), 'id': d.id}))
-            .toList(),
+        (qs) => qs.docs.map((d) {
+          final data = d.data();
+          final orgName = data['orgName'] as String?;
+          final name = data['name'] as String?;
+          return BeneficiaryModel(
+            id: d.id,
+            name: (orgName != null && orgName.isNotEmpty)
+                ? orgName
+                : (name ?? 'Unknown'),
+            address: data['address'] as String?,
+          );
+        }).toList(),
       );
 
   // No orderBy here — avoids composite index requirement.
