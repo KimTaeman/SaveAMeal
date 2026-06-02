@@ -1,4 +1,5 @@
 # SaveAMeal Demo Prep
+
 **Demo date:** June 4–5, 2026
 **Duration:** ~3 minutes
 **Devices needed:** 3 (donor phone, driver phone, beneficiary tablet)
@@ -11,11 +12,11 @@ Do this in [Firebase Console → Authentication → Users → Add User](https://
 
 Create these 3 accounts and **record their UIDs**:
 
-| Role | Email | Password | Notes |
-|---|---|---|---|
-| Donor | `demo.donor@saveameal.th` | `Demo1234!` | Khun Siriporn |
-| Driver | `demo.driver@saveameal.th` | `Demo1234!` | Nattapong |
-| Beneficiary | `demo.beneficiary@saveameal.th` | `Demo1234!` | Sister Maria |
+| Role        | Email                           | Password   | Notes         |
+| ----------- | ------------------------------- | ---------- | ------------- |
+| Donor       | `demo.donor@saveameal.th`       | `qwer1234` | Khun Siriporn |
+| Driver      | `demo.driver@saveameal.th`      | `qwer1234` | Nattapong     |
+| Beneficiary | `demo.beneficiary@saveameal.th` | `qwer1234` | Sister Maria  |
 
 ---
 
@@ -87,6 +88,7 @@ firebase deploy --only functions --key tools/seed/serviceAccountKey.json
 ## 3-Minute Demo Script
 
 ### Setup (before presenting)
+
 - Donor device: logged in as `demo.donor@saveameal.th`, on Donor Dashboard
 - Driver device: logged in as `demo.driver@saveameal.th`, on Driver Map
 - Beneficiary tablet: logged in as `demo.beneficiary@saveameal.th`, on Beneficiary Dashboard (status: "Accepting Food")
@@ -95,52 +97,53 @@ firebase deploy --only functions --key tools/seed/serviceAccountKey.json
 
 ### Scene 1 — Donor logs a batch (~45 sec)
 
-**Narrate:** *"Khun Siriporn manages F&B at a hotel. Tonight the buffet has leftover food that won't be served tomorrow."*
+**Narrate:** _"Khun Siriporn manages F&B at a hotel. Tonight the buffet has leftover food that won't be served tomorrow."_
 
 **On donor device:**
+
 1. Tap **+ Log Surplus** from the Dashboard
 2. Fill form: Category = `Cooked Meals`, Quantity = `38 portions`, Expiry = `tomorrow 6am`
 3. Add a photo (tap camera icon)
 4. Tap **Submit**
-5. QR code appears — *"This QR code travels with the food"*
+5. QR code appears — _"This QR code travels with the food"_
 
-**Driver device:** A push notification arrives: *"New pickup available — Central Embassy · 5.7 kg"*
+**Driver device:** A push notification arrives: _"New pickup available — Central Embassy · 5.7 kg"_
 
 ---
 
 ### Scene 2 — Driver accepts and heads to pickup (~45 sec)
 
-**Narrate:** *"Nattapong is heading home after work. He opens SaveAMeal and sees a pickup nearby."*
+**Narrate:** _"Nattapong is heading home after work. He opens SaveAMeal and sees a pickup nearby."_
 
 **On driver device:**
+
 1. Tap the pin on the map → Job Detail screen appears
 2. Show: pickup address, drop-off shelter, batch summary (38 portions)
 3. Tap **Accept Job**
 
-**Donor device:** Push notification arrives — *"Driver is on the way · Your batch is being picked up"*
+**Donor device:** Push notification arrives — _"Driver is on the way · Your batch is being picked up"_
 
-**Beneficiary tablet:** Push notification arrives — *"Delivery incoming · 5.7 kg from Central Embassy"*
-- Show: Beneficiary Dashboard → active delivery banner — *"A volunteer is on the way"*
+**Beneficiary tablet:** Push notification arrives — _"Delivery incoming · 5.7 kg from Central Embassy"_
+
+- Show: Beneficiary Dashboard → active delivery banner — _"A volunteer is on the way"_
 - Tap **Track Delivery** → map with driver pin
 
 ---
 
 ### Scene 3 — Pickup and delivery (~60 sec)
 
-**Narrate:** *"Nattapong arrives at the hotel."*
+**Narrate:** _"Nattapong arrives at the hotel."_
 
 **On driver device:**
+
 1. **ClaimRescueScreen** — "Status: En Route to Pick-up", tap **Arrived at Pick-up**
 2. **PickupVerificationScreen** — scan the donor's QR code (or tap "Enter code manually" → type `batch_002`)
 3. **SafetyVerificationScreen** — check all 3 safety items, take a photo of the food
-4. Tap **Confirm & Complete Pickup** → *"En Route to Beneficiary"*
+4. Tap **Confirm & Complete Pickup** → _"En Route to Beneficiary"_
 
 **Beneficiary tablet:** Driver pin on map moves toward the shelter
 
-**On driver device:**
-5. Arrive at shelter → tap **Arrived at Drop-off**
-6. **VerifyDeliveryScreen** — shows "Batch #002 / 38 Portions", check both items
-7. Tap **Confirm Delivery Completion**
+**On driver device:** 5. Arrive at shelter → tap **Arrived at Drop-off** 6. **VerifyDeliveryScreen** — shows "Batch #002 / 38 Portions", check both items 7. Tap **Confirm Delivery Completion**
 
 **Delivery Complete screen:** Impact card shows CO₂ saved + meals provided + points earned
 
@@ -149,12 +152,13 @@ firebase deploy --only functions --key tools/seed/serviceAccountKey.json
 ### Scene 4 — Beneficiary confirms (~30 sec)
 
 **On beneficiary tablet:**
-1. Push notification: *"Food has arrived — Tap to confirm receipt"*
+
+1. Push notification: _"Food has arrived — Tap to confirm receipt"_
 2. Tap notification → Rate Delivery screen
-3. Give 5 stars, add note: *"Kids will eat well tomorrow"*
+3. Give 5 stars, add note: _"Kids will eat well tomorrow"_
 4. Tap **Submit**
 
-**Donor device:** Dashboard impact numbers update in real time — *"Donor sees their contribution reflected instantly"*
+**Donor device:** Dashboard impact numbers update in real time — _"Donor sees their contribution reflected instantly"_
 
 ---
 
@@ -174,9 +178,9 @@ firebase deploy --only functions --key tools/seed/serviceAccountKey.json
 
 ## Emergency fallbacks
 
-| Problem | Fallback |
-|---|---|
-| QR scanner won't read | Tap "Enter code manually" → type the batch ID shown below the QR |
+| Problem                          | Fallback                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| QR scanner won't read            | Tap "Enter code manually" → type the batch ID shown below the QR               |
 | Push notification doesn't arrive | Refresh the relevant screen — Firestore real-time streams update the UI anyway |
-| Location permission denied | Driver flow still works; beneficiary tracking map won't show driver pin |
-| Cloud Functions not deployed | Impact metrics won't update; all other flows still work |
+| Location permission denied       | Driver flow still works; beneficiary tracking map won't show driver pin        |
+| Cloud Functions not deployed     | Impact metrics won't update; all other flows still work                        |
