@@ -92,7 +92,7 @@ Widget _buildTestApp(List<AppNotification> items) {
         routes: [
           GoRoute(
             path: '/notifications',
-            builder: (_, __) => const NotificationsScreen(),
+            builder: (context, state) => const NotificationsScreen(),
           ),
         ],
       ),
