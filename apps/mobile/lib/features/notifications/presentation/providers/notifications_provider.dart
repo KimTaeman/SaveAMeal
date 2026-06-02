@@ -13,7 +13,7 @@ NotificationsRepository notificationsRepository(Ref ref) =>
 class NotificationsNotifier extends _$NotificationsNotifier {
   @override
   List<AppNotification> build() =>
-      ref.read(notificationsRepositoryProvider).getAll();
+      ref.watch(notificationsRepositoryProvider).getAll();
 
   void markRead(String id) {
     ref.read(notificationsRepositoryProvider).markRead(id);
