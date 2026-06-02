@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:saveameal/core/logging/app_logger.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
@@ -34,7 +35,8 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
       // Do NOT clear here — the Firestore stream lags behind the write.
       // Clearing now would revert the UI to the stale stream value before
       // the stream catches up. ref.listen in build() clears it once confirmed.
-    } catch (_) {
+    } catch (e, st) {
+      AppLogger.error('toggleIntakeStatus failed', error: e, stack: st);
       if (mounted) {
         setState(() => _optimisticAvailability = null);
         ScaffoldMessenger.of(context).showSnackBar(
