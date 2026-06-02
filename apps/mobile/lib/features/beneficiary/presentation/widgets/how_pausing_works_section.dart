@@ -14,7 +14,7 @@ class HowPausingWorksSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'HOW STATUS PAUSING WORKS',
+          'HOW IT WORKS',
           style: textTheme.labelSmall?.copyWith(
             color: cs.onSurfaceVariant,
             letterSpacing: 1.0,
@@ -24,15 +24,17 @@ class HowPausingWorksSection extends StatelessWidget {
         const _HowItem(
           number: 1,
           text:
-              'Setting status to Full removes your pin from the donor map immediately.',
+              'Switch to Full when your storage capacity is reached or staff are unavailable.',
         ),
         const _HowItem(
           number: 2,
-          text: 'Active deliveries will not be canceled to avoid food waste.',
+          text:
+              'New deliveries are paused immediately. Existing batches in transit will still arrive.',
         ),
         const _HowItem(
           number: 3,
-          text: 'Toggle back to Accepting whenever your storage is ready.',
+          text:
+              'Toggle back to Accepting once you\'ve processed current stocks to reappear on the map.',
         ),
       ],
     );
@@ -51,22 +53,20 @@ class _HowItem extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: Spacing.sm),
+      padding: const EdgeInsets.only(bottom: Spacing.md),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 12,
-            backgroundColor: ac.success,
+          SizedBox(
+            width: 32,
             child: Text(
-              '$number',
-              style: textTheme.labelSmall?.copyWith(
-                color: ac.onSuccess,
-                fontWeight: FontWeight.bold,
+              '0$number',
+              style: textTheme.titleSmall?.copyWith(
+                color: ac.success,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          const SizedBox(width: Spacing.sm),
           Expanded(child: Text(text, style: textTheme.bodySmall)),
         ],
       ),

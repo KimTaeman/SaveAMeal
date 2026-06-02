@@ -59,7 +59,7 @@ class _ToggleSegment extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            color: isActive ? cs.inverseSurface : Colors.transparent,
+            color: isActive ? cs.primary : Colors.transparent,
             borderRadius: BorderRadius.circular(26),
           ),
           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -67,7 +67,7 @@ class _ToggleSegment extends StatelessWidget {
             child: Text(
               label,
               style: textTheme.labelLarge?.copyWith(
-                color: isActive ? cs.onInverseSurface : cs.onSurfaceVariant,
+                color: isActive ? cs.onPrimary : cs.onSurfaceVariant,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
