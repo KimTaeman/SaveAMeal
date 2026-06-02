@@ -31,6 +31,9 @@ class _FakeDriverRepository implements DriverRepository {
   Future<void> upsertLocation(String driverId, double lat, double lng) async {}
 
   @override
+  Future<void> deleteLocation(String driverId) async {}
+
+  @override
   Stream<int> watchPoints(String uid) => const Stream.empty();
 }
 
