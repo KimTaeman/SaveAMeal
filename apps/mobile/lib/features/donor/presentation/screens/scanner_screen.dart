@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:saveameal/features/donor/presentation/providers/batch_session_provider.dart';
 
@@ -16,13 +19,17 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     formats: [BarcodeFormat.all],
   );
   bool _scanned = false;
+  bool _lookingUp = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Reset scan lock each time the scanner becomes the active route again
     // (e.g. after "Add Another Item" pops the form and summary off the stack).
-    if (ModalRoute.of(context)?.isCurrent ?? false) _scanned = false;
+    if (ModalRoute.of(context)?.isCurrent ?? false) {
+      _scanned = false;
+      _lookingUp = false;
+    }
   }
 
   @override
@@ -31,16 +38,45 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     super.dispose();
   }
 
-  void _onDetect(BarcodeCapture capture) {
+  Future<String?> _lookupProductName(String barcode) async {
+    try {
+      final uri = Uri.parse(
+        'https://world.openfoodfacts.org/api/v0/product/$barcode.json',
+      );
+      final response = await http.get(uri).timeout(const Duration(seconds: 4));
+      if (response.statusCode != 200) return null;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (data['status'] != 1) return null;
+      final product = data['product'] as Map<String, dynamic>?;
+      final name = product?['product_name'] as String?;
+      return (name != null && name.isNotEmpty) ? name : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _onDetect(BarcodeCapture capture) async {
     if (_scanned) return;
     final raw = capture.barcodes.firstOrNull?.rawValue;
     if (raw == null) return;
-    _scanned = true;
-    context.push('/donor/log/form', extra: raw);
+    setState(() {
+      _scanned = true;
+      _lookingUp = true;
+    });
+    final productName = await _lookupProductName(raw);
+    if (!mounted) return;
+    setState(() => _lookingUp = false);
+    context.push(
+      '/donor/log/form',
+      extra: {'barcode': raw, 'name': productName},
+    );
   }
 
   void _enterManually() {
-    context.push('/donor/log/form', extra: null);
+    context.push(
+      '/donor/log/form',
+      extra: <String, String?>{'barcode': null, 'name': null},
+    );
   }
 
   @override
@@ -65,6 +101,23 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
               errorBuilder: (context, error, child) =>
                   _PermissionDeniedView(error: error),
             ),
+            if (_lookingUp)
+              Container(
+                color: Colors.black54,
+                child: const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: Colors.white),
+                      SizedBox(height: 12),
+                      Text(
+                        'Looking up product…',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             SafeArea(
               child: Column(
                 children: [

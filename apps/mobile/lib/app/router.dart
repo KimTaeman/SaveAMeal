@@ -65,9 +65,13 @@ GoRouter router(Ref ref) {
             routes: [
               GoRoute(
                 path: 'form',
-                builder: (context, state) => LogSurplusFormScreen(
-                  prefillBarcode: state.extra as String?,
-                ),
+                builder: (context, state) {
+                  final extra = state.extra as Map<String, String?>?;
+                  return LogSurplusFormScreen(
+                    prefillBarcode: extra?['barcode'],
+                    prefillName: extra?['name'],
+                  );
+                },
               ),
               GoRoute(
                 path: 'summary',
