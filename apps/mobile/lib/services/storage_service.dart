@@ -26,4 +26,22 @@ class StorageService {
     await ref.putData(await photo.readAsBytes(), metadata);
     return ref.getDownloadURL();
   }
+
+  Future<String> uploadProfilePhoto(String uid, XFile photo) async {
+    final ref = _storage.ref().child('users/$uid/profile.jpg');
+    final metadata = SettableMetadata(
+      contentType: photo.mimeType ?? 'image/jpeg',
+    );
+    await ref.putData(await photo.readAsBytes(), metadata);
+    return ref.getDownloadURL();
+  }
+
+  Future<String> uploadBannerPhoto(String uid, XFile photo) async {
+    final ref = _storage.ref().child('users/$uid/banner.jpg');
+    final metadata = SettableMetadata(
+      contentType: photo.mimeType ?? 'image/jpeg',
+    );
+    await ref.putData(await photo.readAsBytes(), metadata);
+    return ref.getDownloadURL();
+  }
 }

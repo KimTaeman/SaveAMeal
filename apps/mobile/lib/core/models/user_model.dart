@@ -16,8 +16,15 @@ sealed class UserModel with _$UserModel {
     required UserRole role,
     String? phone,
     String? orgName,
+    String? location,
+    String? photoUrl,
+    String? managerName,
+    String? streetAddress,
+    String? bannerUrl,
     BeneficiaryStatus? status,
     @Default(0) int points,
+    @Default([]) List<Map<String, String>> operatingHours,
+    @Default([]) List<String> surplusTypes,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

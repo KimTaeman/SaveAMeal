@@ -13,6 +13,9 @@ import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.da
 import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_account_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/organization_profile_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/personal_information_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/scanner_screen.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/presentation/screens/claim_rescue_screen.dart';
@@ -96,8 +99,17 @@ GoRouter router(Ref ref) {
           ),
           GoRoute(
             path: 'account',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('Account'))),
+            builder: (context, state) => const DonorAccountScreen(),
+            routes: [
+              GoRoute(
+                path: 'personal',
+                builder: (context, state) => const PersonalInformationScreen(),
+              ),
+              GoRoute(
+                path: 'org',
+                builder: (context, state) => const OrganizationProfileScreen(),
+              ),
+            ],
           ),
         ],
       ),

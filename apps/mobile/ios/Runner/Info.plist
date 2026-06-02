@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SaveAMeal uses your location to autofill your primary location field.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SaveAMeal needs access to your photo library to upload a profile or banner photo.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SaveAMeal needs access to save photos to your library.</string>
 </dict>
 </plist>
