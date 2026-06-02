@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:saveameal/app/router.dart';
@@ -12,14 +13,24 @@ class App extends ConsumerStatefulWidget {
 }
 
 class _AppState extends ConsumerState<App> {
+  List<StreamSubscription<dynamic>> _notificationSubs = [];
+
   @override
   void initState() {
     super.initState();
     // addPostFrameCallback ensures the router widget tree is mounted before
     // getInitialMessage() can attempt navigation.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      NotificationHandler(ref.read(routerProvider)).init();
+      _notificationSubs = NotificationHandler(ref.read(routerProvider)).init();
     });
+  }
+
+  @override
+  void dispose() {
+    for (final sub in _notificationSubs) {
+      sub.cancel();
+    }
+    super.dispose();
   }
 
   @override
