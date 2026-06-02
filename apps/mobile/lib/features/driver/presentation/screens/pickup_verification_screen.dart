@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
-import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
 class PickupVerificationScreen extends ConsumerStatefulWidget {
@@ -166,7 +165,7 @@ class _DonorInfoCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(Spacing.sm),
             decoration: BoxDecoration(
               color: cs.primaryContainer,
               shape: BoxShape.circle,
