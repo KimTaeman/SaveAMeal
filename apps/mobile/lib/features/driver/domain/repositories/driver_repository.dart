@@ -42,5 +42,6 @@ abstract class DriverRepository {
   Future<void> confirmPickup(String batchId, String photoUrl);
   Future<void> confirmDelivery(String batchId, String? notes);
   Future<void> upsertLocation(String driverId, double lat, double lng);
+  Future<void> deleteLocation(String driverId);
   Stream<int> watchPoints(String uid);
 }

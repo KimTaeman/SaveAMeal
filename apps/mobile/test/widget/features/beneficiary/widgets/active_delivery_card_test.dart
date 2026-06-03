@@ -71,7 +71,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('ETA 15 min'), findsOneWidget);
+      expect(find.textContaining('ETA 15 min'), findsOneWidget);
     });
 
     testWidgets('does not show ETA text when estimatedArrivalMinutes is null', (
@@ -116,7 +116,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('View Details →'));
+      await tester.tap(find.text('View Details >'));
       await tester.pumpAndSettle();
 
       expect(called, isTrue);

@@ -54,9 +54,16 @@ GoRouter _buildRouter() => GoRouter(
               const Scaffold(body: Text('Log Batch Screen')),
         ),
         GoRoute(
-          path: 'batch/:batchId/qr',
+          path: 'batch/:batchId',
           builder: (context, state) =>
-              Scaffold(body: Text('QR ${state.pathParameters['batchId']}')),
+              Scaffold(body: Text('Detail ${state.pathParameters['batchId']}')),
+          routes: [
+            GoRoute(
+              path: 'qr',
+              builder: (context, state) =>
+                  Scaffold(body: Text('QR ${state.pathParameters['batchId']}')),
+            ),
+          ],
         ),
         GoRoute(
           path: 'batches',
@@ -234,44 +241,43 @@ void main() {
       expect(find.text('Log Batch Screen'), findsOneWidget);
     });
 
-    // (6) QR icon on open batch navigates to batch QR route
-    testWidgets(
-      'tapping QR icon on open batch navigates to /donor/batch/:batchId/qr',
-      (tester) async {
-        final openBatch = _makeBatch(
-          id: 'openid1234567890',
-          status: BatchStatus.open,
-        );
+    // (6) Tapping a batch card navigates to the batch detail route
+    testWidgets('tapping a batch card navigates to /donor/batch/:batchId', (
+      tester,
+    ) async {
+      final batch = _makeBatch(
+        id: 'openid1234567890',
+        status: BatchStatus.open,
+      );
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
-              activeBatchesProvider(
-                'test-donor-uid',
-              ).overrideWith((ref) => Stream.value([openBatch])),
-              donorMetricsProvider(
-                'test-donor-uid',
-              ).overrideWith((ref) => Stream.value(_testMetrics)),
-            ],
-            child: MaterialApp.router(
-              theme: AppTheme.light(),
-              routerConfig: _buildRouter(),
-            ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+            activeBatchesProvider(
+              'test-donor-uid',
+            ).overrideWith((ref) => Stream.value([batch])),
+            donorMetricsProvider(
+              'test-donor-uid',
+            ).overrideWith((ref) => Stream.value(_testMetrics)),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light(),
+            routerConfig: _buildRouter(),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        final qrButton = find.byIcon(Icons.qr_code);
-        expect(qrButton, findsOneWidget);
+      final card = find.text('Batch #OPENID12');
+      expect(card, findsOneWidget);
 
-        await tester.tap(qrButton);
-        await tester.pumpAndSettle();
+      await tester.tap(card);
+      await tester.pumpAndSettle();
 
-        expect(find.text('QR openid1234567890'), findsOneWidget);
-      },
-    );
+      expect(find.text('Detail openid1234567890'), findsOneWidget);
+    });
 
     // (7) View All link navigates to /donor/batches
     testWidgets('tapping View All navigates to /donor/batches', (tester) async {

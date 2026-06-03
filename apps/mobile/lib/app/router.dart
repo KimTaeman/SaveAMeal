@@ -10,10 +10,17 @@ import 'package:saveameal/features/auth/presentation/screens/welcome_screen.dart
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/delivery_detail_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/tracking_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/batch_detail_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_history_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_account_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_impact_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/organization_profile_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/personal_information_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/scanner_screen.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/presentation/screens/claim_rescue_screen.dart';
@@ -23,8 +30,7 @@ import 'package:saveameal/features/driver/presentation/screens/job_detail_screen
 import 'package:saveameal/features/driver/presentation/screens/pickup_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/safety_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
-import 'package:saveameal/features/volunteer/presentation/screens/volunteer_delivery_scanner_screen.dart';
-import 'package:saveameal/features/volunteer/presentation/screens/volunteer_queue_screen.dart';
+import 'package:saveameal/features/notifications/presentation/screens/notifications_screen.dart';
 
 part 'router.g.dart';
 
@@ -58,6 +64,13 @@ GoRouter router(Ref ref) {
       ),
       GoRoute(
         path: '/donor',
+        redirect: (context, state) {
+          final authAsync = ref.read(authStateProvider);
+          final user = authAsync.asData?.value;
+          if (user == null) return '/login';
+          if (user.role != UserRole.donor) return '/role-router';
+          return null;
+        },
         builder: (context, state) => const DonorDashboardScreen(),
         routes: [
           GoRoute(
@@ -81,24 +94,38 @@ GoRouter router(Ref ref) {
             ],
           ),
           GoRoute(
-            path: 'batch/:batchId/qr',
+            path: 'batch/:batchId',
             builder: (context, state) =>
-                BatchQrScreen(batchId: state.pathParameters['batchId']!),
+                BatchDetailScreen(batchId: state.pathParameters['batchId']!),
+            routes: [
+              GoRoute(
+                path: 'qr',
+                builder: (context, state) =>
+                    BatchQrScreen(batchId: state.pathParameters['batchId']!),
+              ),
+            ],
           ),
           GoRoute(
             path: 'impact',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('Impact'))),
+            builder: (context, state) => const DonorImpactScreen(),
           ),
           GoRoute(
             path: 'batches',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('All Batches'))),
+            builder: (context, state) => const DonorHistoryScreen(),
           ),
           GoRoute(
             path: 'account',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('Account'))),
+            builder: (context, state) => const DonorAccountScreen(),
+            routes: [
+              GoRoute(
+                path: 'personal',
+                builder: (context, state) => const PersonalInformationScreen(),
+              ),
+              GoRoute(
+                path: 'org',
+                builder: (context, state) => const OrganizationProfileScreen(),
+              ),
+            ],
           ),
         ],
       ),
@@ -146,19 +173,22 @@ GoRouter router(Ref ref) {
             path: 'impact',
             builder: (context, state) => const BeneficiaryImpactScreen(),
           ),
+          GoRoute(
+            path: 'tracking',
+            builder: (context, state) {
+              final extra = state.extra as Map<String, String>?;
+              if (extra == null) return const BeneficiaryHomeScreen();
+              return TrackingScreen(
+                driverId: extra['driverId']!,
+                beneficiaryId: extra['beneficiaryId']!,
+              );
+            },
+          ),
         ],
       ),
       GoRoute(
-        path: '/volunteer',
-        builder: (context, state) => const VolunteerQueueScreen(),
-        routes: [
-          GoRoute(
-            path: 'scan/:batchId',
-            builder: (context, state) => VolunteerDeliveryScannerScreen(
-              batchId: state.pathParameters['batchId']!,
-            ),
-          ),
-        ],
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
     ],
   );

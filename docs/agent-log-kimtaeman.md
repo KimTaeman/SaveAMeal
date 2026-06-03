@@ -1,4 +1,15 @@
 ---
+Date: 2026-06-03 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Implement donor batch detail screen and donation history screen
+Prompt: checkout to new branch and implement for donor these features. batch details and donation history.
+
+Outcome: Implemented DonorHistoryScreen (searchable, paginated 5/page, All/Completed/In Progress filter chips, FAB, matching Figma) and BatchDetailScreen (status heading, summary cards, inventory breakdown, driver card, address card, matching Figma). Added volunteerName to Batch entity. Added watchAllBatches + watchBatchById across all layers (FirestoreService → datasource → repository → use cases → providers). Router restructured with batch/:batchId as parent of qr sub-route. Dashboard _BatchCard made tappable. 175 tests pass.
+Decisions: BatchModel already had volunteerName — only Batch entity needed updating. Pagination is client-side (load all, slice by page). Timeline removed — Figma shows summary cards instead. Driver avatar uses initials CircleAvatar. Address card uses styled container (no real map — pickup address is string, not coordinates).
+Handoff: QA-engineer to validate filter chips, pagination, and navigation on device. Cloud Functions already write volunteerName on batch claim via FirestoreService.acceptJob. No schema changes required.
+Review: PENDING
+---
 Date: 2026-05-22 00:00
 Member: KimTaeman
 Agent: flutter-engineer
@@ -304,3 +315,747 @@ Files:
 ~ apps/mobile/lib/features/driver/presentation/screens/pickup_verification_screen.dart
 ~ apps/mobile/lib/services/firestore_service.dart
 Summary: 3 files changed, 59 insertions(+), 23 deletions(-)
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+---
+
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Task 3 — Implement dashed photo upload border on SafetyVerificationScreen
+
+Prompt: Replace the solid photo upload border with a dashed border using CustomPaint. Add _DashedBorderPainter class. Run flutter analyze and flutter test, then commit.
+
+Outcome: SafetyVerificationScreen updated with dashed border rendering. GestureDetector wraps CustomPaint painter with rounded path metrics extraction. _DashedBorderPainter class added with 8.0px dash width, 5.0px spacing, 12px border radius. flutter analyze: No issues found. flutter test: All 103 tests pass. Committed as acf2933.
+
+Decisions: CustomPaint wraps Container (not inside it) to render border before child content. BorderRadius removed from Container decoration since border is now drawn by painter. Used Path.computeMetrics() to walk the rounded rect boundary and extract dash segments. shouldRepaint compares color only (no need to repaint if other properties change).
+
+Handoff: SafetyVerificationScreen photo upload has visual enhancement. Dashed border provides better visual hierarchy for the upload action. All tests still passing; no downstream impact.
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/safety_verification_screen.dart
+Summary:  1 file changed, 64 insertions(+), 27 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+
+---
+Date: 2026-06-02 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Gap analysis from project documents, then implement FCM push notifications, live driver location, driver flow Figma alignment, and demo prep
+Prompt: Read SaveAMeal_Architecture.docx, Concept & Func.docx, WBS.docx, Personas.docx → create project overview MD, check codebase gaps, implement missing features. Then implement FCM notifications, live driver location broadcasting, align driver screens to Figma designs, create demo prep guide.
+
+Outcome:
+  1. Created docs/SaveAMeal_Project_Overview.md — full gap analysis from 4 project documents
+  2. FCM push notifications (Flutter + Cloud Functions):
+     - FcmService abstract interface + FirebaseFcmService
+     - Token registration + driver topic subscribe on login
+     - NotificationHandler (foreground/background/terminated tap routing)
+     - 3 Cloud Functions: onBatchCreated (topic), onBatchClaimed (donor + beneficiary tokens), onDeliveryComplete (beneficiary + impactMetrics increment)
+     - Deployed to feat/fcm-push-notifications branch
+  3. Live driver location broadcasting:
+     - DriverNotifier._startTracking: permission gating + graceful platform fallback
+     - _stopTracking: deletes driverLocations/{driverId} on job end
+     - TrackingScreen: Google Maps with live driver pin (blue) + shelter pin (red), camera follows driver
+     - ActiveDeliveryCard: "Track Delivery →" button, /beneficiary/tracking route
+     - Seed data: lat/lng for all 4 beneficiaries
+     - Deployed to feat/live-driver-location branch
+  4. Driver flow Figma alignment (5 screens):
+     - ClaimRescueScreen: AppBar, status header, ETA chip, contact row, fixed CTA labels, NavigationBar
+     - PickupVerificationScreen: donor info card, autofocus + disabled-when-empty manual entry
+     - SafetyVerificationScreen: dashed photo border
+     - VerifyDeliveryScreen: batch identifier card (Batch #001 / 38 Portions)
+     - DeliveryCompletedScreen: concentric checkmark, impact tile icons
+     - Deployed to feat/driver-flow-figma-alignment branch
+  5. Demo prep: docs/DEMO_PREP.md with 3-minute demo script, account setup steps, release checklist; --add-beneficiary flag added to tools/seed/seed.js
+
+Decisions:
+  - FCM: Topic broadcast for drivers (not multicast) — simpler, no geo-filter needed for demo
+  - Cloud Functions gen-2 triggers (not gen-1) — current Firebase standard
+  - ETA chip hardcoded (~14 min) — Directions API out of scope for demo window
+  - TrackingScreen uses activeBatch from driverProvider for shelter coords (not geocoding)
+  - beneficiaryId in batches must equal Firebase Auth UID for beneficiary dashboard to work — documented in DEMO_PREP.md
+
+Handoff:
+  - 3 open PRs to merge: feat/fcm-push-notifications, feat/live-driver-location, feat/driver-flow-figma-alignment
+  - Firebase Blaze plan required before deploying Cloud Functions
+  - iOS APNs Auth Key needed for iOS push notifications (Firebase Console → Cloud Messaging)
+  - Demo batch must have donorId and beneficiaryId set to real Firebase Auth UIDs (see DEMO_PREP.md Step 3)
+  - volunteer/ feature folder still needs reconciliation (overlaps with driver/ feature)
+  - Run `node seed.js --add-beneficiary <uid>` to create both users doc and beneficiaries doc for demo account
+
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 1 insertion(+), 5 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/services/fcm_service.dart
+Summary:  1 file changed, 9 insertions(+), 4 deletions(-)
+
+
+---
+Date: 2026-06-03 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Implement donor batch detail screen and donation history screen
+Prompt: checkout to new branch and implement for donor these features. batch details and donation history.
+
+---
+Date: 2026-06-02 HH:MM
+Member: Kim Taeman
+Agent: flutter-engineer
+Task: Create widget test for NotificationsScreen (Task 4 of notifications feature)
+Prompt: Create the widget test file `apps/mobile/test/widget/notifications_screen_test.dart` with exact content provided. Run it to confirm compile failure (screen missing). Commit.
+
+Outcome: Widget test file created at `apps/mobile/test/widget/notifications_screen_test.dart`. Test run confirmed compile failure (expected): notifications_screen.dart does not exist. Commit created: 9939642.
+Decisions: None — followed exact specification provided.
+Handoff: Next step is for flutter-engineer to implement NotificationsScreen widget at `apps/mobile/lib/features/notifications/presentation/screens/notifications_screen.dart` to make tests pass.
+Review: PENDING
+Files:
+  ~ apps/mobile/test/widget/features/donor/batch_detail_screen_test.dart
+  ~ apps/mobile/test/widget/features/donor/donor_history_screen_test.dart
+Summary:  2 files changed, 8 insertions(+), 8 deletions(-)
+

@@ -32,6 +32,7 @@ class _BatchSummaryScreenState extends ConsumerState<BatchSummaryScreen> {
     if (items.isEmpty || _submitting) return;
     setState(() => _submitting = true);
 
+    final beneficiary = ref.read(batchBeneficiaryProvider);
     final batch = Batch(
       id: _batchId,
       donorId: donorId,
@@ -39,12 +40,14 @@ class _BatchSummaryScreenState extends ConsumerState<BatchSummaryScreen> {
       pickupAddress: '',
       status: BatchStatus.open,
       qrCode: 'saveameal://batch/$_batchId',
+      beneficiaryId: beneficiary?.id,
     );
 
     try {
       await ref.read(createBatchUsecaseProvider).call(batch);
       _uploadPhotosFireAndForget(items);
       ref.read(batchSessionProvider.notifier).clear();
+      ref.read(batchBeneficiaryProvider.notifier).clear();
       if (mounted) context.go('/donor');
     } catch (e) {
       if (mounted) {

@@ -40,6 +40,11 @@ class FirestoreService {
   Future<void> createUser(UserModel user) =>
       _db.collection(FirestoreConstants.users).doc(user.uid).set(user.toJson());
 
+  Future<void> updateUser(String uid, Map<String, dynamic> fields) => _db
+      .collection(FirestoreConstants.users)
+      .doc(uid)
+      .set(fields, SetOptions(merge: true));
+
   Future<UserModel?> getUser(String uid) async {
     final doc = await _db.collection(FirestoreConstants.users).doc(uid).get();
     if (!doc.exists || doc.data() == null) return null;
@@ -164,10 +169,10 @@ class FirestoreService {
   Future<void> setIntakeAvailability({
     required String beneficiaryId,
     required String intakeStatus,
-  }) => _db
-      .collection(FirestoreConstants.beneficiaries)
-      .doc(beneficiaryId)
-      .update({'intakeStatus': intakeStatus});
+  }) => _db.collection(FirestoreConstants.beneficiaries).doc(beneficiaryId).set(
+    {'intakeStatus': intakeStatus},
+    SetOptions(merge: true),
+  );
 
   Stream<String> watchIntakeAvailability(String beneficiaryId) => _db
       .collection(FirestoreConstants.beneficiaries)
@@ -196,21 +201,45 @@ class FirestoreService {
       });
 
   Future<void> claimBatch(String batchId, String driverId) async {
-    final ref = _db.collection(FirestoreConstants.batches).doc(batchId);
+    final batchRef = _db.collection(FirestoreConstants.batches).doc(batchId);
+
+    // Pre-fetch an available beneficiary outside the transaction — Firestore
+    // only supports doc reads (not collection queries) inside transactions.
+    // The value is only written if the batch has no beneficiaryId yet.
+    final autoId = await findAvailableBeneficiaryId();
+
     await _db.runTransaction((tx) async {
-      final snap = await tx.get(ref);
+      final snap = await tx.get(batchRef);
       if (!snap.exists || snap.data() == null) {
         throw BatchNotFoundException(batchId);
       }
       if (snap.data()!['status'] != 'open') {
         throw const BatchAlreadyClaimedException();
       }
-      tx.update(ref, {
+
+      final update = <String, dynamic>{
         'status': 'claimed',
         'driverId': driverId,
         'claimedAt': FieldValue.serverTimestamp(),
-      });
+      };
+
+      if (snap.data()!['beneficiaryId'] == null && autoId != null) {
+        update['beneficiaryId'] = autoId;
+      }
+
+      tx.update(batchRef, update);
     });
+  }
+
+  /// Returns the ID of the first beneficiary currently accepting food,
+  /// or null if none are available.
+  Future<String?> findAvailableBeneficiaryId() async {
+    final qs = await _db
+        .collection(FirestoreConstants.beneficiaries)
+        .where('intakeStatus', isEqualTo: 'accepting')
+        .limit(1)
+        .get();
+    return qs.docs.isEmpty ? null : qs.docs.first.id;
   }
 
   Future<void> confirmPickup(String batchId, String pickupPhotoUrl) =>
@@ -258,23 +287,68 @@ class FirestoreService {
             : null,
       );
 
-  Stream<ImpactMetricsModel?> watchDonorMetrics(String donorId) => _db
-      .collection(FirestoreConstants.impactMetrics)
-      .doc(donorId)
-      .snapshots()
-      .map(
-        (ds) => ds.exists && ds.data() != null
-            ? ImpactMetricsModel.fromJson({...ds.data()!, 'id': donorId})
-            : ImpactMetricsModel(id: donorId),
-      );
+  // Aggregates directly from the donor's batches — avoids the dependency on the
+  // onDeliveryComplete Cloud Function which pre-computes impactMetrics.
+  // Uses async* so that Firestore permission errors and bad-cast errors in the
+  // aggregation loop are caught and turned into a default (zero) emission rather
+  // than a stream error that trips the dashboard's offline banner.
+  Stream<ImpactMetricsModel?> watchDonorMetrics(String donorId) async* {
+    try {
+      await for (final qs
+          in _db
+              .collection(FirestoreConstants.batches)
+              .where('donorId', isEqualTo: donorId)
+              .snapshots()) {
+        try {
+          double totalKg = 0;
+          int totalDeliveries = 0;
+          for (final doc in qs.docs) {
+            final data = doc.data();
+            if (data['status'] == 'cancelled') continue;
+            for (final raw in (data['items'] as List<dynamic>? ?? [])) {
+              final item = raw as Map<String, dynamic>;
+              final kg = item['weightKg'];
+              if (kg != null) totalKg += (kg as num).toDouble();
+            }
+            final status = data['status'] as String?;
+            if (status == 'delivered' || status == 'closed') totalDeliveries++;
+          }
+          yield ImpactMetricsModel(
+            id: donorId,
+            totalKg: totalKg,
+            totalMeals: (totalKg * 2.5).round(),
+            totalCO2e: totalKg * 2.5,
+            totalDeliveries: totalDeliveries,
+          );
+        } catch (_) {
+          yield ImpactMetricsModel(id: donorId);
+        }
+      }
+    } catch (_) {
+      // Firestore stream error (permission denied, network) — emit default once.
+      yield ImpactMetricsModel(id: donorId);
+    }
+  }
 
+  // Queries users with role=beneficiary for full profile data. The beneficiaries
+  // collection only stores intakeStatus — name/address live in users.
   Stream<List<BeneficiaryModel>> getBeneficiaries() => _db
-      .collection(FirestoreConstants.beneficiaries)
+      .collection(FirestoreConstants.users)
+      .where('role', isEqualTo: 'beneficiary')
       .snapshots()
       .map(
-        (qs) => qs.docs
-            .map((d) => BeneficiaryModel.fromJson({...d.data(), 'id': d.id}))
-            .toList(),
+        (qs) => qs.docs.map((d) {
+          final data = d.data();
+          final orgName = data['orgName'] as String?;
+          final name = data['name'] as String?;
+          return BeneficiaryModel(
+            id: d.id,
+            name: (orgName != null && orgName.isNotEmpty)
+                ? orgName
+                : (name ?? 'Unknown'),
+            address: data['address'] as String?,
+          );
+        }).toList(),
       );
 
   // No orderBy here — avoids composite index requirement.
@@ -292,6 +366,19 @@ class FirestoreService {
             .toList(),
       );
 
+  /// All batches for this donor regardless of status. Sorted client-side.
+  Stream<List<BatchModel>> watchAllBatchesForDonor(String donorId) => _db
+      .collection(FirestoreConstants.batches)
+      .where('donorId', isEqualTo: donorId)
+      .snapshots()
+      .map(
+        (qs) => qs.docs
+            .map(
+              (d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})),
+            )
+            .toList(),
+      );
+
   Stream<int> watchUserPoints(String uid) =>
       _db.collection(FirestoreConstants.users).doc(uid).snapshots().map((ds) {
         if (!ds.exists || ds.data() == null) return 0;
@@ -302,4 +389,16 @@ class FirestoreService {
       .collection(FirestoreConstants.users)
       .doc(uid)
       .update({'fcmToken': token});
+
+  Future<void> deleteDriverLocation(String driverId) =>
+      _db.collection(FirestoreConstants.driverLocations).doc(driverId).delete();
+
+  Future<BeneficiaryModel?> getBeneficiary(String beneficiaryId) async {
+    final doc = await _db
+        .collection(FirestoreConstants.beneficiaries)
+        .doc(beneficiaryId)
+        .get();
+    if (!doc.exists || doc.data() == null) return null;
+    return BeneficiaryModel.fromJson({...doc.data()!, 'id': doc.id});
+  }
 }

@@ -35,6 +35,10 @@ class DriverRepositoryImpl implements DriverRepository {
       _datasource.upsertLocation(driverId, lat, lng);
 
   @override
+  Future<void> deleteLocation(String driverId) =>
+      _datasource.deleteLocation(driverId);
+
+  @override
   Stream<int> watchPoints(String uid) => _datasource.watchPoints(uid);
 
   BatchSummary _toSummary(BatchModel m) => BatchSummary(

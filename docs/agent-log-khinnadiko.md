@@ -1,6 +1,7 @@
 # Agent Log — khinnadiko
 
 ---
+
 Date: 2026-05-19 00:00
 Member: khinnadiko
 Agent: architect + flutter-engineer
@@ -12,61 +13,62 @@ Decisions: Hive over Drift (Web compat, ADR-0003). Firebase.initializeApp() defe
 Handoff: Run flutterfire configure before first flutter run. Choose application theme, then begin /new-proposal for first feature.
 Review: PENDING
 Files:
-  ? apps/mobile/lib/features/beneficiary/data/datasources/intake_remote_datasource.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/data/models/ (untracked)
-  ? apps/mobile/lib/features/beneficiary/data/repositories/firestore_intake_repository.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/entities/intake_request.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/repositories/intake_repository.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/visibility_inactive_card.dart (untracked)
-  ? apps/mobile/lib/features/volunteer/ (untracked)
+? apps/mobile/lib/features/beneficiary/data/datasources/intake_remote_datasource.dart (untracked)
+? apps/mobile/lib/features/beneficiary/data/models/ (untracked)
+? apps/mobile/lib/features/beneficiary/data/repositories/firestore_intake_repository.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/entities/intake_request.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/repositories/intake_repository.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/visibility_inactive_card.dart (untracked)
+? apps/mobile/lib/features/volunteer/ (untracked)
 
 Files:
-  ? apps/mobile/lib/features/beneficiary/data/datasources/intake_remote_datasource.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/data/models/ (untracked)
-  ? apps/mobile/lib/features/beneficiary/data/repositories/firestore_intake_repository.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/entities/intake_request.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/repositories/intake_repository.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/visibility_inactive_card.dart (untracked)
-  ? apps/mobile/lib/features/volunteer/ (untracked)
+? apps/mobile/lib/features/beneficiary/data/datasources/intake_remote_datasource.dart (untracked)
+? apps/mobile/lib/features/beneficiary/data/models/ (untracked)
+? apps/mobile/lib/features/beneficiary/data/repositories/firestore_intake_repository.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/entities/intake_request.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/repositories/intake_repository.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/visibility_inactive_card.dart (untracked)
+? apps/mobile/lib/features/volunteer/ (untracked)
 
 Files:
-  ~ apps/mobile/lib/core/models/batch_model.dart
-  ~ apps/mobile/lib/features/beneficiary/presentation/providers/beneficiary_provider.dart
-  ~ apps/mobile/lib/services/firestore_service.dart
-  ? apps/mobile/lib/features/beneficiary/data/datasources/intake_remote_datasource.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/data/models/ (untracked)
-  ? apps/mobile/lib/features/beneficiary/data/repositories/firestore_intake_repository.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/entities/intake_request.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/repositories/intake_repository.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/visibility_inactive_card.dart (untracked)
-  ? apps/mobile/lib/features/volunteer/ (untracked)
-Summary:  3 files changed, 208 insertions(+), 7 deletions(-)
+~ apps/mobile/lib/core/models/batch_model.dart
+~ apps/mobile/lib/features/beneficiary/presentation/providers/beneficiary_provider.dart
+~ apps/mobile/lib/services/firestore_service.dart
+? apps/mobile/lib/features/beneficiary/data/datasources/intake_remote_datasource.dart (untracked)
+? apps/mobile/lib/features/beneficiary/data/models/ (untracked)
+? apps/mobile/lib/features/beneficiary/data/repositories/firestore_intake_repository.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/entities/intake_request.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/repositories/intake_repository.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/visibility_inactive_card.dart (untracked)
+? apps/mobile/lib/features/volunteer/ (untracked)
+Summary: 3 files changed, 208 insertions(+), 7 deletions(-)
 
 ---
+
 Date: 2026-06-02 00:00
 Member: khinnadiko
 Agent: architect
@@ -78,19 +80,20 @@ Decisions: Recommended extending the existing onDeliveryComplete Cloud Function 
 Handoff: Open questions must be resolved before spec: (1) confirm onDeliveryComplete will be amended to write beneficiary metrics, (2) decide on delivery history sub-collection vs. batch queries, (3) agree on metric set for MVP, (4) clarify offline/no-data UX for new beneficiaries.
 Review: PENDING
 Files:
-  ? apps/mobile/lib/features/beneficiary/data/datasources/beneficiary_impact_remote_datasource.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/data/models/beneficiary_impact_model.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/data/repositories/firestore_beneficiary_impact_repository.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/entities/beneficiary_impact.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/repositories/beneficiary_impact_repository.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/domain/usecases/watch_beneficiary_impact_usecase.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/providers/beneficiary_impact_provider.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/impact_category_row.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/impact_hero_card.dart (untracked)
-  ? apps/mobile/lib/features/beneficiary/presentation/widgets/impact_metric_tile.dart (untracked)
+? apps/mobile/lib/features/beneficiary/data/datasources/beneficiary_impact_remote_datasource.dart (untracked)
+? apps/mobile/lib/features/beneficiary/data/models/beneficiary_impact_model.dart (untracked)
+? apps/mobile/lib/features/beneficiary/data/repositories/firestore_beneficiary_impact_repository.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/entities/beneficiary_impact.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/repositories/beneficiary_impact_repository.dart (untracked)
+? apps/mobile/lib/features/beneficiary/domain/usecases/watch_beneficiary_impact_usecase.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/providers/beneficiary_impact_provider.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/impact_category_row.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/impact_hero_card.dart (untracked)
+? apps/mobile/lib/features/beneficiary/presentation/widgets/impact_metric_tile.dart (untracked)
 
 ---
+
 Date: 2026-06-03 00:00
 Member: khinnadiko
 Agent: flutter-engineer
@@ -102,3 +105,8 @@ Decisions: Provider fix — firestoreServiceProvider returns FirestoreService no
 Handoff: Submit for QA review. All tests pass. Cloud Functions need deployment by the user. The /beneficiary/impact route and Impact bottom nav tap are live. "Details" TextButton in By Category header has onPressed: null (out of scope per spec).
 Review: PENDING
 
+---
+
+Files:
+~ apps/mobile/test/widget/features/beneficiary/widgets/active_delivery_card_test.dart
+Summary: 1 file changed, 2 insertions(+), 2 deletions(-)

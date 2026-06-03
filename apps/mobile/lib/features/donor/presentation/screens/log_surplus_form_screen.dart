@@ -9,6 +9,7 @@ import 'package:saveameal/features/donor/domain/entities/beneficiary.dart';
 import 'package:saveameal/features/donor/domain/entities/food_category.dart';
 import 'package:saveameal/features/donor/presentation/providers/batch_session_provider.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
+import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
 class LogSurplusFormScreen extends ConsumerStatefulWidget {
@@ -88,6 +89,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
       localPhotoPath: _photo?.path,
     );
     ref.read(batchSessionProvider.notifier).add(item);
+    ref.read(batchBeneficiaryProvider.notifier).set(_beneficiary);
     context.push('/donor/log/summary');
   }
 
@@ -95,18 +97,50 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
+    final ac = Theme.of(context).extension<AppColors>()!;
     final beneficiariesAsync = ref.watch(beneficiariesProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Log Surplus Item'),
         leading: BackButton(onPressed: () => context.pop()),
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            Image.asset('assets/images/logo.png', height: 28),
+            const SizedBox(width: Spacing.xs),
+            Text(
+              'SaveAMeal',
+              style: textTheme.titleLarge?.copyWith(
+                color: cs.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => context.push('/notifications'),
+          ),
+        ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(Spacing.md),
           children: [
+            Text(
+              'Log Surplus',
+              style: textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: Spacing.xs),
+            Text(
+              'Add details for a new batch of surplus food.',
+              style: textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            const SizedBox(height: Spacing.lg),
             _fieldLabel(context, 'Product Name'),
             TextFormField(
               controller: _nameController,
@@ -169,21 +203,35 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
               },
             ),
             const SizedBox(height: Spacing.md),
-            _fieldLabel(context, 'Assign Beneficiary (optional)'),
+            _fieldLabel(
+              context,
+              'Assign Destination / Beneficiary',
+              color: cs.onSurfaceVariant,
+            ),
             beneficiariesAsync.when(
-              data: (items) => DropdownButtonFormField<Beneficiary>(
-                // ignore: deprecated_member_use
-                value: _beneficiary,
-                decoration: InputDecoration(
-                  hintText: 'Details of destination...',
-                  hintStyle: TextStyle(
-                    color: cs.primary.withValues(alpha: 0.5),
+              data: (items) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DropdownButtonFormField<Beneficiary>(
+                    // ignore: deprecated_member_use
+                    value: _beneficiary,
+                    decoration: const InputDecoration(
+                      hintText: 'Select destination',
+                    ),
+                    items: items
+                        .map(
+                          (b) =>
+                              DropdownMenuItem(value: b, child: Text(b.name)),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() => _beneficiary = v),
                   ),
-                ),
-                items: items
-                    .map((b) => DropdownMenuItem(value: b, child: Text(b.name)))
-                    .toList(),
-                onChanged: (v) => setState(() => _beneficiary = v),
+                  const SizedBox(height: Spacing.xs),
+                  Text(
+                    _beneficiary?.address ?? 'Details of destination...',
+                    style: textTheme.bodySmall?.copyWith(color: ac.warning),
+                  ),
+                ],
               ),
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text(
@@ -210,15 +258,17 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
     );
   }
 
-  Widget _fieldLabel(BuildContext context, String text) => Padding(
-    padding: const EdgeInsets.only(bottom: Spacing.xs),
-    child: Text(
-      text,
-      style: Theme.of(
-        context,
-      ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
-    ),
-  );
+  Widget _fieldLabel(BuildContext context, String text, {Color? color}) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: Spacing.xs),
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+      );
 
   String _categoryLabel(FoodCategory c) => switch (c) {
     FoodCategory.bakery => 'Bakery',
