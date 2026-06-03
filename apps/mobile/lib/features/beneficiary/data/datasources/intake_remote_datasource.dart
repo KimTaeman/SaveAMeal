@@ -27,6 +27,10 @@ abstract class IntakeRemoteDatasource {
   });
 
   Stream<String> watchIntakeAvailability(String beneficiaryId);
+
+  Stream<List<BatchModel>> watchRecentDeliveriesForBeneficiary(
+    String beneficiaryId,
+  );
 }
 
 class IntakeRemoteDatasourceImpl implements IntakeRemoteDatasource {
@@ -76,4 +80,9 @@ class IntakeRemoteDatasourceImpl implements IntakeRemoteDatasource {
   @override
   Stream<String> watchIntakeAvailability(String beneficiaryId) =>
       _firestoreService.watchIntakeAvailability(beneficiaryId);
+
+  @override
+  Stream<List<BatchModel>> watchRecentDeliveriesForBeneficiary(
+    String beneficiaryId,
+  ) => _firestoreService.watchRecentDeliveriesForBeneficiary(beneficiaryId);
 }

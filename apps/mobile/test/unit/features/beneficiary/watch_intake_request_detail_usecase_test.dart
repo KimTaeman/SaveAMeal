@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_item.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
 import 'package:saveameal/features/beneficiary/domain/repositories/intake_repository.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/watch_intake_request_detail_usecase.dart';
 
@@ -54,6 +55,10 @@ class _FakeIntakeRepository implements IntakeRepository {
   Stream<BeneficiaryIntakeAvailability> watchIntakeAvailability(
     String beneficiaryId,
   ) => throw UnimplementedError();
+
+  @override
+  Stream<List<RecentDelivery>> watchRecentDeliveries(String beneficiaryId) =>
+      throw UnimplementedError();
 }
 
 void main() {

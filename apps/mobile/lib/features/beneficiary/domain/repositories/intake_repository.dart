@@ -2,6 +2,7 @@
 
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
 
 abstract class IntakeRepository {
   Stream<List<IntakeRequest>> watchActiveDeliveries(String beneficiaryId);
@@ -31,4 +32,6 @@ abstract class IntakeRepository {
   );
 
   Stream<IntakeRequestDetail?> watchIntakeRequestDetail(String batchId);
+
+  Stream<List<RecentDelivery>> watchRecentDeliveries(String beneficiaryId);
 }

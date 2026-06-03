@@ -3,6 +3,7 @@ import 'package:saveameal/features/beneficiary/data/datasources/intake_remote_da
 import 'package:saveameal/features/beneficiary/data/repositories/firestore_intake_repository.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
 import 'package:saveameal/features/beneficiary/domain/repositories/intake_repository.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart';
@@ -72,6 +73,11 @@ Stream<BeneficiaryIntakeAvailability> intakeAvailability(
   Ref ref,
   String beneficiaryId,
 ) => ref.watch(intakeRepositoryProvider).watchIntakeAvailability(beneficiaryId);
+
+/// Last 3 completed deliveries for a beneficiary — used by RecentDeliveriesSection.
+@riverpod
+Stream<List<RecentDelivery>> recentDeliveries(Ref ref, String beneficiaryId) =>
+    ref.watch(intakeRepositoryProvider).watchRecentDeliveries(beneficiaryId);
 
 /// Live driver position — used by TrackingScreen to move the driver pin.
 @riverpod

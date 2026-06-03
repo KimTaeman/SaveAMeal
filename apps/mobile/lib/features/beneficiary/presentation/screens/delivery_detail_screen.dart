@@ -6,6 +6,7 @@ import 'package:saveameal/features/beneficiary/domain/entities/intake_request_de
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/batch_items_card.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/driver_info_card.dart';
+import 'package:saveameal/features/beneficiary/presentation/widgets/recent_deliveries_section.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
@@ -128,6 +129,8 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
               child: BatchItemsCard(detail: detail),
             ),
+            const SizedBox(height: Spacing.md),
+            RecentDeliveriesSection(beneficiaryId: detail.beneficiaryId),
             const SizedBox(height: Spacing.xl),
           ],
         ),
