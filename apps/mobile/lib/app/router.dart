@@ -8,6 +8,7 @@ import 'package:saveameal/features/auth/presentation/screens/register_screen.dar
 import 'package:saveameal/features/auth/presentation/screens/role_router_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/welcome_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/delivery_detail_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
@@ -140,6 +141,10 @@ GoRouter router(Ref ref) {
             path: 'delivery/:batchId',
             builder: (context, state) =>
                 DeliveryDetailScreen(batchId: state.pathParameters['batchId']!),
+          ),
+          GoRoute(
+            path: 'impact',
+            builder: (context, state) => const BeneficiaryImpactScreen(),
           ),
         ],
       ),

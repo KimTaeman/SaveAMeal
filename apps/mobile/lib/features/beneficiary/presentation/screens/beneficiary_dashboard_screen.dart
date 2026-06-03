@@ -135,6 +135,8 @@ class BeneficiaryHomeScreen extends ConsumerWidget {
           switch (index) {
             case 0:
               context.go('/beneficiary');
+            case 2:
+              context.go('/beneficiary/impact');
           }
         },
         destinations: const [

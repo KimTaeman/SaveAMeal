@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { logger } from 'firebase-functions/v2';
-import { computeTotals } from './computations';
+import { computeByCategory, computeTotals } from './computations';
 
 export const onDeliveryComplete = onDocumentUpdated(
   'batches/{batchId}',
@@ -17,7 +17,7 @@ export const onDeliveryComplete = onDocumentUpdated(
     const batchId = event.params.batchId;
     const beneficiaryId = after['beneficiaryId'] as string | undefined;
     const donorId = after['donorId'] as string | undefined;
-    const items = (after['items'] as Array<{ weightKg: number }>) ?? [];
+    const items = (after['items'] as Array<{ weightKg: number; category?: string }>) ?? [];
     const { totalKg, totalMeals, totalCo2e } = computeTotals(items);
 
     const db = admin.firestore();
@@ -43,6 +43,31 @@ export const onDeliveryComplete = onDocumentUpdated(
       } else {
         logger.warn(
           `onDeliveryComplete: beneficiary ${beneficiaryId} has no fcmToken`,
+        );
+      }
+
+      // Scalar counters — merge-safe
+      ops.push(
+        db.collection('impactMetrics').doc(beneficiaryId).set(
+          {
+            totalKg: FieldValue.increment(totalKg),
+            totalMeals: FieldValue.increment(totalMeals),
+            totalCo2e: FieldValue.increment(totalCo2e),
+            totalDeliveries: FieldValue.increment(1),
+          },
+          { merge: true },
+        ),
+      );
+      // Per-category breakdown — must use update() with dot-notation keys
+      // because FieldValue.increment doesn't work for nested maps in set()
+      const categoryBreakdown = computeByCategory(items);
+      if (Object.keys(categoryBreakdown).length > 0) {
+        const categoryUpdate: Record<string, admin.firestore.FieldValue> = {};
+        for (const [cat, kg] of Object.entries(categoryBreakdown)) {
+          categoryUpdate[`byCategory.${cat}`] = FieldValue.increment(kg);
+        }
+        ops.push(
+          db.collection('impactMetrics').doc(beneficiaryId).update(categoryUpdate),
         );
       }
     }
