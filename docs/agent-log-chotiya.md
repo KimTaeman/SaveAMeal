@@ -209,7 +209,7 @@ Handoff: One file changed: apps/mobile/lib/features/donor/presentation/screens/o
 Review: CHANGES REQUESTED by qa-engineer
 
 ---
-Date: 2026-06-03 00:00
+Date: 2026-06-02 00:00
 Member: chotiya
 Agent: qa-engineer
 Task: QA review of feature/donor-account-screens PR — coverage gaps, accessibility, performance
@@ -673,4 +673,153 @@ Files:
   ? apps/mobile/test/widget/notifications_screen_test.dart (untracked)
   ? apps/mobile/lib/features/donor/domain/entities/donor_profile.dart (untracked)
 Summary:  60 files changed, 2826 insertions(+), 542 deletions(-)
+
+---
+Date: 2026-06-03 00:00
+Member: chotiya
+Agent: flutter-engineer
+Task: Implement DonorImpactScreen UI with widget test
+Prompt: Implement the DonorImpactScreen for the SaveAMeal Flutter app. All data infrastructure exists — build UI only. Screen includes AppBar, Total Impact card, CO2/Waste stat cards, By Category breakdown from batch items, and DonorBottomNav wired to index 1.
+
+Outcome: DonorImpactScreen created and wired into router. 7/7 widget tests pass. flutter analyze clean on new files (8 pre-existing errors in beneficiary_dashboard_screen.dart are not from this session).
+Decisions: Category mapping uses FoodCategory enum label conversion (not raw string) because BatchItem.category is typed FoodCategory, not String. _buildCategoryMap and _iconForCategory are instance methods on ConsumerWidget (not static/top-level) since they don't close over any state. _StatCard is a private StatelessWidget at the bottom of the file per spec.
+Handoff: DonorImpactScreen is at apps/mobile/lib/features/donor/presentation/screens/donor_impact_screen.dart. Router impact route is wired. Pre-existing errors in beneficiary_dashboard_screen.dart need a separate fix by the relevant engineer.
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ? apps/mobile/lib/features/donor/presentation/screens/donor_impact_screen.dart (untracked)
+  ? apps/mobile/test/widget/features/donor/donor_impact_screen_test.dart (untracked)
+Summary:  1 file changed, 2 insertions(+), 2 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ? apps/mobile/lib/features/donor/presentation/screens/donor_impact_screen.dart (untracked)
+  ? apps/mobile/test/widget/features/donor/donor_impact_screen_test.dart (untracked)
+Summary:  1 file changed, 2 insertions(+), 2 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart
+  ? apps/mobile/lib/features/donor/presentation/screens/donor_impact_screen.dart (untracked)
+  ? apps/mobile/test/widget/features/donor/donor_impact_screen_test.dart (untracked)
+Summary:  2 files changed, 2 insertions(+), 34 deletions(-)
+
+---
+Date: 2026-06-03 09:00
+Member: chotiya
+Agent: flutter-engineer
+Task: Fix 3 blocking PR review findings — router role guard, category enum refactor, test 6 replacement
+Prompt: Fix 3 blocking PR review findings in the SaveAMeal Flutter app. (1) Add donor role guard redirect to /donor GoRoute in router.dart. (2) Replace _kFixedCategories tuple list with FoodCategory.values and add static _iconForCategory method in donor_impact_screen.dart. (3) Replace test 6 "No donations yet" assertion with 6-category 0% assertion in donor_impact_screen_test.dart.
+Outcome: All 3 fixes applied. 7/7 widget tests pass. flutter analyze: no issues. (1) /donor GoRoute now has a redirect callback using ref.read(authStateProvider) — returns /login when unauthenticated, /role-router when role != donor. (2) _kFixedCategories tuple list replaced with _kAllCategories = FoodCategory.values; _categoryLabel and _iconForCategory made static; _buildCategoryMap made static; all 6 enum values correctly mapped. (3) Test 6 replaced — asserts all 6 category labels render with findsOneWidget and find.text('0%') findsNWidgets(6).
+Decisions: Made _buildCategoryMap static alongside the other two helpers so all three helpers are consistently static. Category labels updated to match enum semantics: produce -> 'Produce', meat -> 'Meat', beverages -> 'Beverages', other -> 'Other' (prior mapping collapsed all three to 'Prepared Meals' which was incorrect).
+Handoff: Submit for architect/QA review. No generated files touched. No new dependencies.
+Review: PENDING
+
+---
+Date: 2026-06-03 00:00
+Member: chotiya
+Agent: qa-engineer
+Task: QA review of feature/donor-impact-screen PR
+Prompt: QA review of feature/donor-impact-screen PR. Check test/screen mismatch for Test 6 ("No donations yet"), coverage gaps (bell navigation, category percentage with real data, CO2/kg stat values, yearly goal label), accessibility (bell tooltip, stat card semantics, progress bar semantics), performance (ListView.builder, CachedNetworkImage, stream providers), and golden tests.
+Outcome: CHANGES REQUESTED. One critical blocker: Test 6 asserts find.text('No donations yet') but the screen was updated to always render the 4 fixed category rows — the empty-state string is gone. This test fails on CI. Two high findings: no bell navigation test, no category percentage test with non-empty batches. Two medium findings: no CO2/kg/yearly-goal assertions in existing tests, no golden tests. Two low accessibility gaps: _StatCard values lack merged Semantics, LinearProgressIndicator lacks semantic label. Bell tooltip confirmed present. Color(0xFF006E2F) on white is ~8.6:1 — passes WCAG AA. ListView.builder(itemCount:1) satisfies the no-unbounded-ListView rule. No remote images. Both providers are Stream-backed. Report written to docs/agent-runs/2026-06-03-qa-donor-impact-screen.md.
+Decisions: Test 6 classified as Critical (not High) because it is a live CI failure, not merely a coverage gap. Category percentage logic is entirely untested — all 7 tests supply empty batch lists — elevated to High. Golden tests classified as Medium consistent with prior QA session practice (no screen in the project has goldens yet, but the requirement exists).
+Handoff: Flutter engineer must: (1) fix or replace Test 6 to match current screen behaviour (4 fixed rows always visible, show 0% when batches empty); (2) add bell navigation test; (3) add category percentage test with non-empty Batch list; (4) add Semantics to _StatCard and LinearProgressIndicator; (5) add CO2e / kg / yearly goal assertions in existing tests. Golden tests required before production but non-blocking for this PR.
+Review: CHANGES REQUESTED by qa-engineerFiles:
+  ~ apps/mobile/lib/app/app.dart
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/core/models/user_model.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart
+  + apps/mobile/lib/features/donor/data/datasources/donor_account_remote_datasource.dart
+  + apps/mobile/lib/features/donor/data/repositories/donor_account_repository_impl.dart
+  + apps/mobile/lib/features/donor/domain/entities/donor_profile.dart
+  + apps/mobile/lib/features/donor/domain/entities/user_profile_update.dart
+  + apps/mobile/lib/features/donor/domain/repositories/donor_account_repository.dart
+  + apps/mobile/lib/features/donor/domain/usecases/update_user_usecase.dart
+  ~ apps/mobile/lib/features/donor/presentation/providers/batch_session_provider.dart
+  + apps/mobile/lib/features/donor/presentation/providers/donor_account_provider.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_summary_screen.dart
+  + apps/mobile/lib/features/donor/presentation/screens/donor_account_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_dashboard_screen.dart
+  ? apps/mobile/lib/features/donor/presentation/screens/donor_impact_screen.dart (untracked)
+  ~ apps/mobile/lib/features/donor/presentation/screens/log_surplus_form_screen.dart
+  + apps/mobile/lib/features/donor/presentation/screens/organization_profile_screen.dart
+  + apps/mobile/lib/features/donor/presentation/screens/personal_information_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+  ~ apps/mobile/lib/services/location_service.dart
+  ~ apps/mobile/lib/services/service_providers.dart
+  ~ apps/mobile/lib/services/storage_service.dart
+  + apps/mobile/test/widget/features/donor/donor_account_screen_test.dart
+  + apps/mobile/test/widget/features/donor/organization_profile_screen_test.dart
+  + apps/mobile/test/widget/features/donor/personal_information_screen_test.dart
+  ~ apps/mobile/test/widget/notifications_screen_test.dart
+Summary:  28 files changed, 3407 insertions(+), 608 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/app/app.dart
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/core/models/user_model.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart
+  + apps/mobile/lib/features/donor/data/datasources/donor_account_remote_datasource.dart
+  + apps/mobile/lib/features/donor/data/repositories/donor_account_repository_impl.dart
+  + apps/mobile/lib/features/donor/domain/entities/donor_profile.dart
+  + apps/mobile/lib/features/donor/domain/entities/user_profile_update.dart
+  + apps/mobile/lib/features/donor/domain/repositories/donor_account_repository.dart
+  + apps/mobile/lib/features/donor/domain/usecases/update_user_usecase.dart
+  ~ apps/mobile/lib/features/donor/presentation/providers/batch_session_provider.dart
+  + apps/mobile/lib/features/donor/presentation/providers/donor_account_provider.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_summary_screen.dart
+  + apps/mobile/lib/features/donor/presentation/screens/donor_account_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_dashboard_screen.dart
+  ? apps/mobile/lib/features/donor/presentation/screens/donor_impact_screen.dart (untracked)
+  ~ apps/mobile/lib/features/donor/presentation/screens/log_surplus_form_screen.dart
+  + apps/mobile/lib/features/donor/presentation/screens/organization_profile_screen.dart
+  + apps/mobile/lib/features/donor/presentation/screens/personal_information_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+  ~ apps/mobile/lib/services/location_service.dart
+  ~ apps/mobile/lib/services/service_providers.dart
+  ~ apps/mobile/lib/services/storage_service.dart
+  + apps/mobile/test/widget/features/donor/donor_account_screen_test.dart
+  + apps/mobile/test/widget/features/donor/organization_profile_screen_test.dart
+  + apps/mobile/test/widget/features/donor/personal_information_screen_test.dart
+  ~ apps/mobile/test/widget/notifications_screen_test.dart
+Summary:  28 files changed, 3407 insertions(+), 608 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/app/app.dart
+  ? apps/mobile/lib/app/router.dart (untracked)
+  ~ apps/mobile/lib/core/models/user_model.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart
+  + apps/mobile/lib/features/donor/data/datasources/donor_account_remote_datasource.dart
+  + apps/mobile/lib/features/donor/data/repositories/donor_account_repository_impl.dart
+  + apps/mobile/lib/features/donor/domain/entities/donor_profile.dart
+  + apps/mobile/lib/features/donor/domain/entities/user_profile_update.dart
+  + apps/mobile/lib/features/donor/domain/repositories/donor_account_repository.dart
+  + apps/mobile/lib/features/donor/domain/usecases/update_user_usecase.dart
+  ~ apps/mobile/lib/features/donor/presentation/providers/batch_session_provider.dart
+  + apps/mobile/lib/features/donor/presentation/providers/donor_account_provider.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_summary_screen.dart
+  + apps/mobile/lib/features/donor/presentation/screens/donor_account_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_dashboard_screen.dart
+  ? apps/mobile/lib/features/donor/presentation/screens/donor_impact_screen.dart (untracked)
+  ~ apps/mobile/lib/features/donor/presentation/screens/log_surplus_form_screen.dart
+  + apps/mobile/lib/features/donor/presentation/screens/organization_profile_screen.dart
+  + apps/mobile/lib/features/donor/presentation/screens/personal_information_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+  ~ apps/mobile/lib/services/location_service.dart
+  ~ apps/mobile/lib/services/service_providers.dart
+  ~ apps/mobile/lib/services/storage_service.dart
+  + apps/mobile/test/widget/features/donor/donor_account_screen_test.dart
+  ~ apps/mobile/test/widget/features/donor/donor_impact_screen_test.dart
+  + apps/mobile/test/widget/features/donor/organization_profile_screen_test.dart
+  + apps/mobile/test/widget/features/donor/personal_information_screen_test.dart
+  ~ apps/mobile/test/widget/notifications_screen_test.dart
+Summary:  29 files changed, 3443 insertions(+), 625 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_impact_screen.dart
+  ~ apps/mobile/lib/shared/theme/app_colors.dart
+Summary:  2 files changed, 28 insertions(+), 11 deletions(-)
 

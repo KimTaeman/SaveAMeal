@@ -17,6 +17,7 @@ import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_sc
 import 'package:saveameal/features/donor/presentation/screens/donor_history_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_account_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_impact_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/organization_profile_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/personal_information_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/scanner_screen.dart';
@@ -62,6 +63,13 @@ GoRouter router(Ref ref) {
       ),
       GoRoute(
         path: '/donor',
+        redirect: (context, state) {
+          final authAsync = ref.read(authStateProvider);
+          final user = authAsync.asData?.value;
+          if (user == null) return '/login';
+          if (user.role != UserRole.donor) return '/role-router';
+          return null;
+        },
         builder: (context, state) => const DonorDashboardScreen(),
         routes: [
           GoRoute(
@@ -98,8 +106,7 @@ GoRouter router(Ref ref) {
           ),
           GoRoute(
             path: 'impact',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('Impact'))),
+            builder: (context, state) => const DonorImpactScreen(),
           ),
           GoRoute(
             path: 'batches',

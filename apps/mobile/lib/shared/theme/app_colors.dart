@@ -9,6 +9,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.onWarning,
     required this.danger,
     required this.onDanger,
+    required this.brand,
+    required this.brandLight,
   });
 
   final Color success;
@@ -17,6 +19,8 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color onWarning;
   final Color danger;
   final Color onDanger;
+  final Color brand;
+  final Color brandLight;
 
   static const light = AppColors(
     success: Color(0xFF2E7D32),
@@ -25,6 +29,8 @@ class AppColors extends ThemeExtension<AppColors> {
     onWarning: Color(0xFF000000),
     danger: Color(0xFFC62828),
     onDanger: Color(0xFFFFFFFF),
+    brand: Color(0xFF006E2F),
+    brandLight: Color(0xFF22C55E),
   );
 
   static const dark = AppColors(
@@ -34,6 +40,8 @@ class AppColors extends ThemeExtension<AppColors> {
     onWarning: Color(0xFF000000),
     danger: Color(0xFFEF9A9A),
     onDanger: Color(0xFF000000),
+    brand: Color(0xFF006E2F),
+    brandLight: Color(0xFF22C55E),
   );
 
   @override
@@ -44,6 +52,8 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? onWarning,
     Color? danger,
     Color? onDanger,
+    Color? brand,
+    Color? brandLight,
   }) => AppColors(
     success: success ?? this.success,
     onSuccess: onSuccess ?? this.onSuccess,
@@ -51,6 +61,8 @@ class AppColors extends ThemeExtension<AppColors> {
     onWarning: onWarning ?? this.onWarning,
     danger: danger ?? this.danger,
     onDanger: onDanger ?? this.onDanger,
+    brand: brand ?? this.brand,
+    brandLight: brandLight ?? this.brandLight,
   );
 
   @override
@@ -63,6 +75,8 @@ class AppColors extends ThemeExtension<AppColors> {
       onWarning: Color.lerp(onWarning, other.onWarning, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
       onDanger: Color.lerp(onDanger, other.onDanger, t)!,
+      brand: Color.lerp(brand, other.brand, t)!,
+      brandLight: Color.lerp(brandLight, other.brandLight, t)!,
     );
   }
 }
