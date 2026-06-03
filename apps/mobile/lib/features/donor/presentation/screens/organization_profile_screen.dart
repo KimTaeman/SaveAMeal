@@ -114,7 +114,13 @@ class _OrganizationProfileScreenState
   }
 
   Future<void> _pickBanner(String uid) async {
-    final photo = await ImagePicker().pickImage(source: ImageSource.gallery);
+    // Banner is wide; cap at 1200 × 400 and compress to stay under 10 MB limit.
+    final photo = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1200,
+      maxHeight: 400,
+      imageQuality: 85,
+    );
     if (photo == null) return;
     setState(() => _uploadingBanner = true);
     try {
