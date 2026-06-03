@@ -6,59 +6,33 @@
 
 ---
 
-## Step 1 — Create Firebase Auth accounts
+## Step 1 — Run the one-command demo setup
 
-Do this in [Firebase Console → Authentication → Users → Add User](https://console.firebase.google.com/project/saveameal-87187/authentication/users).
-
-Create these 3 accounts and **record their UIDs**:
-
-| Role        | Email                           | Password   | Notes         |
-| ----------- | ------------------------------- | ---------- | ------------- |
-| Donor       | `demo.donor@saveameal.th`       | `qwer1234` | Khun Siriporn |
-| Driver      | `demo.driver@saveameal.th`      | `qwer1234` | Nattapong     |
-| Beneficiary | `demo.beneficiary@saveameal.th` | `qwer1234` | Sister Maria  |
-
----
-
-## Step 2 — Seed Firestore with demo accounts
-
-From `tools/seed/`, with your `serviceAccountKey.json`:
+From `tools/seed/`, with your `serviceAccountKey.json` placed there:
 
 ```bash
 cd tools/seed
-
-# Register donor
-node seed.js --key serviceAccountKey.json --add-donor <DONOR_UID>
-
-# Register driver
-node seed.js --key serviceAccountKey.json --add-driver <DRIVER_UID>
-
-# Register beneficiary (creates both users doc AND beneficiaries doc)
-node seed.js --key serviceAccountKey.json --add-beneficiary <BENEFICIARY_UID>
+npm run demo
 ```
 
----
+This single command:
+- Creates the 3 Firebase Auth accounts (or skips if they already exist)
+- Registers them in Firestore `users/` with correct roles
+- Creates the `beneficiaries/` doc for Sister Maria's shelter
+- Creates `demo_batch_001` — an `open` batch tied to the donor + beneficiary UIDs
+- Zeroes the donor's `impactMetrics` doc
 
-## Step 3 — Seed demo batch data
+**Demo credentials** (all password `qwer1234`):
 
-Run the full seed with **clean** to reset batches. Then manually create one `open` batch in Firestore Console that uses your real demo UIDs:
+| Role        | Email                           | Notes         |
+| ----------- | ------------------------------- | ------------- |
+| Donor       | `demo.donor@saveameal.th`       | Khun Siriporn |
+| Driver      | `demo.driver@saveameal.th`      | Nattapong     |
+| Beneficiary | `demo.beneficiary@saveameal.th` | Sister Maria  |
 
-```bash
-# Full seed (resets all collection data)
-node seed.js --key serviceAccountKey.json --clean
-```
+The script prints each account's Firebase Auth UID at the end — keep these handy for the FCM verification step.
 
-Then in Firebase Console → Firestore → `batches` collection, **edit `batch_002`** (Central Embassy → Klongtoey) and update:
-
-```
-donorId:        <DONOR_UID>
-beneficiaryId:  <BENEFICIARY_UID>
-status:         open
-```
-
-This is the batch used in the live demo.
-
-> **Why:** The app uses Firebase Auth UIDs as document IDs. Batch `beneficiaryId` and `donorId` must match the real Auth UIDs for push notifications and delivery tracking to work.
+> **Re-running:** Safe to run multiple times. Auth accounts are fetched by email before creation, so no duplicates are made.
 
 ---
 
@@ -101,11 +75,11 @@ firebase deploy --only functions --key tools/seed/serviceAccountKey.json
 
 **On donor device:**
 
-1. Tap **+ Log Surplus** from the Dashboard
-2. Fill form: Category = `Cooked Meals`, Quantity = `38 portions`, Expiry = `tomorrow 6am`
-3. Add a photo (tap camera icon)
-4. Tap **Submit**
-5. QR code appears — _"This QR code travels with the food"_
+1. Tap **+ Log Surplus** from the Dashboard → tap **Enter Manually** to skip the barcode scanner
+2. Fill form: Category = `Other`, Quantity = `15` kg, Expiry = pick a time ~8h from now
+3. Optionally add a photo (tap camera icon)
+4. Tap **Add to Batch** → Batch Summary screen appears
+5. Tap **Submit Batch** → **QR code appears** — _"This QR code travels with the food"_
 
 **Driver device:** A push notification arrives: _"New pickup available — Central Embassy · 5.7 kg"_
 
@@ -137,7 +111,7 @@ firebase deploy --only functions --key tools/seed/serviceAccountKey.json
 **On driver device:**
 
 1. **ClaimRescueScreen** — "Status: En Route to Pick-up", tap **Arrived at Pick-up**
-2. **PickupVerificationScreen** — scan the donor's QR code (or tap "Enter code manually" → type `batch_002`)
+2. **PickupVerificationScreen** — scan the donor's QR code (or tap "Enter code manually" → type `demo_batch_001`)
 3. **SafetyVerificationScreen** — check all 3 safety items, take a photo of the food
 4. Tap **Confirm & Complete Pickup** → _"En Route to Beneficiary"_
 
@@ -164,10 +138,10 @@ firebase deploy --only functions --key tools/seed/serviceAccountKey.json
 
 ## Release Checklist
 
-- [ ] All 3 demo accounts created in Firebase Console
+- [ ] `npm run demo` completed successfully from `tools/seed/` (creates accounts + batch in one shot)
 - [ ] `users/{DONOR_UID}`, `users/{DRIVER_UID}`, `users/{BENEFICIARY_UID}` docs exist in Firestore
 - [ ] `beneficiaries/{BENEFICIARY_UID}` doc exists with `lat`/`lng`
-- [ ] Demo batch `batch_002` updated with real `donorId` and `beneficiaryId`
+- [ ] `batches/demo_batch_001` exists with correct `donorId` and `beneficiaryId`
 - [ ] FCM tokens populated for all 3 accounts (log in + log out to trigger)
 - [ ] Cloud Functions deployed (`firebase deploy --only functions`)
 - [ ] Full dry-run completed with all 3 devices before demo day

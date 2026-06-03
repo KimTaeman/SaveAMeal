@@ -7,6 +7,7 @@
     "seed:clean":       "node seed.js --emulator --clean",
     "seed:prod":        "node seed.js --key serviceAccountKey.json",
     "seed:prod:clean":  "node seed.js --key serviceAccountKey.json --clean",
+    "demo":             "node seed.js --key serviceAccountKey.json --demo",
     "add-driver":       "node seed.js --emulator --add-driver",
     "add-donor":        "node seed.js --emulator --add-donor"
   },

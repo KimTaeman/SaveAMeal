@@ -119,7 +119,10 @@ class DonorRepositoryImpl implements DonorRepository {
 
   BatchItem _toBatchItem(BatchItemModel m) => BatchItem(
     name: m.name,
-    category: FoodCategory.values.byName(m.category),
+    category: FoodCategory.values.firstWhere(
+      (c) => c.name == m.category,
+      orElse: () => FoodCategory.other,
+    ),
     weightKg: m.weightKg,
     expiryTime: m.expiryTime,
     photoUrl: m.photoUrl,

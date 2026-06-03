@@ -169,7 +169,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
               validator: (v) => v == null ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.md),
-            _fieldLabel(context, 'Quantity (kg)'),
+            _fieldLabel(context, 'Quantity (kg/portions)'),
             TextFormField(
               controller: _quantityController,
               keyboardType: const TextInputType.numberWithOptions(
@@ -243,13 +243,14 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
             _fieldLabel(context, 'Photo (optional)'),
             _PhotoPicker(photo: _photo, onTap: _pickPhoto),
             const SizedBox(height: Spacing.xl),
-            FilledButton(
+            FilledButton.icon(
               onPressed: _submit,
+              icon: const Icon(Icons.check_circle_outline),
+              label: const Text('Add to Batch'),
               style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 52),
                 shape: const StadiumBorder(),
               ),
-              child: const Text('Add to Batch'),
             ),
             const SizedBox(height: Spacing.md),
           ],
