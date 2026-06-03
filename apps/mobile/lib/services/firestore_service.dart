@@ -108,6 +108,33 @@ class FirestoreService {
             .toList(),
       );
 
+  /// Returns the last 3 completed deliveries for a beneficiary, sorted by
+  /// deliveredAt descending (client-side, to avoid a composite Firestore index).
+  Stream<List<BatchModel>> watchRecentDeliveriesForBeneficiary(
+    String beneficiaryId,
+  ) => _db
+      .collection(FirestoreConstants.batches)
+      .where('beneficiaryId', isEqualTo: beneficiaryId)
+      .where('status', whereIn: ['delivered', 'closed'])
+      .limit(20)
+      .snapshots()
+      .map((qs) {
+        final docs =
+            qs.docs
+                .map(
+                  (d) => BatchModel.fromJson(
+                    _normalise({...d.data(), 'id': d.id}),
+                  ),
+                )
+                .toList()
+              ..sort((a, b) {
+                final ta = a.deliveredAt ?? a.updatedAt ?? DateTime(0);
+                final tb = b.deliveredAt ?? b.updatedAt ?? DateTime(0);
+                return tb.compareTo(ta);
+              });
+        return docs.take(3).toList();
+      });
+
   // Combines two live Firestore queries: all open (pending) batches system-wide
   // plus this volunteer's own claimed/pickedUp batches. A StreamController is
   // used because Firestore does not support cross-field OR queries natively and
