@@ -108,6 +108,11 @@ class _OrganizationProfileScreenState
     });
   }
 
+  String _errorMessage(String prefix, Object e) {
+    if (e is FirebaseException) return '$prefix — ${e.code}';
+    return '$prefix. Please try again.';
+  }
+
   Future<void> _pickBanner(String uid) async {
     final photo = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (photo == null) return;
@@ -123,13 +128,7 @@ class _OrganizationProfileScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e is FirebaseException
-                  ? 'Upload failed. Please try again.'
-                  : 'Something went wrong. Please try again.',
-            ),
-          ),
+          SnackBar(content: Text(_errorMessage('Banner upload failed', e))),
         );
       }
     } finally {
@@ -169,13 +168,7 @@ class _OrganizationProfileScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e is FirebaseException
-                  ? 'Upload failed. Please try again.'
-                  : 'Something went wrong. Please try again.',
-            ),
-          ),
+          SnackBar(content: Text(_errorMessage('Save failed', e))),
         );
       }
     } finally {

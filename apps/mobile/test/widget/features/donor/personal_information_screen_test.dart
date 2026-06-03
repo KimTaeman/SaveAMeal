@@ -238,10 +238,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(
-        find.text('Something went wrong. Please try again.'),
-        findsOneWidget,
-      );
+      expect(find.text('Save failed. Please try again.'), findsOneWidget);
     });
 
     testWidgets('upload photo widget has accessibility semantics', (

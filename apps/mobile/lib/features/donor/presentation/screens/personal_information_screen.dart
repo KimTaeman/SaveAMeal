@@ -339,13 +339,7 @@ class _PersonalInformationScreenState
       if (!mounted) return;
       setState(() => _uploadingPhoto = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e is FirebaseException
-                ? 'Upload failed. Please try again.'
-                : 'Something went wrong. Please try again.',
-          ),
-        ),
+        SnackBar(content: Text(_errorMessage('Photo upload failed', e))),
       );
     }
   }
@@ -361,18 +355,17 @@ class _PersonalInformationScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e is FirebaseException
-                  ? 'Upload failed. Please try again.'
-                  : 'Something went wrong. Please try again.',
-            ),
-          ),
+          SnackBar(content: Text(_errorMessage('Could not get location', e))),
         );
       }
     } finally {
       if (mounted) setState(() => _gettingLocation = false);
     }
+  }
+
+  String _errorMessage(String prefix, Object e) {
+    if (e is FirebaseException) return '$prefix — ${e.code}';
+    return '$prefix. Please try again.';
   }
 
   Future<void> _save() async {
@@ -401,15 +394,9 @@ class _PersonalInformationScreenState
       context.pop();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e is FirebaseException
-                ? 'Upload failed. Please try again.'
-                : 'Something went wrong. Please try again.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_errorMessage('Save failed', e))));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
