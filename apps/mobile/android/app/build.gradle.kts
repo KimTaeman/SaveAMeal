@@ -23,6 +23,11 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    val localProps = java.util.Properties().also { props ->
+        rootProject.file("local.properties").takeIf { it.exists() }
+            ?.inputStream()?.use { props.load(it) }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.mobile"
@@ -32,6 +37,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Google Maps key — read from local.properties (dev) or MAPS_API_KEY env var (CI).
+        manifestPlaceholders["MAPS_API_KEY"] =
+            (localProps.getProperty("MAPS_API_KEY") ?: System.getenv("MAPS_API_KEY") ?: "")
     }
 
     buildTypes {

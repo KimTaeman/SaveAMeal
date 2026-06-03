@@ -8,6 +8,6 @@ class WatchIntakeRequestDetailUseCase {
 
   final IntakeRepository _repository;
 
-  Stream<IntakeRequestDetail?> call(String batchId) =>
-      _repository.watchIntakeRequestDetail(batchId);
+  Stream<IntakeRequestDetail?> call(String batchId, String beneficiaryId) =>
+      _repository.watchIntakeRequestDetail(batchId, beneficiaryId);
 }
