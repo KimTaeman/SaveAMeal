@@ -15,7 +15,12 @@ import 'package:saveameal/features/donor/domain/repositories/donor_account_repos
 import 'package:saveameal/features/donor/domain/usecases/update_user_usecase.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
+import 'package:saveameal/features/donor/presentation/providers/notification_preference_provider.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_account_screen.dart';
+import 'package:saveameal/features/notifications/data/notification_prefs_store.dart';
+import 'package:saveameal/services/fcm_service.dart';
+import 'package:saveameal/services/firestore_service.dart';
+import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/app_theme.dart';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -81,6 +86,42 @@ class _TrackingAuthRepository implements AuthRepository {
   Future<void> signOut() async {
     signOutCalled = true;
   }
+}
+
+class _FakeFcmService implements FcmService {
+  @override
+  Future<void> requestPermission() async {}
+
+  @override
+  Future<String?> getToken() async => null;
+
+  @override
+  Future<void> subscribeToTopic(String topic) async {}
+
+  @override
+  Future<void> unsubscribeFromTopic(String topic) async {}
+}
+
+class _FakeFirestoreService implements FirestoreService {
+  @override
+  Future<void> updateFcmToken(String uid, String token) async {}
+
+  @override
+  Future<void> updateUser(String uid, Map<String, dynamic> fields) async {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw UnimplementedError('${invocation.memberName} not stubbed');
+}
+
+class _InMemoryPrefStore implements NotificationPrefStore {
+  bool _value = false;
+
+  @override
+  bool load() => _value;
+
+  @override
+  Future<void> save(bool value) async => _value = value;
 }
 
 class _FakeDonorAccountRepository implements DonorAccountRepository {
@@ -160,6 +201,9 @@ Widget _buildApp({
         donorMetricsProvider(
           'test-donor-uid',
         ).overrideWith((ref) => Stream.value(metrics)),
+      notificationPrefStoreProvider.overrideWithValue(_InMemoryPrefStore()),
+      fcmServiceProvider.overrideWithValue(_FakeFcmService()),
+      firestoreServiceProvider.overrideWithValue(_FakeFirestoreService()),
     ],
     child: MaterialApp.router(
       theme: AppTheme.light(),
@@ -303,6 +347,10 @@ void main() {
             updateUserUsecaseProvider.overrideWithValue(
               UpdateUserUsecase(fakeDonorAccountRepo),
             ),
+            notificationPrefStoreProvider.overrideWithValue(
+              _InMemoryPrefStore(),
+            ),
+            fcmServiceProvider.overrideWithValue(_FakeFcmService()),
           ],
           child: MaterialApp.router(
             theme: AppTheme.light(),
@@ -331,10 +379,13 @@ void main() {
             updateUserUsecaseProvider.overrideWithValue(
               UpdateUserUsecase(fakeDonorAccountRepo),
             ),
-            if (true)
-              donorMetricsProvider(
-                'test-donor-uid',
-              ).overrideWith((ref) => Stream.value(_testMetrics)),
+            donorMetricsProvider(
+              'test-donor-uid',
+            ).overrideWith((ref) => Stream.value(_testMetrics)),
+            notificationPrefStoreProvider.overrideWithValue(
+              _InMemoryPrefStore(),
+            ),
+            fcmServiceProvider.overrideWithValue(_FakeFcmService()),
           ],
           child: MaterialApp.router(
             theme: AppTheme.light(),

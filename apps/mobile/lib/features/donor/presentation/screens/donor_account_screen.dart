@@ -6,6 +6,7 @@ import 'package:saveameal/features/auth/presentation/providers/auth_provider.dar
 import 'package:saveameal/features/donor/domain/entities/donor_metrics.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
+import 'package:saveameal/features/donor/presentation/providers/notification_preference_provider.dart';
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
@@ -18,8 +19,6 @@ class DonorAccountScreen extends ConsumerStatefulWidget {
 }
 
 class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
-  bool _notificationsEnabled = false;
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -186,9 +185,17 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
                     title: const Text('Push Notifications'),
                     subtitle: const Text('New Pickups'),
                     trailing: Switch(
-                      value: _notificationsEnabled,
-                      onChanged: (v) =>
-                          setState(() => _notificationsEnabled = v),
+                      value: ref.watch(notificationPreferenceProvider),
+                      onChanged: (v) {
+                        final notifier = ref.read(
+                          notificationPreferenceProvider.notifier,
+                        );
+                        if (v) {
+                          notifier.enable(uid);
+                        } else {
+                          notifier.disable(uid);
+                        }
+                      },
                     ),
                   ),
                   const Divider(height: 1, indent: Spacing.md),
