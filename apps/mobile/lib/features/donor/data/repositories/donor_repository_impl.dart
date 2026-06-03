@@ -78,10 +78,8 @@ class DonorRepositoryImpl implements DonorRepository {
       .map((models) => models.map(_toBatch).toList());
 
   @override
-  Stream<domain.Batch> watchBatchById(String batchId) => _datasource
-      .watchBatchById(batchId)
-      .where((m) => m != null)
-      .map((m) => _toBatch(m!));
+  Stream<domain.Batch> watchBatchById(String batchId) =>
+      _datasource.watchBatchById(batchId).map(_toBatch);
 
   // ── Mappers ────────────────────────────────────────────────────────────────
 
