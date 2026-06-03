@@ -8,6 +8,7 @@ import 'package:saveameal/features/donor/presentation/providers/donor_provider.d
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/donor_brand_title.dart';
 import 'package:saveameal/shared/widgets/logout_button.dart';
 
 class DonorDashboardScreen extends ConsumerWidget {
@@ -120,8 +121,6 @@ class _DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: Spacing.md,
@@ -130,19 +129,7 @@ class _DashboardHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Image.asset('assets/images/logo.png', height: 28),
-              const SizedBox(width: Spacing.xs),
-              Text(
-                'SaveAMeal',
-                style: textTheme.titleLarge?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+          const DonorBrandTitle(),
           Row(
             children: [
               IconButton(
