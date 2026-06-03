@@ -48,6 +48,18 @@ describe('computeByCategory', () => {
     expect(result['mystery_food']).toBeUndefined();
   });
 
+  it('remaps legacy "protein" to "meat"', () => {
+    const result = computeByCategory([{ weightKg: 3, category: 'protein' }]);
+    expect(result['meat']).toBeCloseTo(3);
+    expect(result['protein']).toBeUndefined();
+  });
+
+  it('remaps legacy "prepared" to "other"', () => {
+    const result = computeByCategory([{ weightKg: 2, category: 'prepared' }]);
+    expect(result['other']).toBeCloseTo(2);
+    expect(result['prepared']).toBeUndefined();
+  });
+
   it('maps missing category to other', () => {
     const result = computeByCategory([{ weightKg: 2 }]);
     expect(result['other']).toBeCloseTo(2);

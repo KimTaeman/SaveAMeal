@@ -18,15 +18,23 @@ export function computeTotals(items: BatchItem[]): Totals {
   };
 }
 
+// Canonical set mirrors the Dart FoodCategory enum exactly.
 const VALID_CATEGORIES = new Set([
-  'bakery', 'produce', 'dairy', 'protein', 'prepared', 'other',
+  'bakery', 'produce', 'dairy', 'meat', 'beverages', 'other',
 ]);
+
+// Legacy / alternative spellings that must map to a canonical key.
+const CATEGORY_REMAP: Record<string, string> = {
+  protein: 'meat',
+  prepared: 'other',
+};
 
 export function computeByCategory(items: BatchItem[]): Record<string, number> {
   const result: Record<string, number> = {};
   for (const item of items) {
     const raw = item.category?.trim().toLowerCase() || 'other';
-    const cat = VALID_CATEGORIES.has(raw) ? raw : 'other';
+    const remapped = CATEGORY_REMAP[raw] ?? raw;
+    const cat = VALID_CATEGORIES.has(remapped) ? remapped : 'other';
     result[cat] = (result[cat] ?? 0) + (item.weightKg ?? 0);
   }
   // remove zero-kg entries

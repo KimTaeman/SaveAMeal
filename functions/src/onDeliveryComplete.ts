@@ -50,30 +50,25 @@ export const onDeliveryComplete = onDocumentUpdated(
         );
       }
 
-      // Scalar counters — merge-safe
+      // Single set({merge:true}) with dot-notation keys for byCategory fields.
+      // This creates the document on first delivery and increments atomically on
+      // subsequent ones — no separate update() needed, no NOT_FOUND race.
+      const categoryBreakdown = computeByCategory(items);
+      const beneficiaryPayload: Record<string, unknown> = {
+        totalKg: FieldValue.increment(totalKg),
+        totalMeals: FieldValue.increment(totalMeals),
+        totalCo2e: FieldValue.increment(totalCo2e),
+        totalDeliveries: FieldValue.increment(1),
+      };
+      for (const [cat, kg] of Object.entries(categoryBreakdown)) {
+        beneficiaryPayload[`byCategory.${cat}`] = FieldValue.increment(kg);
+      }
       ops.push(
         db.collection('impactMetrics').doc(beneficiaryId).set(
-          {
-            totalKg: FieldValue.increment(totalKg),
-            totalMeals: FieldValue.increment(totalMeals),
-            totalCo2e: FieldValue.increment(totalCo2e),
-            totalDeliveries: FieldValue.increment(1),
-          },
+          beneficiaryPayload,
           { merge: true },
         ),
       );
-      // Per-category breakdown — must use update() with dot-notation keys
-      // because FieldValue.increment doesn't work for nested maps in set()
-      const categoryBreakdown = computeByCategory(items);
-      if (Object.keys(categoryBreakdown).length > 0) {
-        const categoryUpdate: Record<string, admin.firestore.FieldValue> = {};
-        for (const [cat, kg] of Object.entries(categoryBreakdown)) {
-          categoryUpdate[`byCategory.${cat}`] = FieldValue.increment(kg);
-        }
-        ops.push(
-          db.collection('impactMetrics').doc(beneficiaryId).update(categoryUpdate),
-        );
-      }
     }
 
     // Atomically increment impactMetrics for the donor and globally.
