@@ -116,19 +116,24 @@ class FirestoreIntakeRepository implements IntakeRepository {
       cursor: cursor,
     );
 
-    final items = batches
-        .map(
-          (b) => RecentDelivery(
-            batchId: b.id,
-            deliveredAt: b.deliveredAt ?? b.updatedAt ?? DateTime.now(),
-            portions: b.items.length,
-            donorName: b.donorName,
-            // First item's category; null for legacy batches with no items.
-            // TODO(future): use majority-category for mixed-category batches.
-            category: b.items.isNotEmpty ? b.items.first.category : null,
-          ),
-        )
-        .toList();
+    final items =
+        batches
+            .map(
+              (b) => RecentDelivery(
+                batchId: b.id,
+                deliveredAt: b.deliveredAt ?? b.updatedAt ?? DateTime.now(),
+                portions: b.items.length,
+                donorName: b.donorName,
+                // First item's category; null for legacy batches with no items.
+                // TODO(future): use majority-category for mixed-category batches.
+                category: b.items.isNotEmpty ? b.items.first.category : null,
+              ),
+            )
+            .toList()
+          // Sort descending by deliveredAt client-side. The Firestore query omits
+          // orderBy to avoid requiring a composite index; sorting here restores the
+          // expected date order within each fetched page.
+          ..sort((a, b) => b.deliveredAt.compareTo(a.deliveredAt));
 
     return DeliveryHistoryPage(
       items: items,

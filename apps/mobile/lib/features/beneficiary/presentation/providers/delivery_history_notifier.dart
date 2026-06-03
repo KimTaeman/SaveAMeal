@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:saveameal/core/logging/app_logger.dart';
 import 'package:saveameal/features/beneficiary/data/models/recent_delivery_cache_entry.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/fetch_delivery_history_page_usecase.dart';
@@ -93,7 +94,12 @@ class DeliveryHistoryNotifier extends _$DeliveryHistoryNotifier {
         isLoadingMore: false,
         cursor: page.nextCursor,
       );
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'DeliveryHistoryNotifier.build: failed to fetch page 0 for $beneficiaryId',
+        error: e,
+        stack: st,
+      );
       if (cached.isNotEmpty) {
         // Serve cache on network error — hasMore: true signals offline mode
         return DeliveryHistoryState(
@@ -132,7 +138,12 @@ class DeliveryHistoryNotifier extends _$DeliveryHistoryNotifier {
           cursor: page.nextCursor,
         ),
       );
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'DeliveryHistoryNotifier.loadNextPage: failed to fetch page $_nextPageIndex for $beneficiaryId',
+        error: e,
+        stack: st,
+      );
       state = AsyncData(
         current.copyWith(isLoadingMore: false, loadMoreError: e),
       );

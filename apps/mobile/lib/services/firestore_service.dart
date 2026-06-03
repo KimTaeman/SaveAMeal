@@ -429,10 +429,12 @@ class FirestoreService {
     return BeneficiaryModel.fromJson({...doc.data()!, 'id': doc.id});
   }
 
-  /// Fetches a single page of delivered/closed batches for [beneficiaryId]
-  /// ordered by deliveredAt descending. Uses cursor-based pagination via
-  /// startAfterDocument — pass [cursor] (the DocumentSnapshot returned from
-  /// the previous page) to get the next page; pass null for the first page.
+  /// Fetches a single page of delivered/closed batches for [beneficiaryId].
+  /// Uses cursor-based pagination via startAfterDocument. Results are sorted
+  /// by deliveredAt descending client-side (in FirestoreIntakeRepository) to
+  /// avoid requiring a composite Firestore index on (beneficiaryId, status,
+  /// deliveredAt) — the same no-orderBy pattern used by
+  /// watchRecentDeliveriesForBeneficiary.
   Future<(List<BatchModel>, Object? nextCursor)> fetchDeliveryHistoryPage({
     required String beneficiaryId,
     required int pageSize,
@@ -442,7 +444,6 @@ class FirestoreService {
         .collection(FirestoreConstants.batches)
         .where('beneficiaryId', isEqualTo: beneficiaryId)
         .where('status', whereIn: ['delivered', 'closed'])
-        .orderBy('deliveredAt', descending: true)
         .limit(pageSize);
 
     if (cursor != null) {
