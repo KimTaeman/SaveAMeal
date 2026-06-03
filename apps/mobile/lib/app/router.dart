@@ -10,9 +10,11 @@ import 'package:saveameal/features/auth/presentation/screens/welcome_screen.dart
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/delivery_detail_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/tracking_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/batch_detail_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_history_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_account_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/organization_profile_screen.dart';
@@ -83,9 +85,16 @@ GoRouter router(Ref ref) {
             ],
           ),
           GoRoute(
-            path: 'batch/:batchId/qr',
+            path: 'batch/:batchId',
             builder: (context, state) =>
-                BatchQrScreen(batchId: state.pathParameters['batchId']!),
+                BatchDetailScreen(batchId: state.pathParameters['batchId']!),
+            routes: [
+              GoRoute(
+                path: 'qr',
+                builder: (context, state) =>
+                    BatchQrScreen(batchId: state.pathParameters['batchId']!),
+              ),
+            ],
           ),
           GoRoute(
             path: 'impact',
@@ -94,8 +103,7 @@ GoRouter router(Ref ref) {
           ),
           GoRoute(
             path: 'batches',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('All Batches'))),
+            builder: (context, state) => const DonorHistoryScreen(),
           ),
           GoRoute(
             path: 'account',
