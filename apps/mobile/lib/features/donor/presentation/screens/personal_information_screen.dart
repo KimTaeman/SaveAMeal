@@ -312,7 +312,14 @@ class _PersonalInformationScreenState
   Future<void> _pickImage() async {
     try {
       final picker = ImagePicker();
-      final photo = await picker.pickImage(source: ImageSource.gallery);
+      // Resize and compress before upload — phone gallery photos are often
+      // 8–20 MB which would exceed Firebase Storage size limits.
+      final photo = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
       if (photo == null) return;
 
       final authUser = ref.read(authStateProvider).asData?.value;
