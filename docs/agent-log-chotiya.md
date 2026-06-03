@@ -818,3 +818,8 @@ Files:
   ~ apps/mobile/test/widget/notifications_screen_test.dart
 Summary:  29 files changed, 3443 insertions(+), 625 deletions(-)
 
+Files:
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_impact_screen.dart
+  ~ apps/mobile/lib/shared/theme/app_colors.dart
+Summary:  2 files changed, 28 insertions(+), 11 deletions(-)
+

@@ -7,6 +7,7 @@ import 'package:saveameal/features/donor/domain/entities/donor_metrics.dart';
 import 'package:saveameal/features/donor/domain/entities/food_category.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
+import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
 class DonorImpactScreen extends ConsumerWidget {
@@ -26,6 +27,7 @@ class DonorImpactScreen extends ConsumerWidget {
 
     final textTheme = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
+    final ac = Theme.of(context).extension<AppColors>()!;
 
     final categoryMap = _buildCategoryMap(batches);
     final categoryTotal = categoryMap.values.fold<int>(0, (sum, v) => sum + v);
@@ -38,12 +40,12 @@ class DonorImpactScreen extends ConsumerWidget {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.location_on, color: Color(0xFF006E2F), size: 20),
+            Icon(Icons.location_on, color: ac.brand, size: 20),
             const SizedBox(width: 4),
             Text(
               'SaveAMeal',
               style: textTheme.titleLarge?.copyWith(
-                color: const Color(0xFF006E2F),
+                color: ac.brand,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -85,10 +87,10 @@ class DonorImpactScreen extends ConsumerWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(Spacing.lg),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF006E2F), Color(0xFF22C55E)],
+                      colors: [ac.brand, ac.brandLight],
                     ),
                     borderRadius: BorderRadius.circular(25),
                   ),
@@ -222,7 +224,7 @@ class DonorImpactScreen extends ConsumerWidget {
                                     children: [
                                       Icon(
                                         _iconForCategory(cat),
-                                        color: const Color(0xFF006E2F),
+                                        color: ac.brand,
                                         size: 20,
                                       ),
                                       SizedBox(width: Spacing.sm),
@@ -236,7 +238,7 @@ class DonorImpactScreen extends ConsumerWidget {
                                         '$pct%',
                                         style: textTheme.bodyMedium?.copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF006E2F),
+                                          color: ac.brand,
                                         ),
                                       ),
                                     ],
@@ -310,13 +312,14 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
+    final ac = Theme.of(context).extension<AppColors>()!;
     return Container(
       padding: const EdgeInsets.all(Spacing.md),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
-        border: const Border(
-          top: BorderSide(color: Color(0xFF006E2F), width: 3),
+        border: Border(
+          top: BorderSide(color: ac.brand, width: 3),
         ),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
@@ -326,7 +329,7 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: const Color(0xFF006E2F), size: 24),
+          Icon(icon, color: ac.brand, size: 24),
           SizedBox(height: Spacing.xs),
           Text(
             label,
@@ -343,7 +346,7 @@ class _StatCard extends StatelessWidget {
                 value,
                 style: textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF006E2F),
+                  color: ac.brand,
                 ),
               ),
               const SizedBox(width: 4),
@@ -351,7 +354,7 @@ class _StatCard extends StatelessWidget {
                 unit,
                 style: textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF006E2F),
+                  color: ac.brand,
                 ),
               ),
             ],
