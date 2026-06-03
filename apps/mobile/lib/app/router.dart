@@ -14,6 +14,7 @@ import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.da
 import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_impact_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/scanner_screen.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/presentation/screens/claim_rescue_screen.dart';
@@ -86,8 +87,7 @@ GoRouter router(Ref ref) {
           ),
           GoRoute(
             path: 'impact',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('Impact'))),
+            builder: (context, state) => const DonorImpactScreen(),
           ),
           GoRoute(
             path: 'batches',
