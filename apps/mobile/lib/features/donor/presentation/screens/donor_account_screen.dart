@@ -126,6 +126,15 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (user?.createdAt != null) ...[
+                      const SizedBox(height: Spacing.xs),
+                      Text(
+                        'Member since ${_monthName(user!.createdAt!.month)} ${user.createdAt!.year}',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: Spacing.md),
                     // Stat chips
                     Row(
@@ -133,7 +142,7 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
                         Expanded(
                           child: _StatChip(
                             icon: Icons.eco,
-                            value: '${metrics.totalKg} kg',
+                            value: _formatKg(metrics.totalKg),
                             label: 'Total Donations',
                           ),
                         ),
@@ -205,17 +214,19 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
             ),
             const SizedBox(height: Spacing.lg),
             // Log out button
-            OutlinedButton(
+            OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 foregroundColor: ac.danger,
                 side: BorderSide(color: ac.danger),
                 minimumSize: const Size(double.infinity, 48),
+                shape: const StadiumBorder(),
               ),
+              icon: const Icon(Icons.logout),
+              label: const Text('Log Out'),
               onPressed: () async {
                 final usecase = ref.read(signOutUsecaseProvider);
                 await usecase.call();
               },
-              child: const Text('Log Out'),
             ),
             const SizedBox(height: Spacing.md),
           ],
@@ -238,6 +249,27 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
       ),
     );
   }
+}
+
+String _monthName(int month) => const [
+  '',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+][month];
+
+String _formatKg(double kg) {
+  if (kg == kg.truncateToDouble()) return '${kg.toInt()} kg';
+  return '${kg.toStringAsFixed(1)} kg';
 }
 
 class _StatChip extends StatelessWidget {

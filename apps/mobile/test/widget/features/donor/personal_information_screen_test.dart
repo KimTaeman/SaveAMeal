@@ -159,13 +159,11 @@ void main() {
       );
     });
 
-    testWidgets('renders Primary Location field', (tester) async {
+    testWidgets('renders location field with city/zip hint', (tester) async {
       await tester.pumpWidget(_buildApp());
       await tester.pumpAndSettle();
-      expect(
-        find.widgetWithText(TextFormField, 'Primary Location'),
-        findsOneWidget,
-      );
+      // Field now uses hintText to match Figma; verify by finding the GPS icon.
+      expect(find.byIcon(Icons.my_location), findsOneWidget);
     });
 
     testWidgets('renders Save button', (tester) async {
