@@ -40,6 +40,11 @@ class FirestoreService {
   Future<void> createUser(UserModel user) =>
       _db.collection(FirestoreConstants.users).doc(user.uid).set(user.toJson());
 
+  Future<void> updateUser(String uid, Map<String, dynamic> fields) => _db
+      .collection(FirestoreConstants.users)
+      .doc(uid)
+      .set(fields, SetOptions(merge: true));
+
   Future<UserModel?> getUser(String uid) async {
     final doc = await _db.collection(FirestoreConstants.users).doc(uid).get();
     if (!doc.exists || doc.data() == null) return null;

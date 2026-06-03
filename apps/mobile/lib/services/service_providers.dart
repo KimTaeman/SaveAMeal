@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/services/auth_service.dart';
 import 'package:saveameal/services/fcm_service.dart';
 import 'package:saveameal/services/firestore_service.dart';
+import 'package:saveameal/services/location_service.dart';
 import 'package:saveameal/services/storage_service.dart';
 
 part 'service_providers.g.dart';
@@ -20,6 +21,9 @@ FirestoreService firestoreService(Ref ref) =>
 @riverpod
 StorageService storageService(Ref ref) =>
     StorageService(FirebaseStorage.instance);
+
+@riverpod
+LocationService locationService(Ref ref) => LocationService();
 
 @riverpod
 FcmService fcmService(Ref ref) =>

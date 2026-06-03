@@ -73,7 +73,7 @@ List<AppNotification> _seedNotifications() {
       type: NotificationType.batchCompleted,
       title: 'Batch Completed',
       body: 'Batch #8411 completed.',
-      timestamp: yesterday.subtract(const Duration(hours: 2)),
+      timestamp: yesterday.add(const Duration(hours: 1)),
       isRead: true,
     ),
   ];

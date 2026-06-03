@@ -1,16 +1,29 @@
 import 'package:geolocator/geolocator.dart';
 
-/// Wraps geolocator. All methods throw [UnimplementedError] until wired up.
 class LocationService {
-  // TODO: handle permissions before calling geolocator methods
+  Future<Position> getCurrentPosition() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) throw Exception('Location services are disabled.');
 
-  /// Returns the device's current position.
-  Future<Position> getCurrentPosition() =>
-      // TODO: implement
-      throw UnimplementedError('getCurrentPosition not implemented');
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception('Location permission denied.');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception('Location permission permanently denied.');
+    }
 
-  /// Streams continuous position updates from the device.
-  Stream<Position> getPositionStream() =>
-      // TODO: implement
-      throw UnimplementedError('getPositionStream not implemented');
+    return Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.medium,
+      ),
+    );
+  }
+
+  Stream<Position> getPositionStream() => Geolocator.getPositionStream(
+    locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium),
+  );
 }
