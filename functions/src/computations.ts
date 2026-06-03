@@ -18,10 +18,15 @@ export function computeTotals(items: BatchItem[]): Totals {
   };
 }
 
+const VALID_CATEGORIES = new Set([
+  'bakery', 'produce', 'dairy', 'protein', 'prepared', 'other',
+]);
+
 export function computeByCategory(items: BatchItem[]): Record<string, number> {
   const result: Record<string, number> = {};
   for (const item of items) {
-    const cat = item.category?.trim() || 'other';
+    const raw = item.category?.trim().toLowerCase() || 'other';
+    const cat = VALID_CATEGORIES.has(raw) ? raw : 'other';
     result[cat] = (result[cat] ?? 0) + (item.weightKg ?? 0);
   }
   // remove zero-kg entries

@@ -17,6 +17,10 @@ export const onDeliveryComplete = onDocumentUpdated(
     const batchId = event.params.batchId;
     const beneficiaryId = after['beneficiaryId'] as string | undefined;
     const donorId = after['donorId'] as string | undefined;
+
+    // Reject IDs that contain path separators — a slash would silently write
+    // to an unintended collection path in Firestore.
+    const isValidId = (id: string) => id.length > 0 && !id.includes('/');
     const items = (after['items'] as Array<{ weightKg: number; category?: string }>) ?? [];
     const { totalKg, totalMeals, totalCo2e } = computeTotals(items);
 
@@ -24,7 +28,7 @@ export const onDeliveryComplete = onDocumentUpdated(
     const ops: Promise<unknown>[] = [];
 
     // Notify beneficiary to confirm receipt.
-    if (beneficiaryId) {
+    if (beneficiaryId && isValidId(beneficiaryId)) {
       const benSnap = await db.collection('users').doc(beneficiaryId).get();
       const benToken = benSnap.data()?.['fcmToken'] as string | undefined;
       if (benToken) {
@@ -79,7 +83,7 @@ export const onDeliveryComplete = onDocumentUpdated(
       totalCo2e: FieldValue.increment(totalCo2e),
     };
 
-    if (donorId) {
+    if (donorId && isValidId(donorId)) {
       ops.push(
         db.collection('impactMetrics').doc(donorId).set(increment, { merge: true }),
       );

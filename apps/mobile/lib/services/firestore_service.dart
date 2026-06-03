@@ -401,4 +401,6 @@ class FirestoreService {
     if (!doc.exists || doc.data() == null) return null;
     return BeneficiaryModel.fromJson({...doc.data()!, 'id': doc.id});
   }
+
+  FirebaseFirestore get db => _db;
 }
