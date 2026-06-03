@@ -1,4 +1,15 @@
 ---
+Date: 2026-06-03 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Implement donor batch detail screen and donation history screen
+Prompt: checkout to new branch and implement for donor these features. batch details and donation history.
+
+Outcome: Implemented DonorHistoryScreen (searchable, paginated 5/page, All/Completed/In Progress filter chips, FAB, matching Figma) and BatchDetailScreen (status heading, summary cards, inventory breakdown, driver card, address card, matching Figma). Added volunteerName to Batch entity. Added watchAllBatches + watchBatchById across all layers (FirestoreService → datasource → repository → use cases → providers). Router restructured with batch/:batchId as parent of qr sub-route. Dashboard _BatchCard made tappable. 175 tests pass.
+Decisions: BatchModel already had volunteerName — only Batch entity needed updating. Pagination is client-side (load all, slice by page). Timeline removed — Figma shows summary cards instead. Driver avatar uses initials CircleAvatar. Address card uses styled container (no real map — pickup address is string, not coordinates).
+Handoff: QA-engineer to validate filter chips, pagination, and navigation on device. Cloud Functions already write volunteerName on batch claim via FirestoreService.acceptJob. No schema changes required.
+Review: PENDING
+---
 Date: 2026-05-22 00:00
 Member: KimTaeman
 Agent: flutter-engineer
@@ -1043,3 +1054,8 @@ Outcome: Widget test file created at `apps/mobile/test/widget/notifications_scre
 Decisions: None — followed exact specification provided.
 Handoff: Next step is for flutter-engineer to implement NotificationsScreen widget at `apps/mobile/lib/features/notifications/presentation/screens/notifications_screen.dart` to make tests pass.
 Review: PENDING
+Files:
+  ~ apps/mobile/test/widget/features/donor/batch_detail_screen_test.dart
+  ~ apps/mobile/test/widget/features/donor/donor_history_screen_test.dart
+Summary:  2 files changed, 8 insertions(+), 8 deletions(-)
+

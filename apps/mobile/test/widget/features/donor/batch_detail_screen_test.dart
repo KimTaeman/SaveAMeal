@@ -33,7 +33,7 @@ Widget _wrap(Batch batch) {
     routes: [
       GoRoute(
         path: '/donor',
-        builder: (_, __) => const Scaffold(body: Text('Dashboard')),
+        builder: (_, _) => const Scaffold(body: Text('Dashboard')),
         routes: [
           GoRoute(
             path: 'batch/:batchId',

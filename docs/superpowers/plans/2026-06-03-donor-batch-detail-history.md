@@ -2,49 +2,51 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Implement `DonorHistoryScreen` (`/donor/batches`) showing all batches with status filter chips, and `BatchDetailScreen` (`/donor/batch/:batchId`) showing item list, status timeline, and driver info with the QR button.
+**Goal:** Implement `DonorHistoryScreen` (`/donor/batches`) — searchable, paginated batch list with filter chips — and `BatchDetailScreen` (`/donor/batch/:batchId`) — summary cards, inventory breakdown, driver info, pickup address — matching the Figma reference designs.
 
-**Architecture:** Extend `DonorRepository` with `watchAllBatches` and `watchBatchById`; `BatchModel` already has the three lifecycle timestamps so only `Batch` entity needs updating; both screens are `ConsumerStatefulWidget`s reading from new Riverpod family providers.
+**Architecture:** Extend `DonorRepository` with `watchAllBatches` and `watchBatchById`; add `volunteerName` to `Batch` entity (already on `BatchModel`); both screens are `ConsumerStatefulWidget`s reading from new Riverpod family providers.
 
-**Tech Stack:** Flutter, Riverpod (riverpod_annotation codegen), GoRouter, Firestore (`cloud_firestore`), `freezed`, `go_router`
+**Tech Stack:** Flutter, Riverpod (riverpod_annotation codegen), GoRouter, Firestore (`cloud_firestore`)
+
+**Figma references:** `Donation History (5 per page).png`, `Batch Details.png`
 
 ---
 
 ## File Map
 
-| Action | Path | Responsibility |
-|--------|------|----------------|
-| **Modify** | `lib/features/donor/domain/entities/batch.dart` | Add `claimedAt`, `pickedUpAt`, `deliveredAt` fields |
-| **Modify** | `lib/features/donor/data/repositories/donor_repository_impl.dart` | Map new timestamp fields in `_toBatch` / `_fromBatch` |
-| **Modify** | `lib/services/firestore_service.dart` | Add `watchAllBatchesForDonor` (no status filter) |
-| **Modify** | `lib/features/donor/data/datasources/donor_remote_datasource.dart` | Add `watchAllBatches` + `watchBatchById` abstract + impls |
-| **Modify** | `lib/features/donor/domain/repositories/donor_repository.dart` | Add `watchAllBatches` + `watchBatchById` signatures |
-| **Modify** | `lib/features/donor/data/repositories/donor_repository_impl.dart` | Implement both new methods |
-| **Create** | `lib/features/donor/domain/usecases/watch_all_batches_usecase.dart` | Single-method use case |
-| **Create** | `lib/features/donor/domain/usecases/watch_batch_by_id_usecase.dart` | Single-method use case |
-| **Modify** | `lib/features/donor/presentation/providers/donor_provider.dart` | Add 4 new `@riverpod` providers |
-| **Create** | `lib/features/donor/presentation/screens/donor_history_screen.dart` | History screen + filter chips |
-| **Create** | `lib/features/donor/presentation/screens/batch_detail_screen.dart` | Detail screen (items, timeline, driver) |
-| **Modify** | `lib/features/donor/presentation/screens/donor_dashboard_screen.dart` | Make `_BatchCard` tappable; remove QR button from card |
-| **Modify** | `lib/app/router.dart` | Nest QR under `batch/:batchId`; replace batches stub; add imports |
-| **Modify** | `test/unit/features/donor/domain/usecases/watch_active_batches_usecase_test.dart` | Add stub impls for new interface methods |
-| **Modify** | `test/unit/features/donor/domain/usecases/get_donor_metrics_usecase_test.dart` | Add stub impls for new interface methods |
-| **Modify** | `test/unit/features/donor/domain/usecases/create_batch_usecase_test.dart` | Add stub impls for new interface methods |
-| **Create** | `test/unit/features/donor/domain/usecases/watch_all_batches_usecase_test.dart` | Use case unit tests |
-| **Create** | `test/unit/features/donor/domain/usecases/watch_batch_by_id_usecase_test.dart` | Use case unit tests |
-| **Create** | `test/widget/features/donor/donor_history_screen_test.dart` | Widget tests |
-| **Create** | `test/widget/features/donor/batch_detail_screen_test.dart` | Widget tests |
+| Action | Path |
+|--------|------|
+| **Modify** | `apps/mobile/lib/features/donor/domain/entities/batch.dart` |
+| **Modify** | `apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart` |
+| **Modify** | `apps/mobile/lib/services/firestore_service.dart` |
+| **Modify** | `apps/mobile/lib/features/donor/data/datasources/donor_remote_datasource.dart` |
+| **Modify** | `apps/mobile/lib/features/donor/domain/repositories/donor_repository.dart` |
+| **Create** | `apps/mobile/lib/features/donor/domain/usecases/watch_all_batches_usecase.dart` |
+| **Create** | `apps/mobile/lib/features/donor/domain/usecases/watch_batch_by_id_usecase.dart` |
+| **Modify** | `apps/mobile/lib/features/donor/presentation/providers/donor_provider.dart` |
+| **Create** | `apps/mobile/lib/features/donor/presentation/screens/donor_history_screen.dart` |
+| **Create** | `apps/mobile/lib/features/donor/presentation/screens/batch_detail_screen.dart` |
+| **Modify** | `apps/mobile/lib/features/donor/presentation/screens/donor_dashboard_screen.dart` |
+| **Modify** | `apps/mobile/lib/app/router.dart` |
+| **Modify** | `apps/mobile/test/unit/features/donor/domain/usecases/watch_active_batches_usecase_test.dart` |
+| **Modify** | `apps/mobile/test/unit/features/donor/domain/usecases/get_donor_metrics_usecase_test.dart` |
+| **Modify** | `apps/mobile/test/unit/features/donor/domain/usecases/create_batch_usecase_test.dart` |
+| **Create** | `apps/mobile/test/unit/features/donor/domain/usecases/watch_all_batches_usecase_test.dart` |
+| **Create** | `apps/mobile/test/unit/features/donor/domain/usecases/watch_batch_by_id_usecase_test.dart` |
+| **Create** | `apps/mobile/test/widget/features/donor/donor_history_screen_test.dart` |
+| **Create** | `apps/mobile/test/widget/features/donor/batch_detail_screen_test.dart` |
 
 ---
 
-## Task 1: Extend `Batch` Entity With Timeline Timestamps
+## Task 1: Add `volunteerName` to `Batch` Entity + Update Mapper
 
 **Files:**
 - Modify: `apps/mobile/lib/features/donor/domain/entities/batch.dart`
+- Modify: `apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart`
 
-- [ ] **Step 1: Add the three new fields to `Batch`**
+- [ ] **Step 1: Add `volunteerName` field to `Batch`**
 
-Replace the entire file content:
+Replace `apps/mobile/lib/features/donor/domain/entities/batch.dart`:
 
 ```dart
 import 'package:saveameal/features/donor/domain/entities/batch_item.dart';
@@ -59,6 +61,7 @@ class Batch {
     required this.pickupAddress,
     required this.status,
     this.driverId,
+    this.volunteerName,
     this.beneficiaryId,
     this.photoUrl,
     this.qrCode,
@@ -66,9 +69,6 @@ class Batch {
     this.feedback,
     this.createdAt,
     this.updatedAt,
-    this.claimedAt,
-    this.pickedUpAt,
-    this.deliveredAt,
   });
 
   final String id;
@@ -77,6 +77,7 @@ class Batch {
   final String pickupAddress;
   final BatchStatus status;
   final String? driverId;
+  final String? volunteerName;
   final String? beneficiaryId;
   final String? photoUrl;
   final String? qrCode;
@@ -84,9 +85,6 @@ class Batch {
   final String? feedback;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  final DateTime? claimedAt;
-  final DateTime? pickedUpAt;
-  final DateTime? deliveredAt;
 
   double get weightKg => items.fold(0, (s, i) => s + i.weightKg);
   int get portions => items.length;
@@ -94,26 +92,69 @@ class Batch {
 }
 ```
 
-- [ ] **Step 2: Run static analysis to confirm no errors**
+- [ ] **Step 2: Update `_toBatch` and `_fromBatch` mappers in `donor_repository_impl.dart`**
+
+In `apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart`, replace the `_toBatch` method:
+
+```dart
+  domain.Batch _toBatch(bm.BatchModel m) => domain.Batch(
+    id: m.id,
+    donorId: m.donorId,
+    items: m.items.map(_toBatchItem).toList(),
+    pickupAddress: m.pickupAddress,
+    status: domain.BatchStatus.values.byName(m.status.name),
+    driverId: m.driverId,
+    volunteerName: m.volunteerName,
+    beneficiaryId: m.beneficiaryId,
+    photoUrl: m.photoUrl,
+    qrCode: m.qrCode,
+    rating: m.rating,
+    feedback: m.feedback,
+    createdAt: m.createdAt,
+    updatedAt: m.updatedAt,
+  );
+```
+
+Also replace `_fromBatch`:
+
+```dart
+  bm.BatchModel _fromBatch(domain.Batch b) => bm.BatchModel(
+    id: b.id,
+    donorId: b.donorId,
+    items: b.items.map(_fromBatchItem).toList(),
+    pickupAddress: b.pickupAddress,
+    status: bm.BatchStatus.values.byName(b.status.name),
+    driverId: b.driverId,
+    volunteerName: b.volunteerName,
+    beneficiaryId: b.beneficiaryId,
+    photoUrl: b.photoUrl,
+    qrCode: b.qrCode,
+    rating: b.rating,
+    feedback: b.feedback,
+    createdAt: b.createdAt,
+    updatedAt: b.updatedAt,
+  );
+```
+
+- [ ] **Step 3: Run static analysis**
 
 ```bash
-cd apps/mobile && flutter analyze lib/features/donor/domain/entities/batch.dart
+cd apps/mobile && flutter analyze lib/features/donor/domain/entities/batch.dart lib/features/donor/data/repositories/donor_repository_impl.dart
 ```
 
 Expected: no issues.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add apps/mobile/lib/features/donor/domain/entities/batch.dart
-git commit -m "feat(donor): add claimedAt/pickedUpAt/deliveredAt to Batch entity"
+git add apps/mobile/lib/features/donor/domain/entities/batch.dart \
+        apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart
+git commit -m "feat(donor): add volunteerName to Batch entity and update mapper"
 ```
 
 ---
 
 ## Task 2: Update `DonorRepository` Interface + Fix Existing Test Fakes
-
-Adding two methods to the abstract class will break the three existing `_FakeDonorRepository` impls in unit tests. Fix them all in this task.
 
 **Files:**
 - Modify: `apps/mobile/lib/features/donor/domain/repositories/donor_repository.dart`
@@ -142,7 +183,7 @@ abstract class DonorRepository {
 
 - [ ] **Step 2: Add stub implementations to `watch_active_batches_usecase_test.dart`**
 
-In the `_FakeDonorRepository` class, add these two methods after `getBeneficiaries()`:
+In `_FakeDonorRepository`, add after `getBeneficiaries()`:
 
 ```dart
   @override
@@ -151,14 +192,14 @@ In the `_FakeDonorRepository` class, add these two methods after `getBeneficiari
 
   @override
   Stream<Batch> watchBatchById(String batchId) =>
-      Stream.value(batchesToEmit.isNotEmpty
-          ? batchesToEmit.first
-          : throw Exception('not found'));
+      batchesToEmit.isNotEmpty
+          ? Stream.value(batchesToEmit.first)
+          : Stream.error(Exception('not found'));
 ```
 
 - [ ] **Step 3: Add stub implementations to `get_donor_metrics_usecase_test.dart`**
 
-Read the file first, then add after the last `@override` method in `_FakeDonorRepository`:
+In `_FakeDonorRepository`, add after the last `@override` method:
 
 ```dart
   @override
@@ -170,7 +211,7 @@ Read the file first, then add after the last `@override` method in `_FakeDonorRe
 
 - [ ] **Step 4: Add stub implementations to `create_batch_usecase_test.dart`**
 
-Read the file first, then add after the last `@override` method in `_FakeDonorRepository`:
+In `_FakeDonorRepository`, add after the last `@override` method:
 
 ```dart
   @override
@@ -180,7 +221,7 @@ Read the file first, then add after the last `@override` method in `_FakeDonorRe
   Stream<Batch> watchBatchById(String batchId) => const Stream.empty();
 ```
 
-- [ ] **Step 5: Run existing tests to confirm they still pass**
+- [ ] **Step 5: Run existing unit tests**
 
 ```bash
 cd apps/mobile && flutter test test/unit/features/donor/
@@ -200,19 +241,19 @@ git commit -m "feat(donor): add watchAllBatches + watchBatchById to DonorReposit
 
 ---
 
-## Task 3: Add `watchAllBatchesForDonor` to `FirestoreService` + Update Mapper
+## Task 3: Add `watchAllBatchesForDonor` to `FirestoreService` + Implement Datasource + Repository
 
 **Files:**
 - Modify: `apps/mobile/lib/services/firestore_service.dart`
+- Modify: `apps/mobile/lib/features/donor/data/datasources/donor_remote_datasource.dart`
 - Modify: `apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart`
 
 - [ ] **Step 1: Add `watchAllBatchesForDonor` to `FirestoreService`**
 
-After the `watchActiveBatchesForDonor` method (around line 354), add:
+After the `watchActiveBatchesForDonor` method (near the end of the file), add:
 
 ```dart
-  /// All batches for this donor regardless of status, sorted client-side by
-  /// createdAt descending. No composite Firestore index needed.
+  /// All batches for this donor regardless of status. Sorted client-side.
   Stream<List<BatchModel>> watchAllBatchesForDonor(String donorId) => _db
       .collection(FirestoreConstants.batches)
       .where('donorId', isEqualTo: donorId)
@@ -226,60 +267,9 @@ After the `watchActiveBatchesForDonor` method (around line 354), add:
       );
 ```
 
-Note: `watchBatch(String batchId)` already exists in `FirestoreService` (around line 71) — no changes needed there.
+Note: `watchBatch(String batchId)` already exists — no changes needed.
 
-- [ ] **Step 2: Update `_toBatch` mapper in `DonorRepositoryImpl` to pass through the three new timestamps**
-
-In `apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart`, replace the `_toBatch` method:
-
-```dart
-  domain.Batch _toBatch(bm.BatchModel m) => domain.Batch(
-    id: m.id,
-    donorId: m.donorId,
-    items: m.items.map(_toBatchItem).toList(),
-    pickupAddress: m.pickupAddress,
-    status: domain.BatchStatus.values.byName(m.status.name),
-    driverId: m.driverId,
-    beneficiaryId: m.beneficiaryId,
-    photoUrl: m.photoUrl,
-    qrCode: m.qrCode,
-    rating: m.rating,
-    feedback: m.feedback,
-    createdAt: m.createdAt,
-    updatedAt: m.updatedAt,
-    claimedAt: m.claimedAt,
-    pickedUpAt: m.pickedUpAt,
-    deliveredAt: m.deliveredAt,
-  );
-```
-
-- [ ] **Step 3: Run static analysis**
-
-```bash
-cd apps/mobile && flutter analyze lib/services/firestore_service.dart lib/features/donor/data/repositories/donor_repository_impl.dart
-```
-
-Expected: no issues.
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add apps/mobile/lib/services/firestore_service.dart \
-        apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart
-git commit -m "feat(donor): add watchAllBatchesForDonor to FirestoreService; map timeline timestamps in _toBatch"
-```
-
----
-
-## Task 4: Implement `DonorRemoteDatasource` + `DonorRepositoryImpl` New Methods
-
-**Files:**
-- Modify: `apps/mobile/lib/features/donor/data/datasources/donor_remote_datasource.dart`
-- Modify: `apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart`
-
-- [ ] **Step 1: Add two methods to `DonorRemoteDatasource`**
-
-Replace `apps/mobile/lib/features/donor/data/datasources/donor_remote_datasource.dart`:
+- [ ] **Step 2: Replace `donor_remote_datasource.dart`**
 
 ```dart
 import 'package:saveameal/core/exceptions/batch_exceptions.dart';
@@ -320,16 +310,15 @@ class DonorRemoteDatasourceImpl implements DonorRemoteDatasource {
       _firestoreService.getBeneficiaries();
 
   @override
-  Stream<List<BatchModel>> watchAllBatches(String donorId) {
-    return _firestoreService.watchAllBatchesForDonor(donorId).map((models) {
-      final sorted = [...models]
-        ..sort(
-          (a, b) => (b.createdAt ?? DateTime(0))
-              .compareTo(a.createdAt ?? DateTime(0)),
-        );
-      return sorted;
-    });
-  }
+  Stream<List<BatchModel>> watchAllBatches(String donorId) =>
+      _firestoreService.watchAllBatchesForDonor(donorId).map((models) {
+        final sorted = [...models]
+          ..sort(
+            (a, b) => (b.createdAt ?? DateTime(0))
+                .compareTo(a.createdAt ?? DateTime(0)),
+          );
+        return sorted;
+      });
 
   @override
   Stream<BatchModel> watchBatchById(String batchId) =>
@@ -340,9 +329,9 @@ class DonorRemoteDatasourceImpl implements DonorRemoteDatasource {
 }
 ```
 
-- [ ] **Step 2: Add implementations to `DonorRepositoryImpl`**
+- [ ] **Step 3: Add `watchAllBatches` and `watchBatchById` implementations to `DonorRepositoryImpl`**
 
-In `apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart`, add these two method implementations after `getBeneficiaries()`:
+In `donor_repository_impl.dart`, add after `getBeneficiaries()`:
 
 ```dart
   @override
@@ -356,31 +345,34 @@ In `apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart`
       _datasource.watchBatchById(batchId).map(_toBatch);
 ```
 
-- [ ] **Step 3: Run static analysis**
+- [ ] **Step 4: Run static analysis**
 
 ```bash
-cd apps/mobile && flutter analyze lib/features/donor/data/
+cd apps/mobile && flutter analyze lib/services/firestore_service.dart lib/features/donor/data/
 ```
 
 Expected: no issues.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add apps/mobile/lib/features/donor/data/datasources/donor_remote_datasource.dart \
+git add apps/mobile/lib/services/firestore_service.dart \
+        apps/mobile/lib/features/donor/data/datasources/donor_remote_datasource.dart \
         apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart
 git commit -m "feat(donor): implement watchAllBatches + watchBatchById in datasource and repository"
 ```
 
 ---
 
-## Task 5: Create Use Cases
+## Task 4: Create Use Cases + Unit Tests
 
 **Files:**
 - Create: `apps/mobile/lib/features/donor/domain/usecases/watch_all_batches_usecase.dart`
 - Create: `apps/mobile/lib/features/donor/domain/usecases/watch_batch_by_id_usecase.dart`
+- Create: `apps/mobile/test/unit/features/donor/domain/usecases/watch_all_batches_usecase_test.dart`
+- Create: `apps/mobile/test/unit/features/donor/domain/usecases/watch_batch_by_id_usecase_test.dart`
 
-- [ ] **Step 1: Write the failing unit test for `WatchAllBatchesUsecase`**
+- [ ] **Step 1: Write failing test for `WatchAllBatchesUsecase`**
 
 Create `apps/mobile/test/unit/features/donor/domain/usecases/watch_all_batches_usecase_test.dart`:
 
@@ -399,21 +391,16 @@ class _FakeDonorRepository implements DonorRepository {
   @override
   Stream<List<Batch>> watchActiveBatches(String donorId) =>
       Stream.value(batches);
-
   @override
   Stream<DonorMetrics> watchMetrics(String donorId) =>
       Stream.value(DonorMetrics.empty);
-
   @override
   Future<void> createBatch(Batch batch) async {}
-
   @override
   Stream<List<Beneficiary>> getBeneficiaries() => const Stream.empty();
-
   @override
   Stream<List<Batch>> watchAllBatches(String donorId) =>
       Stream.value(batches);
-
   @override
   Stream<Batch> watchBatchById(String batchId) =>
       Stream.value(batches.firstWhere((b) => b.id == batchId));
@@ -433,22 +420,20 @@ void main() {
     test('delegates to repository.watchAllBatches and emits all statuses',
         () async {
       final batches = [
-        _makeBatch('a', BatchStatus.open),
-        _makeBatch('b', BatchStatus.closed),
-        _makeBatch('c', BatchStatus.delivered),
+        _makeBatch('aaaaaaaa', BatchStatus.open),
+        _makeBatch('bbbbbbbb', BatchStatus.closed),
+        _makeBatch('cccccccc', BatchStatus.delivered),
       ];
-      final repo = _FakeDonorRepository(batches: batches);
-      final usecase = WatchAllBatchesUsecase(repo);
+      final usecase = WatchAllBatchesUsecase(_FakeDonorRepository(batches: batches));
 
       final result = await usecase.call('donor-1').first;
 
       expect(result.length, 3);
-      expect(result.map((b) => b.id), containsAll(['a', 'b', 'c']));
+      expect(result.map((b) => b.id), containsAll(['aaaaaaaa', 'bbbbbbbb', 'cccccccc']));
     });
 
     test('emits empty list when repository emits empty list', () async {
-      final repo = _FakeDonorRepository(batches: []);
-      final usecase = WatchAllBatchesUsecase(repo);
+      final usecase = WatchAllBatchesUsecase(_FakeDonorRepository(batches: []));
 
       final result = await usecase.call('donor-1').first;
 
@@ -458,10 +443,10 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run to verify it fails (file not found)**
+- [ ] **Step 2: Run to verify it fails**
 
 ```bash
-cd apps/mobile && flutter test test/unit/features/donor/domain/usecases/watch_all_batches_usecase_test.dart
+cd apps/mobile && flutter test test/unit/features/donor/domain/usecases/watch_all_batches_usecase_test.dart 2>&1 | head -5
 ```
 
 Expected: compilation error — `WatchAllBatchesUsecase` not found.
@@ -484,7 +469,7 @@ class WatchAllBatchesUsecase {
 }
 ```
 
-- [ ] **Step 4: Write the failing unit test for `WatchBatchByIdUsecase`**
+- [ ] **Step 4: Write failing test for `WatchBatchByIdUsecase`**
 
 Create `apps/mobile/test/unit/features/donor/domain/usecases/watch_batch_by_id_usecase_test.dart`:
 
@@ -503,58 +488,46 @@ class _FakeDonorRepository implements DonorRepository {
   @override
   Stream<List<Batch>> watchActiveBatches(String donorId) =>
       Stream.value(batch != null ? [batch!] : []);
-
   @override
   Stream<DonorMetrics> watchMetrics(String donorId) =>
       Stream.value(DonorMetrics.empty);
-
   @override
   Future<void> createBatch(Batch b) async {}
-
   @override
   Stream<List<Beneficiary>> getBeneficiaries() => const Stream.empty();
-
   @override
   Stream<List<Batch>> watchAllBatches(String donorId) =>
       Stream.value(batch != null ? [batch!] : []);
-
   @override
-  Stream<Batch> watchBatchById(String batchId) {
-    if (batch == null) return Stream.error(Exception('not found'));
-    return Stream.value(batch!);
-  }
+  Stream<Batch> watchBatchById(String batchId) =>
+      batch != null ? Stream.value(batch!) : Stream.error(Exception('not found'));
 }
 
 void main() {
   group('WatchBatchByIdUsecase', () {
-    test('delegates to repository.watchBatchById and emits Batch', () async {
+    test('delegates to repository and emits Batch', () async {
       final b = Batch(
-        id: 'batch-xyz',
+        id: 'batch001',
         donorId: 'donor-1',
         items: const [],
         pickupAddress: '1 Test St',
         status: BatchStatus.claimed,
+        volunteerName: 'Nattapong',
         createdAt: DateTime(2026, 5, 23),
-        claimedAt: DateTime(2026, 5, 23, 10),
       );
-      final repo = _FakeDonorRepository(batch: b);
-      final usecase = WatchBatchByIdUsecase(repo);
+      final usecase = WatchBatchByIdUsecase(_FakeDonorRepository(batch: b));
 
-      final result = await usecase.call('batch-xyz').first;
+      final result = await usecase.call('batch001').first;
 
-      expect(result.id, 'batch-xyz');
+      expect(result.id, 'batch001');
       expect(result.status, BatchStatus.claimed);
-      expect(result.claimedAt, DateTime(2026, 5, 23, 10));
+      expect(result.volunteerName, 'Nattapong');
     });
 
     test('emits error when repository stream errors', () async {
-      final repo = _FakeDonorRepository(batch: null);
-      final usecase = WatchBatchByIdUsecase(repo);
+      final usecase = WatchBatchByIdUsecase(_FakeDonorRepository(batch: null));
 
-      expect(
-        usecase.call('missing-id'),
-        emitsError(isA<Exception>()),
-      );
+      expect(usecase.call('missing'), emitsError(isA<Exception>()));
     });
   });
 }
@@ -563,7 +536,7 @@ void main() {
 - [ ] **Step 5: Run to verify it fails**
 
 ```bash
-cd apps/mobile && flutter test test/unit/features/donor/domain/usecases/watch_batch_by_id_usecase_test.dart
+cd apps/mobile && flutter test test/unit/features/donor/domain/usecases/watch_batch_by_id_usecase_test.dart 2>&1 | head -5
 ```
 
 Expected: compilation error — `WatchBatchByIdUsecase` not found.
@@ -591,7 +564,7 @@ class WatchBatchByIdUsecase {
 cd apps/mobile && flutter test test/unit/features/donor/domain/usecases/watch_all_batches_usecase_test.dart test/unit/features/donor/domain/usecases/watch_batch_by_id_usecase_test.dart
 ```
 
-Expected: all 4 tests pass.
+Expected: 4 tests pass.
 
 - [ ] **Step 8: Commit**
 
@@ -605,21 +578,21 @@ git commit -m "feat(donor): add WatchAllBatchesUsecase + WatchBatchByIdUsecase w
 
 ---
 
-## Task 6: Add Riverpod Providers + Run Codegen
+## Task 5: Add Riverpod Providers + Run Codegen
 
 **Files:**
 - Modify: `apps/mobile/lib/features/donor/presentation/providers/donor_provider.dart`
 
-- [ ] **Step 1: Add 4 new providers to `donor_provider.dart`**
+- [ ] **Step 1: Add imports and 4 new providers**
 
-Add these imports at the top (after existing imports):
+Add to the import block at the top of `donor_provider.dart`:
 
 ```dart
 import 'package:saveameal/features/donor/domain/usecases/watch_all_batches_usecase.dart';
 import 'package:saveameal/features/donor/domain/usecases/watch_batch_by_id_usecase.dart';
 ```
 
-Append these four providers at the end of the file (before the end of the `part` section — just add to the bottom):
+Append to the bottom of `donor_provider.dart` (before the end of file):
 
 ```dart
 @riverpod
@@ -639,15 +612,15 @@ Stream<Batch> batchById(Ref ref, String batchId) =>
     ref.watch(watchBatchByIdUsecaseProvider).call(batchId);
 ```
 
-- [ ] **Step 2: Run code generation**
+- [ ] **Step 2: Run codegen**
 
 ```bash
 cd apps/mobile && dart run build_runner build --delete-conflicting-outputs
 ```
 
-Expected: completes without errors. `donor_provider.g.dart` is regenerated with `allBatchesProvider`, `batchByIdProvider`, `watchAllBatchesUsecaseProvider`, and `watchBatchByIdUsecaseProvider`.
+Expected: completes without errors. `donor_provider.g.dart` updated with `allBatchesProvider`, `batchByIdProvider`, `watchAllBatchesUsecaseProvider`, `watchBatchByIdUsecaseProvider`.
 
-- [ ] **Step 3: Run static analysis**
+- [ ] **Step 3: Run analysis**
 
 ```bash
 cd apps/mobile && flutter analyze lib/features/donor/presentation/providers/
@@ -664,7 +637,7 @@ git commit -m "feat(donor): add allBatchesProvider + batchByIdProvider Riverpod 
 
 ---
 
-## Task 7: Implement `DonorHistoryScreen` (Test-First)
+## Task 6: Implement `DonorHistoryScreen` (Test-First)
 
 **Files:**
 - Create: `apps/mobile/test/widget/features/donor/donor_history_screen_test.dart`
@@ -693,54 +666,54 @@ const _testUser = AppUser(
   role: UserRole.donor,
 );
 
-Batch _makeBatch({
-  required String id,
-  BatchStatus status = BatchStatus.open,
-}) => Batch(
-  id: id,
-  donorId: 'donor-uid',
-  items: const [],
-  pickupAddress: '1 Test Road',
-  status: status,
-  createdAt: DateTime(2026, 5, 23, 14, 30),
-);
-
-GoRouter _buildRouter(Widget screen) => GoRouter(
-  initialLocation: '/donor/batches',
-  routes: [
-    GoRoute(
-      path: '/donor',
-      builder: (_, __) => const Scaffold(body: Text('Dashboard')),
-      routes: [
-        GoRoute(
-          path: 'batches',
-          builder: (_, __) => screen,
-        ),
-        GoRoute(
-          path: 'batch/:batchId',
-          builder: (context, state) =>
-              Scaffold(body: Text('Detail ${state.pathParameters['batchId']}')),
-        ),
-        GoRoute(
-          path: 'impact',
-          builder: (_, __) => const Scaffold(body: Text('Impact')),
-        ),
-        GoRoute(
-          path: 'account',
-          builder: (_, __) => const Scaffold(body: Text('Account')),
-        ),
-      ],
-    ),
-  ],
-);
+Batch _makeBatch({required String id, BatchStatus status = BatchStatus.open}) =>
+    Batch(
+      id: id,
+      donorId: 'donor-uid',
+      items: const [],
+      pickupAddress: '1 Test Road',
+      status: status,
+      createdAt: DateTime(2026, 5, 23, 14, 30),
+    );
 
 Widget _wrap(List<Batch> batches) {
-  final router = _buildRouter(const DonorHistoryScreen());
+  final router = GoRouter(
+    initialLocation: '/donor/batches',
+    routes: [
+      GoRoute(
+        path: '/donor',
+        builder: (_, __) => const Scaffold(body: Text('Dashboard')),
+        routes: [
+          GoRoute(
+            path: 'batches',
+            builder: (_, __) => const DonorHistoryScreen(),
+          ),
+          GoRoute(
+            path: 'batch/:batchId',
+            builder: (context, state) => Scaffold(
+              body: Text('Detail ${state.pathParameters['batchId']}'),
+            ),
+          ),
+          GoRoute(
+            path: 'log',
+            builder: (_, __) => const Scaffold(body: Text('Log')),
+          ),
+          GoRoute(
+            path: 'impact',
+            builder: (_, __) => const Scaffold(body: Text('Impact')),
+          ),
+          GoRoute(
+            path: 'account',
+            builder: (_, __) => const Scaffold(body: Text('Account')),
+          ),
+        ],
+      ),
+    ],
+  );
+
   return ProviderScope(
     overrides: [
-      authStateProvider.overrideWith(
-        (ref) => Stream.value(_testUser),
-      ),
+      authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
       allBatchesProvider('donor-uid').overrideWith(
         (ref) => Stream.value(batches),
       ),
@@ -754,65 +727,66 @@ Widget _wrap(List<Batch> batches) {
 
 void main() {
   group('DonorHistoryScreen', () {
-    testWidgets('shows loading indicator while batches loading', (tester) async {
-      final router = _buildRouter(const DonorHistoryScreen());
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            authStateProvider.overrideWith(
-              (ref) => Stream.value(_testUser),
-            ),
-            allBatchesProvider('donor-uid').overrideWith(
-              (ref) => const Stream.empty(),
-            ),
-          ],
-          child: MaterialApp.router(
-            theme: AppTheme.light,
-            routerConfig: router,
+    testWidgets('shows CircularProgressIndicator while loading', (tester) async {
+      final router = GoRouter(
+        initialLocation: '/donor/batches',
+        routes: [
+          GoRoute(
+            path: '/donor/batches',
+            builder: (_, __) => const DonorHistoryScreen(),
           ),
-        ),
+        ],
       );
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+          allBatchesProvider('donor-uid').overrideWith(
+            (ref) => const Stream.empty(),
+          ),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.light,
+          routerConfig: router,
+        ),
+      ));
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('All chip shows all batches regardless of status',
-        (tester) async {
+    testWidgets('All chip shows all batches', (tester) async {
       final batches = [
-        _makeBatch(id: 'open11111', status: BatchStatus.open),
-        _makeBatch(id: 'closed111', status: BatchStatus.closed),
-        _makeBatch(id: 'delivrd1', status: BatchStatus.delivered),
+        _makeBatch(id: 'aaaaaaaa', status: BatchStatus.open),
+        _makeBatch(id: 'bbbbbbbb', status: BatchStatus.closed),
+        _makeBatch(id: 'cccccccc', status: BatchStatus.delivered),
       ];
       await tester.pumpWidget(_wrap(batches));
       await tester.pumpAndSettle();
 
-      // All 3 cards rendered — each shows "Batch #XXXXXXXX"
-      expect(find.textContaining('Batch #'), findsNWidgets(3));
+      expect(find.textContaining('#'), findsNWidgets(3));
     });
 
-    testWidgets('Active chip filters to open/claimed/pickedUp only',
+    testWidgets('In Progress chip shows only active-status batches',
         (tester) async {
       final batches = [
-        _makeBatch(id: 'open11111', status: BatchStatus.open),
-        _makeBatch(id: 'closed111', status: BatchStatus.closed),
-        _makeBatch(id: 'claimed11', status: BatchStatus.claimed),
+        _makeBatch(id: 'aaaaaaaa', status: BatchStatus.open),
+        _makeBatch(id: 'bbbbbbbb', status: BatchStatus.closed),
+        _makeBatch(id: 'cccccccc', status: BatchStatus.claimed),
       ];
       await tester.pumpWidget(_wrap(batches));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Active'));
+      await tester.tap(find.text('In Progress'));
       await tester.pumpAndSettle();
 
-      // Only open + claimed remain (2 of 3)
-      expect(find.textContaining('Batch #'), findsNWidgets(2));
+      expect(find.textContaining('#'), findsNWidgets(2));
     });
 
-    testWidgets('Completed chip filters to delivered/closed only',
+    testWidgets('Completed chip shows only delivered/closed batches',
         (tester) async {
       final batches = [
-        _makeBatch(id: 'open11111', status: BatchStatus.open),
-        _makeBatch(id: 'closed111', status: BatchStatus.closed),
-        _makeBatch(id: 'delivrd1', status: BatchStatus.delivered),
+        _makeBatch(id: 'aaaaaaaa', status: BatchStatus.open),
+        _makeBatch(id: 'bbbbbbbb', status: BatchStatus.closed),
+        _makeBatch(id: 'cccccccc', status: BatchStatus.delivered),
       ];
       await tester.pumpWidget(_wrap(batches));
       await tester.pumpAndSettle();
@@ -820,8 +794,7 @@ void main() {
       await tester.tap(find.text('Completed'));
       await tester.pumpAndSettle();
 
-      // Only delivered + closed remain (2 of 3)
-      expect(find.textContaining('Batch #'), findsNWidgets(2));
+      expect(find.textContaining('#'), findsNWidgets(2));
     });
 
     testWidgets('shows empty state when no batches', (tester) async {
@@ -831,24 +804,40 @@ void main() {
       expect(find.text('No donations yet'), findsOneWidget);
     });
 
-    testWidgets('tapping a batch card pushes /donor/batch/:id', (tester) async {
-      final batches = [_makeBatch(id: 'abc12345', status: BatchStatus.open)];
-      await tester.pumpWidget(_wrap(batches));
+    testWidgets('tapping a batch card navigates to /donor/batch/:id',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap([_makeBatch(id: 'abc12345', status: BatchStatus.open)]),
+      );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.textContaining('Batch #').first);
+      await tester.tap(find.textContaining('#').first);
       await tester.pumpAndSettle();
 
       expect(find.text('Detail abc12345'), findsOneWidget);
+    });
+
+    testWidgets('search filters by batch short ID', (tester) async {
+      final batches = [
+        _makeBatch(id: 'aaaaaaaa', status: BatchStatus.open),
+        _makeBatch(id: 'bbbbbbbb', status: BatchStatus.open),
+      ];
+      await tester.pumpWidget(_wrap(batches));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'aaaa');
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('#'), findsOneWidget);
     });
   });
 }
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [ ] **Step 2: Run to verify failure**
 
 ```bash
-cd apps/mobile && flutter test test/widget/features/donor/donor_history_screen_test.dart 2>&1 | head -20
+cd apps/mobile && flutter test test/widget/features/donor/donor_history_screen_test.dart 2>&1 | head -5
 ```
 
 Expected: compilation error — `DonorHistoryScreen` not found.
@@ -865,39 +854,61 @@ import 'package:saveameal/features/auth/presentation/providers/auth_provider.dar
 import 'package:saveameal/features/donor/domain/entities/batch.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
+import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
-enum _Filter { all, active, completed }
+enum _HistoryFilter { all, completed, inProgress }
 
 class DonorHistoryScreen extends ConsumerStatefulWidget {
   const DonorHistoryScreen({super.key});
 
   @override
-  ConsumerState<DonorHistoryScreen> createState() => _DonorHistoryScreenState();
+  ConsumerState<DonorHistoryScreen> createState() =>
+      _DonorHistoryScreenState();
 }
 
 class _DonorHistoryScreenState extends ConsumerState<DonorHistoryScreen> {
-  _Filter _filter = _Filter.all;
+  _HistoryFilter _filter = _HistoryFilter.all;
+  String _searchQuery = '';
+  int _currentPage = 0;
+  static const _pageSize = 5;
 
-  List<Batch> _applyFilter(List<Batch> batches) => switch (_filter) {
-    _Filter.all => batches,
-    _Filter.active => batches
-        .where((b) =>
-            b.status == BatchStatus.open ||
-            b.status == BatchStatus.claimed ||
-            b.status == BatchStatus.pickedUp)
-        .toList(),
-    _Filter.completed => batches
-        .where((b) =>
-            b.status == BatchStatus.delivered ||
-            b.status == BatchStatus.closed)
-        .toList(),
-  };
+  List<Batch> _applyFilterAndSearch(List<Batch> batches) {
+    var filtered = switch (_filter) {
+      _HistoryFilter.all => batches,
+      _HistoryFilter.completed => batches
+          .where(
+            (b) =>
+                b.status == BatchStatus.delivered ||
+                b.status == BatchStatus.closed,
+          )
+          .toList(),
+      _HistoryFilter.inProgress => batches
+          .where(
+            (b) =>
+                b.status == BatchStatus.open ||
+                b.status == BatchStatus.claimed ||
+                b.status == BatchStatus.pickedUp,
+          )
+          .toList(),
+    };
+
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      filtered = filtered.where((b) {
+        final shortId =
+            b.id.substring(0, b.id.length.clamp(0, 4)).toLowerCase();
+        final dateStr =
+            b.createdAt != null ? _formatDate(b.createdAt!).toLowerCase() : '';
+        return shortId.contains(q) || dateStr.contains(q);
+      }).toList();
+    }
+    return filtered;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final authAsync = ref.watch(authStateProvider);
-    final donorId = authAsync.asData?.value?.uid ?? '';
+    final donorId = ref.watch(authStateProvider).asData?.value?.uid ?? '';
     final batchesAsync = donorId.isEmpty
         ? const AsyncValue<List<Batch>>.loading()
         : ref.watch(allBatchesProvider(donorId));
@@ -906,35 +917,108 @@ class _DonorHistoryScreenState extends ConsumerState<DonorHistoryScreen> {
     return Scaffold(
       backgroundColor: cs.surface,
       appBar: AppBar(
-        title: const Text('Donation History'),
+        title: Text(
+          'Donation History',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: cs.primary,
+          ),
+        ),
         centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => context.push('/notifications'),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/donor/log'),
+        child: const Icon(Icons.add),
       ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _StatusFilterChips(
+            _SearchBar(
+              onChanged: (q) => setState(() {
+                _searchQuery = q;
+                _currentPage = 0;
+              }),
+            ),
+            _FilterChipsRow(
               selected: _filter,
-              onChanged: (f) => setState(() => _filter = f),
+              onChanged: (f) => setState(() {
+                _filter = f;
+                _currentPage = 0;
+              }),
             ),
             Expanded(
               child: batchesAsync.when(
                 loading: () =>
                     const Center(child: CircularProgressIndicator()),
-                error: (e, _) => _ErrorState(
+                error: (_, __) => _ErrorState(
                   onRetry: () => ref.invalidate(allBatchesProvider(donorId)),
                 ),
-                data: (batches) {
-                  final filtered = _applyFilter(batches);
+                data: (allBatches) {
+                  final filtered = _applyFilterAndSearch(allBatches);
                   if (filtered.isEmpty) return const _EmptyState();
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Spacing.md,
-                      vertical: Spacing.sm,
-                    ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, i) =>
-                        _HistoryBatchCard(batch: filtered[i]),
+
+                  final totalPages =
+                      ((filtered.length - 1) ~/ _pageSize) + 1;
+                  final page = _currentPage.clamp(0, totalPages - 1);
+                  final start = page * _pageSize;
+                  final end =
+                      (start + _pageSize).clamp(0, filtered.length);
+                  final pageBatches = filtered.sublist(start, end);
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Spacing.md,
+                          vertical: Spacing.sm,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Recent Batches',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${filtered.length} Total',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: cs.onSurfaceVariant),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Spacing.md,
+                          ),
+                          itemCount: pageBatches.length,
+                          itemBuilder: (context, i) =>
+                              _BatchHistoryCard(batch: pageBatches[i]),
+                        ),
+                      ),
+                      if (totalPages > 1)
+                        _PaginationRow(
+                          currentPage: page,
+                          totalPages: totalPages,
+                          onPageChanged: (p) =>
+                              setState(() => _currentPage = p),
+                        ),
+                      const SizedBox(height: Spacing.md),
+                    ],
                   );
                 },
               ),
@@ -959,16 +1043,68 @@ class _DonorHistoryScreenState extends ConsumerState<DonorHistoryScreen> {
       ),
     );
   }
+
+  String _formatDate(DateTime dt) {
+    const months = [
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[dt.month]} ${dt.day}';
+  }
 }
 
-class _StatusFilterChips extends StatelessWidget {
-  const _StatusFilterChips({
-    required this.selected,
-    required this.onChanged,
-  });
+// ── Sub-widgets ────────────────────────────────────────────────────────────────
 
-  final _Filter selected;
-  final ValueChanged<_Filter> onChanged;
+class _SearchBar extends StatelessWidget {
+  const _SearchBar({required this.onChanged});
+
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.sm,
+      ),
+      child: TextField(
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          hintText: 'Search batch ID or date...',
+          prefixIcon: const Icon(Icons.search),
+          filled: true,
+          fillColor: cs.surfaceContainerLow,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: Spacing.md,
+            vertical: Spacing.sm,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterChipsRow extends StatelessWidget {
+  const _FilterChipsRow({required this.selected, required this.onChanged});
+
+  final _HistoryFilter selected;
+  final ValueChanged<_HistoryFilter> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -977,28 +1113,28 @@ class _StatusFilterChips extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
         horizontal: Spacing.md,
-        vertical: Spacing.sm,
+        vertical: Spacing.xs,
       ),
       child: Row(
         children: [
-          _Chip(
+          _FilterChip(
             label: 'All',
-            isSelected: selected == _Filter.all,
-            onTap: () => onChanged(_Filter.all),
+            isSelected: selected == _HistoryFilter.all,
+            onTap: () => onChanged(_HistoryFilter.all),
             cs: cs,
           ),
           const SizedBox(width: Spacing.sm),
-          _Chip(
-            label: 'Active',
-            isSelected: selected == _Filter.active,
-            onTap: () => onChanged(_Filter.active),
-            cs: cs,
-          ),
-          const SizedBox(width: Spacing.sm),
-          _Chip(
+          _FilterChip(
             label: 'Completed',
-            isSelected: selected == _Filter.completed,
-            onTap: () => onChanged(_Filter.completed),
+            isSelected: selected == _HistoryFilter.completed,
+            onTap: () => onChanged(_HistoryFilter.completed),
+            cs: cs,
+          ),
+          const SizedBox(width: Spacing.sm),
+          _FilterChip(
+            label: 'In Progress',
+            isSelected: selected == _HistoryFilter.inProgress,
+            onTap: () => onChanged(_HistoryFilter.inProgress),
             cs: cs,
           ),
         ],
@@ -1007,8 +1143,8 @@ class _StatusFilterChips extends StatelessWidget {
   }
 }
 
-class _Chip extends StatelessWidget {
-  const _Chip({
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
     required this.label,
     required this.isSelected,
     required this.onTap,
@@ -1021,96 +1157,261 @@ class _Chip extends StatelessWidget {
   final ColorScheme cs;
 
   @override
-  Widget build(BuildContext context) {
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => onTap(),
-      selectedColor: cs.primaryContainer,
-      checkmarkColor: cs.onPrimaryContainer,
-    );
-  }
+  Widget build(BuildContext context) => FilterChip(
+    label: Text(label),
+    selected: isSelected,
+    onSelected: (_) => onTap(),
+    selectedColor: cs.primary,
+    labelStyle: TextStyle(
+      color: isSelected ? cs.onPrimary : cs.onSurface,
+      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    ),
+    checkmarkColor: cs.onPrimary,
+  );
 }
 
-class _HistoryBatchCard extends StatelessWidget {
-  const _HistoryBatchCard({required this.batch});
+class _BatchHistoryCard extends StatelessWidget {
+  const _BatchHistoryCard({required this.batch});
 
   final Batch batch;
+
+  Color _accentColor(BatchStatus s, AppColors ac, ColorScheme cs) =>
+      switch (s) {
+        BatchStatus.delivered || BatchStatus.closed => cs.primary,
+        BatchStatus.open ||
+        BatchStatus.claimed ||
+        BatchStatus.pickedUp => ac.warning,
+        _ => ac.danger,
+      };
+
+  IconData _categoryIcon(List items) => items.isEmpty
+      ? Icons.inventory_2_outlined
+      : Icons.bakery_dining;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final ac = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
-    final shortId = batch.id.substring(0, 8).toUpperCase();
+    final accent = _accentColor(batch.status, ac, cs);
+    final shortId =
+        batch.id.substring(0, batch.id.length.clamp(0, 4)).toUpperCase();
 
     return Padding(
       padding: const EdgeInsets.only(bottom: Spacing.sm),
       child: Card(
-        color: cs.surfaceContainerLow,
+        elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => context.push('/donor/batch/${batch.id}'),
-          child: Column(
-            children: [
-              Container(height: 4, color: cs.primary),
-              ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: cs.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.inventory_2_outlined,
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
-                title: Text(
-                  'Batch #$shortId',
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(width: 4, color: accent),
+                const SizedBox(width: Spacing.sm),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: accent.withValues(alpha: 0.15),
+                    child: Icon(
+                      Icons.inventory_2_outlined,
+                      color: accent,
+                      size: 20,
+                    ),
                   ),
                 ),
-                subtitle: Text(
-                  '${batch.portions} items • ${batch.weightKg.toStringAsFixed(1)}kg'
-                  ' • ${_statusLabel(batch.status)}'
-                  '${batch.createdAt != null ? ' • ${_formatDate(batch.createdAt!)}' : ''}',
-                  style: textTheme.bodySmall,
+                const SizedBox(width: Spacing.sm),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: Spacing.sm,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '#$shortId',
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (batch.createdAt != null)
+                          Text(
+                            _formatDateTime(batch.createdAt!),
+                            style: textTheme.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        const SizedBox(height: Spacing.xs),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.scale_outlined,
+                              size: 14,
+                              color: cs.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${batch.weightKg.toStringAsFixed(1)} kg',
+                              style: textTheme.bodySmall,
+                            ),
+                            const SizedBox(width: Spacing.sm),
+                            Icon(
+                              Icons.inventory_2_outlined,
+                              size: 14,
+                              color: cs.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${batch.portions} items',
+                              style: textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: Spacing.xs),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Spacing.sm,
+                    vertical: Spacing.sm,
+                  ),
+                  child: _StatusBadge(status: batch.status),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  String _statusLabel(BatchStatus s) => switch (s) {
-    BatchStatus.open => 'Pending',
-    BatchStatus.claimed => 'Claimed',
-    BatchStatus.pickedUp => 'Collected',
-    BatchStatus.delivered => 'Delivered',
-    BatchStatus.closed => 'Closed',
-    BatchStatus.cancelled => 'Cancelled',
-  };
-
-  String _formatDate(DateTime dt) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final date = DateTime(dt.year, dt.month, dt.day);
-    if (date == today) return 'Today';
-    if (date == today.subtract(const Duration(days: 1))) return 'Yesterday';
-    return '${_monthName(dt.month)} ${dt.day}';
+  String _formatDateTime(DateTime dt) {
+    const months = [
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final h = dt.hour > 12
+        ? dt.hour - 12
+        : dt.hour == 0
+        ? 12
+        : dt.hour;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+    return '${months[dt.month]} ${dt.day}, ${dt.year} · $h:$m $ampm';
   }
+}
 
-  String _monthName(int m) => const [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ][m];
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.status});
+
+  final BatchStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final ac = Theme.of(context).extension<AppColors>()!;
+    final textTheme = Theme.of(context).textTheme;
+
+    final isDone =
+        status == BatchStatus.delivered || status == BatchStatus.closed;
+    final color = isDone ? cs.primary : ac.warning;
+    final icon = isDone ? Icons.check_circle : Icons.sync;
+    final label = isDone ? 'DONE' : 'ACTIVE';
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: color, size: 24),
+        Text(
+          label,
+          style: textTheme.labelSmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PaginationRow extends StatelessWidget {
+  const _PaginationRow({
+    required this.currentPage,
+    required this.totalPages,
+    required this.onPageChanged,
+  });
+
+  final int currentPage;
+  final int totalPages;
+  final ValueChanged<int> onPageChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final pages = List.generate(totalPages, (i) => i);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed:
+                currentPage > 0 ? () => onPageChanged(currentPage - 1) : null,
+          ),
+          ...pages.map(
+            (p) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: p == currentPage
+                  ? FilledButton(
+                      onPressed: null,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(36, 36),
+                        padding: EdgeInsets.zero,
+                        backgroundColor: cs.primary,
+                      ),
+                      child: Text('${p + 1}'),
+                    )
+                  : OutlinedButton(
+                      onPressed: () => onPageChanged(p),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(36, 36),
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: Text('${p + 1}'),
+                    ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            onPressed: currentPage < totalPages - 1
+                ? () => onPageChanged(currentPage + 1)
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _EmptyState extends StatelessWidget {
@@ -1119,18 +1420,17 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.volunteer_activism, size: 64, color: cs.primary),
-            const SizedBox(height: Spacing.md),
-            Text('No donations yet', style: textTheme.titleMedium),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.volunteer_activism, size: 64, color: cs.primary),
+          const SizedBox(height: Spacing.md),
+          Text(
+            'No donations yet',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ],
       ),
     );
   }
@@ -1160,25 +1460,25 @@ class _ErrorState extends StatelessWidget {
 }
 ```
 
-- [ ] **Step 4: Run the widget tests**
+- [ ] **Step 4: Run widget tests**
 
 ```bash
 cd apps/mobile && flutter test test/widget/features/donor/donor_history_screen_test.dart
 ```
 
-Expected: all 5 tests pass.
+Expected: all 7 tests pass.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add apps/mobile/lib/features/donor/presentation/screens/donor_history_screen.dart \
         apps/mobile/test/widget/features/donor/donor_history_screen_test.dart
-git commit -m "feat(donor): implement DonorHistoryScreen with status filter chips"
+git commit -m "feat(donor): implement DonorHistoryScreen matching Figma design"
 ```
 
 ---
 
-## Task 8: Implement `BatchDetailScreen` (Test-First)
+## Task 7: Implement `BatchDetailScreen` (Test-First)
 
 **Files:**
 - Create: `apps/mobile/test/widget/features/donor/batch_detail_screen_test.dart`
@@ -1204,21 +1504,18 @@ Batch _makeBatch({
   String id = 'abc12345',
   BatchStatus status = BatchStatus.open,
   String? driverId,
-  DateTime? claimedAt,
-  DateTime? pickedUpAt,
-  DateTime? deliveredAt,
+  String? volunteerName,
   List<BatchItem> items = const [],
+  String pickupAddress = '100 Central Hub Road',
 }) => Batch(
   id: id,
   donorId: 'donor-uid',
   items: items,
-  pickupAddress: '1 Test Road',
+  pickupAddress: pickupAddress,
   status: status,
   driverId: driverId,
-  createdAt: DateTime(2026, 5, 23, 10),
-  claimedAt: claimedAt,
-  pickedUpAt: pickedUpAt,
-  deliveredAt: deliveredAt,
+  volunteerName: volunteerName,
+  createdAt: DateTime(2026, 5, 23, 14, 30),
 );
 
 Widget _wrap(Batch batch) {
@@ -1273,86 +1570,102 @@ void main() {
           ),
         ],
       );
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            batchByIdProvider('abc12345').overrideWith(
-              (ref) => const Stream.empty(),
-            ),
-          ],
-          child: MaterialApp.router(
-            theme: AppTheme.light,
-            routerConfig: router,
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          batchByIdProvider('abc12345').overrideWith(
+            (ref) => const Stream.empty(),
           ),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.light,
+          routerConfig: router,
         ),
-      );
+      ));
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('shows status banner with current status label', (tester) async {
-      await tester.pumpWidget(_wrap(_makeBatch(status: BatchStatus.claimed)));
+    testWidgets('shows status-based heading', (tester) async {
+      await tester.pumpWidget(
+          _wrap(_makeBatch(status: BatchStatus.pickedUp)));
       await tester.pumpAndSettle();
 
-      expect(find.text('Claimed'), findsOneWidget);
+      expect(find.text('Collected Successfully'), findsOneWidget);
     });
 
-    testWidgets('shows items section with item count', (tester) async {
+    testWidgets('shows Total Weight and Total Items summary cards',
+        (tester) async {
       final items = [
         BatchItem(
-          name: 'White Bread',
+          name: 'Bread',
           category: FoodCategory.bakery,
-          weightKg: 0.5,
-          expiryTime: DateTime(2026, 6, 5),
-        ),
-        BatchItem(
-          name: 'Milk',
-          category: FoodCategory.dairy,
-          weightKg: 1.0,
-          expiryTime: DateTime(2026, 6, 5),
+          weightKg: 2.5,
+          expiryTime: DateTime(2026, 6, 10),
         ),
       ];
       await tester.pumpWidget(_wrap(_makeBatch(items: items)));
       await tester.pumpAndSettle();
 
-      expect(find.text('Items (2)'), findsOneWidget);
-      expect(find.text('White Bread'), findsOneWidget);
-      expect(find.text('Milk'), findsOneWidget);
+      expect(find.text('Total Weight'), findsOneWidget);
+      expect(find.text('Total Items'), findsOneWidget);
+      expect(find.text('2.5 kg'), findsOneWidget);
+      expect(find.text('1 Products'), findsOneWidget);
     });
 
-    testWidgets('shows — for missing timeline timestamps', (tester) async {
+    testWidgets('shows Inventory Breakdown section with item names',
+        (tester) async {
+      final items = [
+        BatchItem(
+          name: 'Sourdough Loaves',
+          category: FoodCategory.bakery,
+          weightKg: 5.0,
+          expiryTime: DateTime(2026, 6, 10),
+        ),
+        BatchItem(
+          name: 'Organic Apples',
+          category: FoodCategory.produce,
+          weightKg: 8.0,
+          expiryTime: DateTime(2026, 6, 10),
+        ),
+      ];
+      await tester.pumpWidget(_wrap(_makeBatch(items: items)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Inventory Breakdown'), findsOneWidget);
+      expect(find.text('Sourdough Loaves'), findsOneWidget);
+      expect(find.text('Organic Apples'), findsOneWidget);
+    });
+
+    testWidgets('hides driver section when volunteerName is null',
+        (tester) async {
       await tester.pumpWidget(
-        _wrap(_makeBatch(status: BatchStatus.open)),
+          _wrap(_makeBatch(volunteerName: null)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Collected by'), findsNothing);
+    });
+
+    testWidgets('shows driver section with volunteer name', (tester) async {
+      await tester.pumpWidget(
+        _wrap(_makeBatch(
+          driverId: 'driver-1',
+          volunteerName: 'Nattapong',
+          status: BatchStatus.pickedUp,
+        )),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Timeline'), findsOneWidget);
-      expect(find.text('—'), findsWidgets);
+      expect(find.text('Collected by'), findsOneWidget);
+      expect(find.textContaining('Nattapong'), findsOneWidget);
     });
 
-    testWidgets('shows formatted timestamps when present', (tester) async {
-      await tester.pumpWidget(_wrap(_makeBatch(
-        status: BatchStatus.claimed,
-        claimedAt: DateTime(2026, 5, 23, 14, 30),
-      )));
+    testWidgets('shows pickup address card', (tester) async {
+      await tester.pumpWidget(
+        _wrap(_makeBatch(pickupAddress: 'Central Distribution Hub')),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('14:30'), findsOneWidget);
-    });
-
-    testWidgets('hides driver section when driverId is null', (tester) async {
-      await tester.pumpWidget(_wrap(_makeBatch(driverId: null)));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Driver'), findsNothing);
-    });
-
-    testWidgets('shows driver section when driverId is set', (tester) async {
-      await tester.pumpWidget(_wrap(_makeBatch(driverId: 'driver-xyz')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Driver'), findsOneWidget);
-      expect(find.textContaining('driver-xyz'), findsOneWidget);
+      expect(find.textContaining('Central Distribution Hub'), findsOneWidget);
     });
 
     testWidgets('QR button visible only on open batch', (tester) async {
@@ -1363,17 +1676,17 @@ void main() {
     });
 
     testWidgets('QR button not visible on non-open batch', (tester) async {
-      await tester.pumpWidget(_wrap(_makeBatch(status: BatchStatus.delivered)));
+      await tester.pumpWidget(
+          _wrap(_makeBatch(status: BatchStatus.delivered)));
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.qr_code), findsNothing);
     });
 
-    testWidgets('QR button navigates to /donor/batch/:id/qr', (tester) async {
-      await tester.pumpWidget(_wrap(_makeBatch(
-        id: 'abc12345',
-        status: BatchStatus.open,
-      )));
+    testWidgets('QR button navigates to qr sub-route', (tester) async {
+      await tester.pumpWidget(
+        _wrap(_makeBatch(id: 'abc12345', status: BatchStatus.open)),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.qr_code));
@@ -1385,10 +1698,10 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [ ] **Step 2: Run to verify failure**
 
 ```bash
-cd apps/mobile && flutter test test/widget/features/donor/batch_detail_screen_test.dart 2>&1 | head -20
+cd apps/mobile && flutter test test/widget/features/donor/batch_detail_screen_test.dart 2>&1 | head -5
 ```
 
 Expected: compilation error — `BatchDetailScreen` not found.
@@ -1416,15 +1729,20 @@ class BatchDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final batchAsync = ref.watch(batchByIdProvider(batchId));
-    final shortId = batchId.length >= 8
-        ? batchId.substring(0, 8).toUpperCase()
-        : batchId.toUpperCase();
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Batch #$shortId'),
+        title: Text(
+          'Batch Details',
+          style: TextStyle(fontWeight: FontWeight.bold, color: cs.primary),
+        ),
         centerTitle: false,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => context.push('/notifications'),
+          ),
           batchAsync.when(
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
@@ -1450,81 +1768,25 @@ class BatchDetailScreen extends ConsumerWidget {
             ],
           ),
         ),
-        data: (batch) => SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Spacing.md,
-            vertical: Spacing.md,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _StatusBanner(status: batch.status),
-              const SizedBox(height: Spacing.md),
-              _ItemsSection(items: batch.items),
-              const SizedBox(height: Spacing.md),
-              _TimelineSection(batch: batch),
-              if (batch.driverId != null) ...[
-                const SizedBox(height: Spacing.md),
-                _DriverSection(driverId: batch.driverId!),
-              ],
-              const SizedBox(height: Spacing.md),
-            ],
-          ),
-        ),
+        data: (batch) => _BatchDetailBody(batch: batch),
       ),
     );
   }
 }
 
-class _StatusBanner extends StatelessWidget {
-  const _StatusBanner({required this.status});
+class _BatchDetailBody extends StatelessWidget {
+  const _BatchDetailBody({required this.batch});
 
-  final BatchStatus status;
+  final Batch batch;
 
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final ac = Theme.of(context).extension<AppColors>()!;
-    final textTheme = Theme.of(context).textTheme;
-
-    final (bg, fg) = switch (status) {
-      BatchStatus.open => (cs.primaryContainer, cs.onPrimaryContainer),
-      BatchStatus.claimed ||
-      BatchStatus.pickedUp => (
-          ac.warning.withValues(alpha: 0.2),
-          ac.warning,
-        ),
-      BatchStatus.delivered ||
-      BatchStatus.closed => (
-          ac.success.withValues(alpha: 0.2),
-          ac.success,
-        ),
-      BatchStatus.cancelled => (
-          ac.danger.withValues(alpha: 0.2),
-          ac.danger,
-        ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Spacing.md,
-        vertical: Spacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Center(
-        child: Text(
-          _statusLabel(status),
-          style: textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: fg,
-          ),
-        ),
-      ),
-    );
-  }
+  String _statusHeading(BatchStatus s) => switch (s) {
+    BatchStatus.open => 'Waiting for Pickup',
+    BatchStatus.claimed => 'Driver Assigned',
+    BatchStatus.pickedUp => 'Collected Successfully',
+    BatchStatus.delivered => 'Delivered Successfully',
+    BatchStatus.closed => 'Completed',
+    BatchStatus.cancelled => 'Cancelled',
+  };
 
   String _statusLabel(BatchStatus s) => switch (s) {
     BatchStatus.open => 'Pending',
@@ -1534,43 +1796,216 @@ class _StatusBanner extends StatelessWidget {
     BatchStatus.closed => 'Closed',
     BatchStatus.cancelled => 'Cancelled',
   };
-}
-
-class _ItemsSection extends StatelessWidget {
-  const _ItemsSection({required this.items});
-
-  final List<BatchItem> items;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final shortId =
+        batch.id.substring(0, batch.id.length.clamp(0, 4)).toUpperCase();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Batch chip
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Chip(
+              label: Text('Batch #$shortId'),
+              backgroundColor: cs.tertiaryContainer,
+              labelStyle: TextStyle(color: cs.onTertiaryContainer),
+            ),
+          ),
+          const SizedBox(height: Spacing.sm),
+          // Status heading
+          Text(
+            _statusHeading(batch.status),
+            style: textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (batch.createdAt != null) ...[
+            const SizedBox(height: Spacing.xs),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 14,
+                  color: cs.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _formatDate(batch.createdAt!),
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: Spacing.sm),
+          // Status pill
+          _StatusPill(label: 'Status: ${_statusLabel(batch.status)}'),
+          const SizedBox(height: Spacing.md),
+          // Summary cards row
+          Row(
+            children: [
+              Expanded(
+                child: _SummaryCard(
+                  icon: Icons.scale_outlined,
+                  label: 'Total Weight',
+                  value: '${batch.weightKg.toStringAsFixed(1)} kg',
+                ),
+              ),
+              const SizedBox(width: Spacing.sm),
+              Expanded(
+                child: _SummaryCard(
+                  icon: Icons.inventory_2_outlined,
+                  label: 'Total Items',
+                  value: '${batch.portions} Products',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.md),
+          // Inventory breakdown
+          Text(
+            'Inventory Breakdown',
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: Spacing.sm),
+          if (batch.items.isEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(Spacing.md),
+                child: Text(
+                  'No item data available',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            )
+          else
+            ...batch.items.map((item) => _InventoryItemCard(item: item)),
+          // Driver section
+          if (batch.volunteerName != null) ...[
+            const SizedBox(height: Spacing.md),
+            _DriverCard(volunteerName: batch.volunteerName!),
+          ],
+          // Address card
+          const SizedBox(height: Spacing.md),
+          _AddressCard(address: batch.pickupAddress),
+          const SizedBox(height: Spacing.md),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime dt) {
+    const months = [
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final h = dt.hour > 12
+        ? dt.hour - 12
+        : dt.hour == 0
+        ? 12
+        : dt.hour;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+    return '${months[dt.month]} ${dt.day}, $h:$m $ampm';
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: cs.primary,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle, color: cs.onPrimary, size: 18),
+          const SizedBox(width: Spacing.xs),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: cs.onPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(Spacing.md),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Items (${items.length})',
-              style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            CircleAvatar(
+              backgroundColor: cs.primaryContainer,
+              child: Icon(icon, color: cs.onPrimaryContainer),
             ),
-            const SizedBox(height: Spacing.sm),
-            if (items.isEmpty)
-              Text(
-                'No item data available',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: items.length,
-                itemBuilder: (context, i) => _ItemRow(item: items[i]),
+            const SizedBox(height: Spacing.xs),
+            Text(
+              label,
+              style: textTheme.labelSmall?.copyWith(
+                color: cs.onSurfaceVariant,
               ),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              value,
+              style: textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -1578,8 +2013,8 @@ class _ItemsSection extends StatelessWidget {
   }
 }
 
-class _ItemRow extends StatelessWidget {
-  const _ItemRow({required this.item});
+class _InventoryItemCard extends StatelessWidget {
+  const _InventoryItemCard({required this.item});
 
   final BatchItem item;
 
@@ -1592,182 +2027,169 @@ class _ItemRow extends StatelessWidget {
     FoodCategory.other: Icons.category_outlined,
   };
 
+  static const _categoryNames = {
+    FoodCategory.bakery: 'Bakery',
+    FoodCategory.produce: 'Produce',
+    FoodCategory.dairy: 'Dairy',
+    FoodCategory.meat: 'Meat',
+    FoodCategory.beverages: 'Beverages',
+    FoodCategory.other: 'Other',
+  };
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final now = DateTime.now();
-    final isExpired = item.expiryTime.isBefore(now);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
+      padding: const EdgeInsets.only(bottom: Spacing.sm),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(height: 4, color: cs.primary),
+            Padding(
+              padding: const EdgeInsets.all(Spacing.sm),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: cs.primaryContainer,
+                    child: Icon(
+                      _icons[item.category] ?? Icons.category_outlined,
+                      color: cs.onPrimaryContainer,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.name,
+                          style: textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          _categoryNames[item.category] ?? 'Other',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Chip(
+                    label: Text(
+                      '${item.weightKg.toStringAsFixed(1)}kg',
+                      style: textTheme.bodySmall,
+                    ),
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DriverCard extends StatelessWidget {
+  const _DriverCard({required this.volunteerName});
+
+  final String volunteerName;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final initials = volunteerName.isNotEmpty
+        ? volunteerName[0].toUpperCase()
+        : '?';
+
+    return Container(
+      padding: const EdgeInsets.all(Spacing.md),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: cs.outlineVariant,
+          style: BorderStyle.solid,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         children: [
-          Icon(
-            _icons[item.category] ?? Icons.category_outlined,
-            size: 20,
-            color: cs.onSurfaceVariant,
+          CircleAvatar(
+            backgroundColor: cs.tertiaryContainer,
+            child: Text(
+              initials,
+              style: TextStyle(color: cs.onTertiaryContainer),
+            ),
           ),
+          const SizedBox(width: Spacing.md),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Collected by',
+                style: textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                '$volunteerName (Driver)',
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AddressCard extends StatelessWidget {
+  const _AddressCard({required this.address});
+
+  final String address;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Spacing.md),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B5E20),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.location_on, color: Colors.white),
           const SizedBox(width: Spacing.sm),
           Expanded(
             child: Text(
-              item.name,
-              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(width: Spacing.sm),
-          Chip(
-            label: Text(
-              '${item.weightKg.toStringAsFixed(1)} kg',
-              style: textTheme.bodySmall,
-            ),
-            padding: EdgeInsets.zero,
-            visualDensity: VisualDensity.compact,
-          ),
-          const SizedBox(width: Spacing.xs),
-          Chip(
-            label: Text(
-              isExpired ? 'Expired' : _formatExpiry(item.expiryTime, now),
-              style: textTheme.bodySmall?.copyWith(
-                color: isExpired ? Colors.red : cs.onSurface,
+              address,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            padding: EdgeInsets.zero,
-            visualDensity: VisualDensity.compact,
           ),
+          const Icon(Icons.chevron_right, color: Colors.white),
         ],
-      ),
-    );
-  }
-
-  String _formatExpiry(DateTime expiry, DateTime now) {
-    final diff = expiry.difference(now);
-    if (diff.inHours < 24) return 'Expires in ${diff.inHours}h';
-    return 'Expires ${_monthName(expiry.month)} ${expiry.day}';
-  }
-
-  String _monthName(int m) => const [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ][m];
-}
-
-class _TimelineSection extends StatelessWidget {
-  const _TimelineSection({required this.batch});
-
-  final Batch batch;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final steps = [
-      ('Created', batch.createdAt),
-      ('Claimed', batch.claimedAt),
-      ('Picked Up', batch.pickedUpAt),
-      ('Delivered', batch.deliveredAt),
-    ];
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Timeline',
-              style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: Spacing.sm),
-            ...steps.map((step) => _TimelineRow(
-              label: step.$1,
-              timestamp: step.$2,
-            )),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TimelineRow extends StatelessWidget {
-  const _TimelineRow({required this.label, required this.timestamp});
-
-  final String label;
-  final DateTime? timestamp;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final hasValue = timestamp != null;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
-      child: Row(
-        children: [
-          Icon(
-            hasValue ? Icons.circle : Icons.radio_button_unchecked,
-            size: 12,
-            color: hasValue ? cs.primary : cs.outline,
-          ),
-          const SizedBox(width: Spacing.sm),
-          Expanded(
-            child: Text(label, style: textTheme.bodyMedium),
-          ),
-          Text(
-            timestamp != null ? _formatTimestamp(timestamp!) : '—',
-            style: textTheme.bodySmall?.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatTimestamp(DateTime dt) {
-    final h = dt.hour.toString().padLeft(2, '0');
-    final m = dt.minute.toString().padLeft(2, '0');
-    return '${dt.day}/${dt.month} $h:$m';
-  }
-}
-
-class _DriverSection extends StatelessWidget {
-  const _DriverSection({required this.driverId});
-
-  final String driverId;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final cs = Theme.of(context).colorScheme;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(Spacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Driver',
-              style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: Spacing.sm),
-            Text(
-              'Driver ID: $driverId',
-              style: textTheme.bodyMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 }
 ```
 
-- [ ] **Step 4: Run the widget tests**
+- [ ] **Step 4: Run widget tests**
 
 ```bash
 cd apps/mobile && flutter test test/widget/features/donor/batch_detail_screen_test.dart
@@ -1780,27 +2202,30 @@ Expected: all 9 tests pass.
 ```bash
 git add apps/mobile/lib/features/donor/presentation/screens/batch_detail_screen.dart \
         apps/mobile/test/widget/features/donor/batch_detail_screen_test.dart
-git commit -m "feat(donor): implement BatchDetailScreen with item list, timeline, and driver section"
+git commit -m "feat(donor): implement BatchDetailScreen matching Figma design"
 ```
 
 ---
 
-## Task 9: Update Router + Dashboard `_BatchCard`
+## Task 8: Update Router + Dashboard `_BatchCard`
 
 **Files:**
 - Modify: `apps/mobile/lib/app/router.dart`
 - Modify: `apps/mobile/lib/features/donor/presentation/screens/donor_dashboard_screen.dart`
+- Modify: `apps/mobile/test/widget/features/donor/donor_dashboard_screen_test.dart`
 
-- [ ] **Step 1: Update `router.dart`**
+- [ ] **Step 1: Add imports to `router.dart`**
 
-Add these two imports after the existing donor screen imports:
+Add after the existing donor screen imports:
 
 ```dart
 import 'package:saveameal/features/donor/presentation/screens/batch_detail_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_history_screen.dart';
 ```
 
-Replace the flat `batch/:batchId/qr` route AND the batches stub with the new nested structure. Find these lines in the `/donor` routes block:
+- [ ] **Step 2: Replace the flat `batch/:batchId/qr` route in `router.dart`**
+
+Find:
 
 ```dart
           GoRoute(
@@ -1829,7 +2254,9 @@ Replace with:
           ),
 ```
 
-Also replace the batches stub:
+- [ ] **Step 3: Replace the batches stub in `router.dart`**
+
+Find:
 
 ```dart
           GoRoute(
@@ -1839,7 +2266,7 @@ Also replace the batches stub:
           ),
 ```
 
-With:
+Replace with:
 
 ```dart
           GoRoute(
@@ -1848,87 +2275,59 @@ With:
           ),
 ```
 
-- [ ] **Step 2: Update `_BatchCard` in `donor_dashboard_screen.dart`**
+- [ ] **Step 4: Update `_BatchCard` in `donor_dashboard_screen.dart`**
 
-Read the full `_BatchCard` widget. It currently renders a `Card` with a `ListTile` that has an `IconButton` trailing for `open` status. Make two changes:
-1. Wrap the `Card` in `InkWell` (or add `onTap` to the `Card`) to navigate to the detail screen
-2. Remove the QR `IconButton` from the trailing
+Read the `_BatchCard` class in `donor_dashboard_screen.dart`. Find the `Card` widget inside `build`. Wrap it in an `InkWell` (or add `onTap` via `Card`'s `child` property) and remove the QR `IconButton` from trailing. The card should always show `Icon(Icons.check_circle_outline, color: ac.success)` as trailing, and the entire card taps to `/donor/batch/${batch.id}`.
 
-Find the `_BatchCard` class. Replace the `build` method body with:
+The key change is wrapping the existing `Card` in `InkWell`:
 
 ```dart
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final ac = Theme.of(context).extension<AppColors>()!;
-    final textTheme = Theme.of(context).textTheme;
-    final shortId = batch.id.substring(0, 8).toUpperCase();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Spacing.md,
-        vertical: Spacing.xs,
-      ),
-      child: Card(
-        color: cs.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => context.push('/donor/batch/${batch.id}'),
-          child: ListTile(
-            leading: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.inventory_2_outlined,
-                color: cs.onSurfaceVariant,
-              ),
+  // Inside _BatchCard.build — find the Card widget and wrap it:
+  return Padding(
+    padding: const EdgeInsets.symmetric(
+      horizontal: Spacing.md,
+      vertical: Spacing.xs,
+    ),
+    child: Card(
+      color: cs.surfaceContainerLow,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.push('/donor/batch/${batch.id}'),
+        child: ListTile(
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(8),
             ),
-            title: Text(
-              'Batch #$shortId',
-              style: textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            subtitle: Text(
-              '${batch.portions} items • ${batch.weightKg.toStringAsFixed(1)}kg'
-              ' • ${_statusLabel(batch.status)}'
-              '${batch.createdAt != null ? ' • ${_formatDate(batch.createdAt!)}' : ''}',
-              style: textTheme.bodySmall,
-            ),
-            trailing: Icon(Icons.check_circle_outline, color: ac.success),
+            child: Icon(Icons.inventory_2_outlined, color: cs.onSurfaceVariant),
           ),
+          title: Text(
+            'Batch #${batch.id.substring(0, 8).toUpperCase()}',
+            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(
+            '${batch.portions} items • ${batch.weightKg.toStringAsFixed(1)}kg'
+            ' • ${_statusLabel(batch.status)}'
+            '${batch.createdAt != null ? ' • ${_formatDate(batch.createdAt!)}' : ''}',
+            style: textTheme.bodySmall,
+          ),
+          trailing: Icon(Icons.check_circle_outline, color: ac.success),
         ),
       ),
-    );
-  }
+    ),
+  );
 ```
 
-Keep the existing `_statusLabel` and `_formatDate` helper methods in `_BatchCard` unchanged.
+Keep the existing `_statusLabel` and `_formatDate` helpers unchanged.
 
-- [ ] **Step 3: Update the existing dashboard widget test router** to match the new route structure
+- [ ] **Step 5: Update `donor_dashboard_screen_test.dart` router**
 
-In `apps/mobile/test/widget/features/donor/donor_dashboard_screen_test.dart`, update `_buildRouter()` — replace the `batch/:batchId/qr` flat route with the nested structure:
+In `_buildRouter()`, replace the flat `batch/:batchId/qr` route with the nested structure:
 
 ```dart
-GoRouter _buildRouter() => GoRouter(
-  initialLocation: '/donor',
-  routes: [
-    GoRoute(
-      path: '/donor',
-      builder: (context, state) => const DonorDashboardScreen(),
-      routes: [
-        GoRoute(
-          path: 'log',
-          builder: (context, state) =>
-              const Scaffold(body: Text('Log Batch Screen')),
-        ),
         GoRoute(
           path: 'batch/:batchId',
           builder: (context, state) =>
@@ -1941,28 +2340,9 @@ GoRouter _buildRouter() => GoRouter(
             ),
           ],
         ),
-        GoRoute(
-          path: 'batches',
-          builder: (context, state) =>
-              const Scaffold(body: Text('All Batches Screen')),
-        ),
-        GoRoute(
-          path: 'impact',
-          builder: (context, state) =>
-              const Scaffold(body: Text('Impact Screen')),
-        ),
-        GoRoute(
-          path: 'account',
-          builder: (context, state) =>
-              const Scaffold(body: Text('Account Screen')),
-        ),
-      ],
-    ),
-  ],
-);
 ```
 
-- [ ] **Step 4: Run full test suite**
+- [ ] **Step 6: Run the full test suite**
 
 ```bash
 cd apps/mobile && flutter test
@@ -1970,15 +2350,15 @@ cd apps/mobile && flutter test
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Run static analysis + format**
+- [ ] **Step 7: Run analysis + format**
 
 ```bash
 cd apps/mobile && flutter analyze && dart format --set-exit-if-changed .
 ```
 
-Expected: no issues, no formatting changes.
+Expected: no issues.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add apps/mobile/lib/app/router.dart \
@@ -1989,9 +2369,9 @@ git commit -m "feat(donor): wire batch detail + history routes; make dashboard c
 
 ---
 
-## Task 10: Final Verification
+## Task 9: Final Verification
 
-- [ ] **Step 1: Run the full test suite**
+- [ ] **Step 1: Run full test suite**
 
 ```bash
 cd apps/mobile && flutter test --reporter=compact
@@ -1999,7 +2379,7 @@ cd apps/mobile && flutter test --reporter=compact
 
 Expected: all tests pass, 0 failures.
 
-- [ ] **Step 2: Run static analysis**
+- [ ] **Step 2: Static analysis**
 
 ```bash
 cd apps/mobile && flutter analyze
@@ -2007,7 +2387,7 @@ cd apps/mobile && flutter analyze
 
 Expected: No issues found.
 
-- [ ] **Step 3: Run formatter**
+- [ ] **Step 3: Format check**
 
 ```bash
 cd apps/mobile && dart format --set-exit-if-changed .
@@ -2015,7 +2395,7 @@ cd apps/mobile && dart format --set-exit-if-changed .
 
 Expected: 0 files changed.
 
-- [ ] **Step 4: Run codegen check** (ensure no stale generated files)
+- [ ] **Step 4: Codegen check**
 
 ```bash
 cd apps/mobile && dart run build_runner build --delete-conflicting-outputs
@@ -2028,8 +2408,8 @@ Expected: completes without errors.
 Append to `docs/agent-log-kimtaeman.md`:
 
 ```
-Outcome: Implemented DonorHistoryScreen and BatchDetailScreen. Added watchAllBatches + watchBatchById to all layers (FirestoreService → datasource → repository → use cases → providers). Batch entity extended with 3 timeline timestamps. Router restructured with batch/:batchId as parent of qr sub-route. Dashboard _BatchCard made tappable (card → detail) with QR button moved to detail screen AppBar.
-Decisions: BatchModel already had claimedAt/pickedUpAt/deliveredAt — only Batch entity needed updating. Used client-side sort in datasource for watchAllBatches to avoid composite Firestore index. Filter chips implemented with local StatefulWidget state (no Riverpod needed for purely UI state). Dart 3 exhaustive switch expressions used for status/category mappings.
-Handoff: QA-engineer to validate filter chips on device. Cloud Functions must write claimedAt/pickedUpAt/deliveredAt on status transitions for the timeline to show values (Flutter only reads these fields — it never writes them).
+Outcome: Implemented DonorHistoryScreen (searchable, paginated 5/page, All/Completed/In Progress filter chips, FAB) and BatchDetailScreen (status heading, summary cards, inventory breakdown, driver card, address card). Added volunteerName to Batch entity. Added watchAllBatches + watchBatchById across all layers (FirestoreService → datasource → repository → use cases → providers). Router restructured with batch/:batchId as parent of qr sub-route. Dashboard _BatchCard made tappable. Matches Figma reference designs: "Donation History (5 per page).png" and "Batch Details.png".
+Decisions: BatchModel already had volunteerName — only Batch entity needed updating. Pagination is client-side (load all, slice by page). Timeline removed — Figma shows summary cards instead. Driver avatar uses initials CircleAvatar (no driver photo in data model). Address card uses styled container (no real map — pickup address is string, not coordinates).
+Handoff: QA-engineer to validate filter chips, pagination, and navigation on device. Cloud Functions must write volunteerName on batch claim (already done in FirestoreService.acceptJob). No schema changes required.
 Review: PENDING
 ```

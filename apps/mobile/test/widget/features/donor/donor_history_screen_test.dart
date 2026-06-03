@@ -32,11 +32,11 @@ Widget _wrap(List<Batch> batches) {
     routes: [
       GoRoute(
         path: '/donor',
-        builder: (_, __) => const Scaffold(body: Text('Dashboard')),
+        builder: (_, _) => const Scaffold(body: Text('Dashboard')),
         routes: [
           GoRoute(
             path: 'batches',
-            builder: (_, __) => const DonorHistoryScreen(),
+            builder: (_, _) => const DonorHistoryScreen(),
           ),
           GoRoute(
             path: 'batch/:batchId',
@@ -46,15 +46,15 @@ Widget _wrap(List<Batch> batches) {
           ),
           GoRoute(
             path: 'log',
-            builder: (_, __) => const Scaffold(body: Text('Log')),
+            builder: (_, _) => const Scaffold(body: Text('Log')),
           ),
           GoRoute(
             path: 'impact',
-            builder: (_, __) => const Scaffold(body: Text('Impact')),
+            builder: (_, _) => const Scaffold(body: Text('Impact')),
           ),
           GoRoute(
             path: 'account',
-            builder: (_, __) => const Scaffold(body: Text('Account')),
+            builder: (_, _) => const Scaffold(body: Text('Account')),
           ),
         ],
       ),
@@ -82,7 +82,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/donor/batches',
-            builder: (_, __) => const DonorHistoryScreen(),
+            builder: (_, _) => const DonorHistoryScreen(),
           ),
         ],
       );
@@ -193,7 +193,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/donor/batches',
-            builder: (_, __) => const DonorHistoryScreen(),
+            builder: (_, _) => const DonorHistoryScreen(),
           ),
         ],
       );
