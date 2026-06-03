@@ -205,6 +205,8 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
           switch (index) {
             case 0:
               context.go('/beneficiary');
+            case 2:
+              context.go('/beneficiary/impact');
           }
         },
         destinations: const [
