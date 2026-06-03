@@ -36,74 +36,81 @@ class DriverInfoCard extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Map section
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            ),
-            child: SizedBox(
-              height: 200,
-              child: Stack(
-                children: [
-                  // Map or placeholder
-                  if (detail.volunteerId != null && driverLoc != null)
-                    GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(driverLoc.lat, driverLoc.lng),
-                        zoom: 14,
-                      ),
-                      markers: {
-                        Marker(
-                          markerId: const MarkerId('driver'),
-                          position: LatLng(driverLoc.lat, driverLoc.lng),
-                          icon: BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueAzure,
+          // Map section — labelled for screen readers; inner decorative widgets
+          // are excluded so TalkBack/VoiceOver reads one coherent description.
+          Semantics(
+            label: driverLoc != null
+                ? 'Driver location map — driver is en route'
+                : 'Driver location unavailable',
+            excludeSemantics: true,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+              child: SizedBox(
+                height: 200,
+                child: Stack(
+                  children: [
+                    // Map or placeholder
+                    if (detail.volunteerId != null && driverLoc != null)
+                      GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(driverLoc.lat, driverLoc.lng),
+                          zoom: 14,
+                        ),
+                        markers: {
+                          Marker(
+                            markerId: const MarkerId('driver'),
+                            position: LatLng(driverLoc.lat, driverLoc.lng),
+                            icon: BitmapDescriptor.defaultMarkerWithHue(
+                              BitmapDescriptor.hueAzure,
+                            ),
                           ),
-                        ),
-                      },
-                      liteModeEnabled: true,
-                      zoomGesturesEnabled: false,
-                      scrollGesturesEnabled: false,
-                      tiltGesturesEnabled: false,
-                      rotateGesturesEnabled: false,
-                      myLocationButtonEnabled: false,
-                      zoomControlsEnabled: false,
-                    )
-                  else
-                    Container(
-                      color: cs.surfaceContainerHigh,
-                      child: Center(
-                        child: Icon(
-                          Icons.local_shipping_outlined,
-                          color: cs.onSurfaceVariant,
-                          size: 40,
-                        ),
-                      ),
-                    ),
-                  // "En route" chip
-                  if (driverLoc != null)
-                    Positioned(
-                      bottom: 8,
-                      left: 8,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: cs.primaryContainer,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: Spacing.sm,
-                          vertical: 4,
-                        ),
-                        child: Text(
-                          'En route',
-                          style: textTheme.labelSmall?.copyWith(
-                            color: cs.onPrimaryContainer,
+                        },
+                        liteModeEnabled: true,
+                        zoomGesturesEnabled: false,
+                        scrollGesturesEnabled: false,
+                        tiltGesturesEnabled: false,
+                        rotateGesturesEnabled: false,
+                        myLocationButtonEnabled: false,
+                        zoomControlsEnabled: false,
+                      )
+                    else
+                      Container(
+                        color: cs.surfaceContainerHigh,
+                        child: Center(
+                          child: Icon(
+                            Icons.local_shipping_outlined,
+                            color: cs.onSurfaceVariant,
+                            size: 40,
                           ),
                         ),
                       ),
-                    ),
-                ],
+                    // "En route" chip
+                    if (driverLoc != null)
+                      Positioned(
+                        bottom: 8,
+                        left: 8,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: cs.primaryContainer,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Spacing.sm,
+                            vertical: 4,
+                          ),
+                          child: Text(
+                            'En route',
+                            style: textTheme.labelSmall?.copyWith(
+                              color: cs.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -112,14 +119,17 @@ class DriverInfoCard extends ConsumerWidget {
             padding: const EdgeInsets.all(Spacing.md),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: ac.success.withValues(alpha: 0.15),
-                  child: Text(
-                    initials,
-                    style: textTheme.labelMedium?.copyWith(
-                      color: ac.success,
-                      fontWeight: FontWeight.bold,
+                // Decorative avatar — name Text adjacent is the readable label.
+                ExcludeSemantics(
+                  child: CircleAvatar(
+                    radius: 22,
+                    backgroundColor: ac.success.withValues(alpha: 0.15),
+                    child: Text(
+                      initials,
+                      style: textTheme.labelMedium?.copyWith(
+                        color: ac.success,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -132,25 +142,29 @@ class DriverInfoCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-                // ETA column
+                // ETA — merge the two-line label into one screen-reader string.
                 if (detail.estimatedArrivalMinutes != null)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'ETA',
-                        style: textTheme.labelSmall?.copyWith(
-                          color: cs.onSurfaceVariant,
+                  Semantics(
+                    label: 'ETA: ${detail.estimatedArrivalMinutes} minutes',
+                    excludeSemantics: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'ETA',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '${detail.estimatedArrivalMinutes} min',
-                        style: textTheme.titleMedium?.copyWith(
-                          color: cs.primary,
-                          fontWeight: FontWeight.bold,
+                        Text(
+                          '${detail.estimatedArrivalMinutes} min',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: cs.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   )
                 else
                   Text(

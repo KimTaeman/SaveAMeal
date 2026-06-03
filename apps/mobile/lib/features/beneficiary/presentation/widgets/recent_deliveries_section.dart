@@ -38,13 +38,10 @@ class RecentDeliveriesSection extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  // TODO: navigate to full delivery history screen
                   TextButton(
                     onPressed: () {},
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
                     child: Text(
                       'View All',
                       style: textTheme.labelMedium?.copyWith(color: cs.primary),
@@ -80,14 +77,16 @@ class _DeliveryRow extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         color: cs.surfaceContainerLow,
         child: ListTile(
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: ac.success,
-              shape: BoxShape.circle,
+          leading: ExcludeSemantics(
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: ac.success,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.check_rounded, color: ac.onSuccess, size: 20),
             ),
-            child: Icon(Icons.check_rounded, color: ac.onSuccess, size: 20),
           ),
           title: Text(
             _formatRelativeDate(delivery.deliveredAt),
@@ -98,7 +97,9 @@ class _DeliveryRow extends StatelessWidget {
             '${delivery.donorName != null ? ' • ${delivery.donorName}' : ''}',
             style: textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
           ),
-          trailing: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+          trailing: ExcludeSemantics(
+            child: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+          ),
           onTap: () {},
           contentPadding: const EdgeInsets.symmetric(
             horizontal: Spacing.md,
