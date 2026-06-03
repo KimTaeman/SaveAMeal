@@ -134,8 +134,9 @@ class DonorImpactScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
                               value: 0.0,
-                              backgroundColor:
-                                  Colors.white.withValues(alpha: 0.3),
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.3,
+                              ),
                               valueColor: const AlwaysStoppedAnimation<Color>(
                                 Colors.white,
                               ),
@@ -204,52 +205,50 @@ class DonorImpactScreen extends ConsumerWidget {
                     ],
                   ),
                   child: Column(
-                          children: _kAllCategories.asMap().entries.map((
-                            entry,
-                          ) {
-                            final i = entry.key;
-                            final cat = entry.value;
-                            final count = categoryMap[_categoryLabel(cat)] ?? 0;
-                            final pct = categoryTotal == 0
-                                ? 0
-                                : ((count / categoryTotal) * 100).round();
-                            return Column(
+                    children: _kAllCategories.asMap().entries.map((entry) {
+                      final i = entry.key;
+                      final cat = entry.value;
+                      final count = categoryMap[_categoryLabel(cat)] ?? 0;
+                      final pct = categoryTotal == 0
+                          ? 0
+                          : ((count / categoryTotal) * 100).round();
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                            child: Row(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 16,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        _iconForCategory(cat),
-                                        color: ac.brand,
-                                        size: 20,
-                                      ),
-                                      SizedBox(width: Spacing.sm),
-                                      Expanded(
-                                        child: Text(
-                                          _categoryLabel(cat),
-                                          style: textTheme.bodyMedium,
-                                        ),
-                                      ),
-                                      Text(
-                                        '$pct%',
-                                        style: textTheme.bodyMedium?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: ac.brand,
-                                        ),
-                                      ),
-                                    ],
+                                Icon(
+                                  _iconForCategory(cat),
+                                  color: ac.brand,
+                                  size: 20,
+                                ),
+                                SizedBox(width: Spacing.sm),
+                                Expanded(
+                                  child: Text(
+                                    _categoryLabel(cat),
+                                    style: textTheme.bodyMedium,
                                   ),
                                 ),
-                                if (i < _kAllCategories.length - 1)
-                                  const Divider(height: 1, indent: Spacing.md),
+                                Text(
+                                  '$pct%',
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: ac.brand,
+                                  ),
+                                ),
                               ],
-                            );
-                          }).toList(),
-                        ),
+                            ),
+                          ),
+                          if (i < _kAllCategories.length - 1)
+                            const Divider(height: 1, indent: Spacing.md),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
 
                 SizedBox(height: Spacing.md),
@@ -275,21 +274,21 @@ class DonorImpactScreen extends ConsumerWidget {
   }
 
   static String _categoryLabel(FoodCategory category) => switch (category) {
-    FoodCategory.bakery    => 'Bakery',
-    FoodCategory.produce   => 'Produce',
-    FoodCategory.dairy     => 'Dairy',
-    FoodCategory.meat      => 'Meat',
+    FoodCategory.bakery => 'Bakery',
+    FoodCategory.produce => 'Produce',
+    FoodCategory.dairy => 'Dairy',
+    FoodCategory.meat => 'Meat',
     FoodCategory.beverages => 'Beverages',
-    FoodCategory.other     => 'Other',
+    FoodCategory.other => 'Other',
   };
 
   static IconData _iconForCategory(FoodCategory category) => switch (category) {
-    FoodCategory.bakery    => Icons.bakery_dining,
-    FoodCategory.produce   => Icons.energy_savings_leaf,
-    FoodCategory.dairy     => Icons.water_drop,
-    FoodCategory.meat      => Icons.set_meal,
+    FoodCategory.bakery => Icons.bakery_dining,
+    FoodCategory.produce => Icons.energy_savings_leaf,
+    FoodCategory.dairy => Icons.water_drop,
+    FoodCategory.meat => Icons.set_meal,
     FoodCategory.beverages => Icons.local_drink,
-    FoodCategory.other     => Icons.category,
+    FoodCategory.other => Icons.category,
   };
 }
 
@@ -318,9 +317,7 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
-        border: Border(
-          top: BorderSide(color: ac.brand, width: 3),
-        ),
+        border: Border(top: BorderSide(color: ac.brand, width: 3)),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
         ],
