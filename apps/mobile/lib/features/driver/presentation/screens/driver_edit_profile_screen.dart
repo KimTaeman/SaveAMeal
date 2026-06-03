@@ -127,9 +127,10 @@ class _DriverEditProfileScreenState
                   itemBuilder: (context, _) => Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── Title block ───────────────────────────────────
+                      // ── Title block (centered) ────────────────────────
                       Text(
                         'Personal Information',
+                        textAlign: TextAlign.center,
                         style: textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -137,74 +138,163 @@ class _DriverEditProfileScreenState
                       const SizedBox(height: Spacing.xs),
                       Text(
                         'Tell us a bit about yourself to get started.',
+                        textAlign: TextAlign.center,
                         style: textTheme.bodyMedium?.copyWith(
                           color: cs.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: Spacing.lg),
-                      // ── Avatar upload ─────────────────────────────────
-                      Center(
-                        child: _AvatarUploadWidget(photoUrl: profile.photoUrl),
-                      ),
-                      const SizedBox(height: Spacing.lg),
-                      // ── Full Name ─────────────────────────────────────
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          hintText: 'Jane Doe',
-                          labelText: 'Full Name',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                      // ── White box: avatar + fields ────────────────────
+                      Container(
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Name is required'
-                            : null,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // ── Email (read-only) ─────────────────────────────
-                      TextFormField(
-                        initialValue: profile.email,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          labelText: 'Email Address',
-                          hintText: 'jane@example.com',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: cs.surfaceContainerHigh,
+                        padding: const EdgeInsets.all(Spacing.md),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Avatar upload
+                            Center(
+                              child: _AvatarUploadWidget(
+                                photoUrl: profile.photoUrl,
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.lg),
+                            // Full Name
+                            Text(
+                              'Full Name',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.xs),
+                            TextFormField(
+                              controller: _nameController,
+                              decoration: InputDecoration(
+                                hintText: 'Jane Doe',
+                                filled: true,
+                                fillColor: cs.surfaceContainerLowest,
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide(color: cs.primary),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide(
+                                    color: cs.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? 'Name is required'
+                                  : null,
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: Spacing.md),
+                            // Email Address
+                            Text(
+                              'Email Address',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.xs),
+                            TextFormField(
+                              initialValue: profile.email,
+                              readOnly: true,
+                              decoration: InputDecoration(
+                                hintText: 'jane@example.com',
+                                filled: true,
+                                fillColor: cs.surfaceContainerHigh,
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide(color: cs.outline),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide(color: cs.outline),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.md),
+                            // Phone Number
+                            Text(
+                              'Phone Number',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.xs),
+                            TextFormField(
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              decoration: InputDecoration(
+                                hintText: '(555) 123-4567',
+                                filled: true,
+                                fillColor: cs.surfaceContainerLowest,
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide(color: cs.primary),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide(
+                                    color: cs.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: Spacing.md),
+                            // Primary Location
+                            Text(
+                              'Primary Location',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.xs),
+                            TextFormField(
+                              controller: _locationController,
+                              decoration: InputDecoration(
+                                hintText: 'City, Neighborhood, or Zip',
+                                filled: true,
+                                fillColor: cs.surfaceContainerLowest,
+                                suffixIcon: const Icon(
+                                  Icons.location_on_outlined,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide(color: cs.primary),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide(
+                                    color: cs.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _submit(profile),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // ── Phone ─────────────────────────────────────────
-                      TextFormField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          hintText: '(555) 123-4567',
-                          labelText: 'Phone Number',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // ── Primary Location ──────────────────────────────
-                      TextFormField(
-                        controller: _locationController,
-                        decoration: InputDecoration(
-                          hintText: 'City, Neighborhood, or Zip',
-                          labelText: 'Primary Location',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          suffixIcon: const Icon(Icons.location_on_outlined),
-                        ),
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _submit(profile),
                       ),
                       const SizedBox(height: Spacing.lg),
                       // ── Save button ───────────────────────────────────
@@ -212,7 +302,7 @@ class _DriverEditProfileScreenState
                         style: FilledButton.styleFrom(
                           minimumSize: const Size(double.infinity, 52),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(30),
                           ),
                         ),
                         icon: const Icon(Icons.save_outlined),

@@ -105,6 +105,23 @@ class _DriverVehicleDetailsScreenState
       _initialiseControllers(profile);
     }
 
+    // Shared pill-shaped input decoration for all text fields.
+    InputDecoration pillDecoration({required String hintText}) =>
+        InputDecoration(
+          hintText: hintText,
+          filled: true,
+          fillColor: cs.surfaceContainerLowest,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(color: cs.primary),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(color: cs.primary, width: 2),
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+        );
+
     return Scaffold(
       backgroundColor: cs.surface,
       appBar: AppBar(
@@ -165,103 +182,162 @@ class _DriverVehicleDetailsScreenState
                         ),
                       ),
                       const SizedBox(height: Spacing.lg),
-                      // ── Make & Model ──────────────────────────────────
-                      TextFormField(
-                        controller: _makeModelController,
-                        decoration: InputDecoration(
-                          labelText: 'Make & Model',
-                          hintText: 'e.g. Toyota Prius',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+
+                      // ── Group 1: white box ────────────────────────────
+                      Container(
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // ── License Plate ─────────────────────────────────
-                      TextFormField(
-                        controller: _licensePlateController,
-                        decoration: InputDecoration(
-                          labelText: 'License Plate',
-                          hintText: 'ABC-1234',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        textCapitalization: TextCapitalization.characters,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // ── Vehicle Color ─────────────────────────────────
-                      TextFormField(
-                        controller: _vehicleColorController,
-                        decoration: InputDecoration(
-                          labelText: 'Vehicle Color',
-                          hintText: 'e.g. Silver',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // ── Cargo Capacity ────────────────────────────────
-                      DropdownButtonFormField<String>(
-                        // ignore: deprecated_member_use
-                        value: _selectedCargoCapacity,
-                        decoration: InputDecoration(
-                          labelText: 'Cargo Capacity',
-                          hintText: 'Select capacity',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        items: _cargoOptions
-                            .map(
-                              (o) => DropdownMenuItem(value: o, child: Text(o)),
-                            )
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedCargoCapacity = val),
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // ── Refrigerated Storage row ──────────────────────
-                      Card(
-                        color: cs.surfaceContainerLowest,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: SwitchListTile(
-                          title: Text(
-                            'Refrigerated Storage',
-                            style: textTheme.bodyLarge,
-                          ),
-                          subtitle: Text(
-                            'Required for cold chain rescues',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
+                        padding: const EdgeInsets.all(Spacing.md),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Make & Model
+                            Text(
+                              'Make & Model',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          value: _refrigeratedStorage,
-                          onChanged: (val) =>
-                              setState(() => _refrigeratedStorage = val),
+                            const SizedBox(height: Spacing.xs),
+                            TextFormField(
+                              controller: _makeModelController,
+                              decoration: pillDecoration(
+                                hintText: 'e.g. Toyota Prius',
+                              ),
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: Spacing.md),
+
+                            // License Plate
+                            Text(
+                              'License Plate',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.xs),
+                            TextFormField(
+                              controller: _licensePlateController,
+                              decoration: pillDecoration(hintText: 'ABC-1234'),
+                              textCapitalization: TextCapitalization.characters,
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: Spacing.md),
+
+                            // Vehicle Color
+                            Text(
+                              'Vehicle Color',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.xs),
+                            TextFormField(
+                              controller: _vehicleColorController,
+                              decoration: pillDecoration(
+                                hintText: 'e.g. Silver',
+                              ),
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: Spacing.md),
+
+                            // Cargo Capacity
+                            Text(
+                              'Cargo Capacity',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.xs),
+                            DropdownButtonFormField<String>(
+                              // ignore: deprecated_member_use
+                              value: _selectedCargoCapacity,
+                              decoration: pillDecoration(
+                                hintText: 'Select capacity',
+                              ),
+                              items: _cargoOptions
+                                  .map(
+                                    (o) => DropdownMenuItem(
+                                      value: o,
+                                      child: Text(o),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (val) =>
+                                  setState(() => _selectedCargoCapacity = val),
+                            ),
+                          ],
                         ),
                       ),
+
                       const SizedBox(height: Spacing.md),
-                      // ── Insurance Policy Number ───────────────────────
-                      TextFormField(
-                        controller: _insuranceController,
-                        decoration: InputDecoration(
-                          labelText: 'Insurance Policy Number',
-                          hintText: 'Enter policy number',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+
+                      // ── Group 2: green box ────────────────────────────
+                      Container(
+                        decoration: BoxDecoration(
+                          color: cs.primaryContainer,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _submit(profile),
+                        padding: const EdgeInsets.all(Spacing.md),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Refrigerated Storage toggle row
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Refrigerated Storage',
+                                        style: textTheme.bodyLarge,
+                                      ),
+                                      const SizedBox(height: Spacing.xs),
+                                      Text(
+                                        'Required for cold chain rescues',
+                                        style: textTheme.bodySmall?.copyWith(
+                                          color: cs.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Switch(
+                                  value: _refrigeratedStorage,
+                                  onChanged: (val) => setState(
+                                    () => _refrigeratedStorage = val,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: Spacing.md),
+
+                            // Insurance Policy Number
+                            Text(
+                              'Insurance Policy Number',
+                              style: textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: Spacing.xs),
+                            TextFormField(
+                              controller: _insuranceController,
+                              decoration: pillDecoration(
+                                hintText: 'Enter policy number',
+                              ),
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _submit(profile),
+                            ),
+                          ],
+                        ),
                       ),
+
                       const SizedBox(height: Spacing.lg),
+
                       // ── Save button ───────────────────────────────────
                       FilledButton.icon(
                         style: FilledButton.styleFrom(

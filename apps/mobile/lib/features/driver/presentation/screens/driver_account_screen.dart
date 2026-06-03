@@ -233,10 +233,9 @@ class _AccountBody extends StatelessWidget {
           ),
           const SizedBox(height: Spacing.lg),
           // ── Log Out ─────────────────────────────────────────────────────
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              backgroundColor: ac.danger,
-              foregroundColor: ac.onDanger,
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              foregroundColor: ac.danger,
               minimumSize: const Size(double.infinity, 52),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

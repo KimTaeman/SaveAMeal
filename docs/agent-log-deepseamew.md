@@ -118,3 +118,18 @@ Files:
   ? apps/mobile/test/widget/driver/driver_vehicle_details_screen_test.dart (untracked)
 Summary:  3 files changed, 19 insertions(+)
 
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_vehicle_details_screen.dart
+Summary:  1 file changed, 164 insertions(+), 88 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_account_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_vehicle_details_screen.dart
+Summary:  2 files changed, 167 insertions(+), 92 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_account_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_edit_profile_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_vehicle_details_screen.dart
+Summary:  3 files changed, 320 insertions(+), 155 deletions(-)
+
