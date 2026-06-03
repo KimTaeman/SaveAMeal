@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -19,11 +21,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        }
     }
 
-    val localProps = java.util.Properties().also { props ->
+    val localProps = Properties().also { props: Properties ->
         rootProject.file("local.properties").takeIf { it.exists() }
             ?.inputStream()?.use { props.load(it) }
     }
