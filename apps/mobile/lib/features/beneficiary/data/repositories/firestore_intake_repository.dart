@@ -73,12 +73,15 @@ class FirestoreIntakeRepository implements IntakeRepository {
       .map(_stringToAvailability);
 
   @override
-  Stream<IntakeRequestDetail?> watchIntakeRequestDetail(String batchId) =>
-      _datasource
-          .watchBatch(batchId)
-          .map(
-            (batch) => batch == null ? null : batchModelToDetailDomain(batch),
-          );
+  Stream<IntakeRequestDetail?> watchIntakeRequestDetail(
+    String batchId,
+    String beneficiaryId,
+  ) => _datasource.watchBatch(batchId).map((batch) {
+    if (batch == null) return null;
+    // Ownership check — reject batches that don't belong to the requesting user.
+    if (batch.beneficiaryId != beneficiaryId) return null;
+    return batchModelToDetailDomain(batch);
+  });
 
   @override
   Stream<List<RecentDelivery>> watchRecentDeliveries(String beneficiaryId) =>

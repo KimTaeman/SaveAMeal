@@ -31,7 +31,10 @@ abstract class IntakeRepository {
     String beneficiaryId,
   );
 
-  Stream<IntakeRequestDetail?> watchIntakeRequestDetail(String batchId);
+  Stream<IntakeRequestDetail?> watchIntakeRequestDetail(
+    String batchId,
+    String beneficiaryId,
+  );
 
   Stream<List<RecentDelivery>> watchRecentDeliveries(String beneficiaryId);
 }

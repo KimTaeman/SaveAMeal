@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/beneficiary/data/datasources/intake_remote_datasource.dart';
 import 'package:saveameal/features/beneficiary/data/repositories/firestore_intake_repository.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
@@ -58,9 +59,15 @@ Stream<IntakeRequest?> intakeRequest(Ref ref, String batchId) =>
     ref.watch(intakeRepositoryProvider).watchIntakeRequest(batchId);
 
 /// Detail view — item-level batch data for DeliveryDetailScreen.
+/// Enforces ownership: emits null if the authenticated user doesn't own the batch.
 @riverpod
-Stream<IntakeRequestDetail?> intakeRequestDetail(Ref ref, String batchId) =>
-    ref.watch(watchIntakeRequestDetailUseCaseProvider).call(batchId);
+Stream<IntakeRequestDetail?> intakeRequestDetail(Ref ref, String batchId) {
+  final currentUser = ref.watch(authStateProvider).asData?.value;
+  if (currentUser == null) return Stream.value(null);
+  return ref
+      .watch(watchIntakeRequestDetailUseCaseProvider)
+      .call(batchId, currentUser.uid);
+}
 
 /// Volunteer queue — all pending batches + this volunteer's dispatched batches.
 @riverpod

@@ -8,15 +8,21 @@ import 'package:saveameal/features/beneficiary/domain/usecases/watch_intake_requ
 
 // Handwritten fake — avoids the mockito/build_runner dependency.
 class _FakeIntakeRepository implements IntakeRepository {
-  Stream<IntakeRequestDetail?> Function(String batchId)? _watchDetail;
+  Stream<IntakeRequestDetail?> Function(String batchId, String beneficiaryId)?
+  _watchDetail;
 
-  void stubWatchDetail(Stream<IntakeRequestDetail?> Function(String) fn) {
+  void stubWatchDetail(
+    Stream<IntakeRequestDetail?> Function(String, String) fn,
+  ) {
     _watchDetail = fn;
   }
 
   @override
-  Stream<IntakeRequestDetail?> watchIntakeRequestDetail(String batchId) {
-    if (_watchDetail != null) return _watchDetail!(batchId);
+  Stream<IntakeRequestDetail?> watchIntakeRequestDetail(
+    String batchId,
+    String beneficiaryId,
+  ) {
+    if (_watchDetail != null) return _watchDetail!(batchId, beneficiaryId);
     throw UnimplementedError();
   }
 
@@ -71,10 +77,11 @@ void main() {
   });
 
   const batchId = 'batch_001';
+  const beneficiaryId = 'ben_001';
 
   final fakeDetail = IntakeRequestDetail(
     batchId: batchId,
-    beneficiaryId: 'ben_001',
+    beneficiaryId: beneficiaryId,
     donorId: 'donor_001',
     status: IntakeStatus.dispatched,
     portions: 1,
@@ -84,17 +91,17 @@ void main() {
 
   group('WatchIntakeRequestDetailUseCase', () {
     test('delegates to repository.watchIntakeRequestDetail', () {
-      fakeRepository.stubWatchDetail((_) => Stream.value(fakeDetail));
+      fakeRepository.stubWatchDetail((b, id) => Stream.value(fakeDetail));
 
-      final stream = useCase.call(batchId);
+      final stream = useCase.call(batchId, beneficiaryId);
 
       expect(stream, emits(fakeDetail));
     });
 
     test('passes through null when repository emits null', () {
-      fakeRepository.stubWatchDetail((_) => Stream.value(null));
+      fakeRepository.stubWatchDetail((b, id) => Stream.value(null));
 
-      expect(useCase.call(batchId), emits(null));
+      expect(useCase.call(batchId, beneficiaryId), emits(null));
     });
   });
 }
