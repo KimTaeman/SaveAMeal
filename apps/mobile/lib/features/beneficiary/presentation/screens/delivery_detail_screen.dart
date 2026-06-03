@@ -40,6 +40,7 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
       ),
       actions: [
         IconButton(
+          tooltip: 'Notifications',
           icon: const Icon(Icons.notifications_outlined),
           onPressed: () {},
         ),
