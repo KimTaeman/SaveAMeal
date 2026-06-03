@@ -72,6 +72,17 @@ class DonorRepositoryImpl implements DonorRepository {
       .getBeneficiaries()
       .map((models) => models.map(_toBeneficiary).toList());
 
+  @override
+  Stream<List<domain.Batch>> watchAllBatches(String donorId) => _datasource
+      .watchAllBatches(donorId)
+      .map((models) => models.map(_toBatch).toList());
+
+  @override
+  Stream<domain.Batch> watchBatchById(String batchId) => _datasource
+      .watchBatchById(batchId)
+      .where((m) => m != null)
+      .map((m) => _toBatch(m!));
+
   // ── Mappers ────────────────────────────────────────────────────────────────
 
   domain.Batch _toBatch(bm.BatchModel m) => domain.Batch(

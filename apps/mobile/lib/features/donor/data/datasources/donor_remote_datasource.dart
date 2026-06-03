@@ -8,6 +8,8 @@ abstract class DonorRemoteDatasource {
   Stream<ImpactMetricsModel> watchMetrics(String donorId);
   Future<void> createBatch(BatchModel batch);
   Stream<List<BeneficiaryModel>> getBeneficiaries();
+  Stream<List<BatchModel>> watchAllBatches(String donorId);
+  Stream<BatchModel?> watchBatchById(String batchId);
 }
 
 class DonorRemoteDatasourceImpl implements DonorRemoteDatasource {
@@ -31,4 +33,12 @@ class DonorRemoteDatasourceImpl implements DonorRemoteDatasource {
   @override
   Stream<List<BeneficiaryModel>> getBeneficiaries() =>
       _firestoreService.getBeneficiaries();
+
+  @override
+  Stream<List<BatchModel>> watchAllBatches(String donorId) =>
+      _firestoreService.watchActiveBatchesForDonor(donorId);
+
+  @override
+  Stream<BatchModel?> watchBatchById(String batchId) =>
+      _firestoreService.watchBatch(batchId);
 }

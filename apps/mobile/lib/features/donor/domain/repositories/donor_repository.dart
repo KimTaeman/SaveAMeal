@@ -7,4 +7,6 @@ abstract class DonorRepository {
   Stream<DonorMetrics> watchMetrics(String donorId);
   Future<void> createBatch(Batch batch);
   Stream<List<Beneficiary>> getBeneficiaries();
+  Stream<List<Batch>> watchAllBatches(String donorId);
+  Stream<Batch> watchBatchById(String batchId);
 }

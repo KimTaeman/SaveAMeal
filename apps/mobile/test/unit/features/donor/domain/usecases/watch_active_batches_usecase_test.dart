@@ -22,6 +22,15 @@ class _FakeDonorRepository implements DonorRepository {
 
   @override
   Stream<List<Beneficiary>> getBeneficiaries() => const Stream.empty();
+
+  @override
+  Stream<List<Batch>> watchAllBatches(String donorId) =>
+      Stream.value(batchesToEmit);
+
+  @override
+  Stream<Batch> watchBatchById(String batchId) => batchesToEmit.isNotEmpty
+      ? Stream.value(batchesToEmit.first)
+      : Stream.error(Exception('not found'));
 }
 
 Batch _makeBatch(String id) => Batch(
