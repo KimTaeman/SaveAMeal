@@ -429,5 +429,36 @@ class FirestoreService {
     return BeneficiaryModel.fromJson({...doc.data()!, 'id': doc.id});
   }
 
+  /// Fetches a single page of delivered/closed batches for [beneficiaryId]
+  /// ordered by deliveredAt descending. Uses cursor-based pagination via
+  /// startAfterDocument — pass [cursor] (the DocumentSnapshot returned from
+  /// the previous page) to get the next page; pass null for the first page.
+  Future<(List<BatchModel>, Object? nextCursor)> fetchDeliveryHistoryPage({
+    required String beneficiaryId,
+    required int pageSize,
+    Object? cursor,
+  }) async {
+    Query<Map<String, dynamic>> query = _db
+        .collection(FirestoreConstants.batches)
+        .where('beneficiaryId', isEqualTo: beneficiaryId)
+        .where('status', whereIn: ['delivered', 'closed'])
+        .orderBy('deliveredAt', descending: true)
+        .limit(pageSize);
+
+    if (cursor != null) {
+      query = query.startAfterDocument(cursor as DocumentSnapshot);
+    }
+
+    final snapshot = await query.get();
+    final nextCursor = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+    final models = snapshot.docs
+        .map(
+          (doc) =>
+              BatchModel.fromJson(_normalise({...doc.data(), 'id': doc.id})),
+        )
+        .toList();
+    return (models, nextCursor);
+  }
+
   FirebaseFirestore get db => _db;
 }

@@ -1,5 +1,6 @@
 // Pure Dart — zero Flutter or Firebase imports.
 
+import 'package:saveameal/features/beneficiary/domain/entities/delivery_history_page.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
@@ -37,4 +38,15 @@ abstract class IntakeRepository {
   );
 
   Stream<List<RecentDelivery>> watchRecentDeliveries(String beneficiaryId);
+
+  /// Fetches a single page of completed deliveries for [beneficiaryId].
+  ///
+  /// [pageSize]  — number of records to return; use kDeliveryHistoryPageSize.
+  /// [cursor]    — opaque cursor returned by the previous page's
+  ///               DeliveryHistoryPage.nextCursor. Pass null for the first page.
+  Future<DeliveryHistoryPage> fetchDeliveryHistoryPage({
+    required String beneficiaryId,
+    required int pageSize,
+    Object? cursor,
+  });
 }

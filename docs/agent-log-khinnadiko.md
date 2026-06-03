@@ -155,3 +155,41 @@ Outcome: All 8 steps complete. RecentDelivery domain entity created (pure Dart).
 Decisions: Used Object/StackTrace named params in the error callback to satisfy both the unnecessary_underscores lint and no_leading_underscores_for_local_identifiers lint simultaneously. _FakeIntakeRepository in the existing usecase test required watchRecentDeliveries to be added (throws UnimplementedError) to keep the interface contract satisfied without touching test logic.
 Handoff: Submit for review to architect or qa-engineer. The "View All" TextButton and each row's onTap are no-ops for this iteration — flag for the next spec to wire navigation to a full history screen.
 Review: PENDING
+
+---
+
+Date: 2026-06-04 14:00
+Member: khinnadiko
+Agent: qa-engineer
+Task: QA audit of feat/beneficiary-batches — DeliveryDetailScreen, BatchItemsCard, DriverInfoCard, RecentDeliveriesSection, new domain entities and repository methods
+Prompt: Review the diff for feat/beneficiary-batches against main. Audit coverage gaps, performance, accessibility, edge cases, test quality, and CLAUDE.md rule compliance.
+
+Outcome: Full audit completed. 27 PR tests all pass. flutter analyze clean. dart format clean. No unbounded ListView violations. No Image.network usage. 4 blocking accessibility findings (no semantic labels on interactive widgets, "View All" touch target below 44dp) plus 5 warnings around silent stubs, empty-state coverage, and missing widget-level tests for BatchItemsCard and DriverInfoCard.
+Decisions: Marked accessibility findings as BLOCKING per WCAG 2.2 AA mandate in QA rules. Touch target shrinkWrap on View All is a direct Material tap-target spec violation. Silent error swallowing in RecentDeliveriesSection and DriverInfoCard (no logging) flagged as WARNING not BLOCKING because they are pre-existing patterns in the codebase.
+Handoff: Flutter engineer must add Semantics wrappers to all interactive widgets (DriverInfoCard map, View All button, each _DeliveryRow, notifications IconButton) and restore View All to MaterialTapTargetSize.padded or wrap in a SizedBox 44dp tall. Golden tests for DeliveryDetailScreen are missing — add one per the QA rule. BatchItemsCard and DriverInfoCard need dedicated widget tests.
+Review: CHANGES REQUESTED by qa-engineer
+
+---
+
+Date: 2026-06-04 00:00
+Member: khinnadiko
+Agent: architect
+Task: Write tech spec SPEC-0007 for PROP-0007 "Beneficiary Order History"
+Prompt: Write the full tech spec for PROP-0007 "Beneficiary Order History" at tech-specs/0007-beneficiary-order-history.md. Chosen option: Option A (new DeliveryHistoryScreen, cursor-based Firestore pagination, Hive page cache). Full Figma analysis, user answers, and architecture constraints provided inline.
+
+Outcome: Wrote tech-specs/0007-beneficiary-order-history.md (DRAFT). Wrote ADR docs/decisions/0014-beneficiary-order-history-design-decisions.md covering three design decisions (category field, aggregate stats source, display ID format). All interfaces grounded in the real codebase (RecentDelivery, IntakeRepository, BatchModel, FirestoreIntakeRepository, router.dart, AppColors, Spacing).
+Decisions: (1) Added category: String? to RecentDelivery — nullable for backwards-compat, mapper reads batch.items.first.category. (2) Aggregate stats computed client-side from loaded pages only for MVP — no new Firestore reads or Cloud Functions dependency. (3) Display order ID formatted as #${batchId.substring(0,8).toUpperCase()} in the presentation widget — no BatchModel schema change. (4) DeliveryHistoryPage value object introduced so domain interface returns hasMore/nextCursor without importing Firestore types. (5) Hive cache uses Hive.box<String> + jsonEncode — no TypeAdapter needed. (6) Status filter: delivered + closed only; Figma "In Transit" chip treated as mock artefact.
+Handoff: Flutter engineer implements against tech-specs/0007-beneficiary-order-history.md. Resolve OQ-5 (Hive box opening in main.dart) and OQ-6 (FirestoreService method location) before starting Data layer. Six open questions documented in spec. Run flutter analyze and dart format . before PR.
+Review: PENDING
+
+---
+Date: 2026-06-04 00:00
+Member: khinnadiko
+Agent: flutter-engineer
+Task: Implement SPEC-0007 Beneficiary Order History feature
+Prompt: Implement SPEC-0007 "Beneficiary Order History" strictly following the approved spec at tech-specs/0007-beneficiary-order-history.md.
+
+Outcome: Fully implemented SPEC-0007. All layers complete: domain (category field on RecentDelivery, fetchDeliveryHistoryPage on IntakeRepository, FetchDeliveryHistoryPageUseCase), data (FirestoreService.fetchDeliveryHistoryPage, IntakeRemoteDatasource, FirestoreIntakeRepository), presentation (DeliveryHistoryNotifier with Hive cache, DeliveryHistoryScreen, DeliveryHistoryRow, OrderHistoryStatsBar). Wired View All button and added /beneficiary/history GoRoute. Added firestore.indexes.json composite index. 18 new tests written (3 use case unit, 5 notifier unit, 7 widget, plus 1 existing test updated). flutter analyze: 0 issues. All 262 tests pass.
+Decisions: (1) refresh() re-runs fetch logic inline instead of invalidateSelf() — avoids Riverpod 3.x autoDispose ref-invalidation after async gaps. (2) intl: ^0.19.0 added as explicit pubspec dep — not transitive in this project. (3) AppUser.name used as orgName in subtitle (entity has no organisationName field — OQ). (4) withValues(alpha:) used instead of deprecated withOpacity.
+Handoff: Submit PR for review. Reviewer must verify: domain layer has no Flutter/Firestore imports; Firestore composite index deployed before live; OQ-4 (currentUser.uid == batch.beneficiaryId) confirmed with backend team; intl dep addition approved per CLAUDE.md new-dep rule.
+Review: PENDING
