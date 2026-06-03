@@ -2,11 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/notifications/data/notification_prefs_store.dart';
 import 'package:saveameal/features/notifications/domain/entities/app_notification.dart';
 import 'package:saveameal/features/notifications/domain/repositories/notifications_repository.dart';
 import 'package:saveameal/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:saveameal/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
+
+class _InMemoryReadStore implements NotificationReadStore {
+  Set<String> _ids = {};
+
+  @override
+  Set<String> loadReadIds() => Set.unmodifiable(_ids);
+
+  @override
+  void saveReadIds(Set<String> ids) => _ids = Set.from(ids);
+}
 
 // ── Fake repository ───────────────────────────────────────────────────────────
 
@@ -84,7 +96,12 @@ List<AppNotification> _seedNotifications() {
 Widget _buildTestApp(List<AppNotification> items) {
   final repo = _FakeNotificationsRepository(items);
   return ProviderScope(
-    overrides: [notificationsRepositoryProvider.overrideWith((ref) => repo)],
+    overrides: [
+      notificationsRepositoryProvider.overrideWith((ref) => repo),
+      // No auth → role is null → no role-based filtering, all items shown.
+      authStateProvider.overrideWith((_) => const Stream.empty()),
+      notificationReadStoreProvider.overrideWith((_) => _InMemoryReadStore()),
+    ],
     child: MaterialApp.router(
       theme: ThemeData(extensions: const [AppColors.light]),
       routerConfig: GoRouter(
