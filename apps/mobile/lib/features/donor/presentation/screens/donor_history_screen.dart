@@ -10,6 +10,32 @@ import 'package:saveameal/shared/theme/spacing.dart';
 
 enum _HistoryFilter { all, completed, inProgress }
 
+String _formatBatchDate(DateTime dt) {
+  const months = [
+    '',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  final h = dt.hour > 12
+      ? dt.hour - 12
+      : dt.hour == 0
+      ? 12
+      : dt.hour;
+  final m = dt.minute.toString().padLeft(2, '0');
+  final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+  return '${months[dt.month]} ${dt.day}, ${dt.year} · $h:$m $ampm';
+}
+
 class DonorHistoryScreen extends ConsumerStatefulWidget {
   const DonorHistoryScreen({super.key});
 
@@ -428,31 +454,7 @@ class _BatchHistoryCard extends StatelessWidget {
     );
   }
 
-  String _formatDateTime(DateTime dt) {
-    const months = [
-      '',
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    final h = dt.hour > 12
-        ? dt.hour - 12
-        : dt.hour == 0
-        ? 12
-        : dt.hour;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    return '${months[dt.month]} ${dt.day}, ${dt.year} · $h:$m $ampm';
-  }
+  String _formatDateTime(DateTime dt) => _formatBatchDate(dt);
 }
 
 class _StatusBadge extends StatelessWidget {

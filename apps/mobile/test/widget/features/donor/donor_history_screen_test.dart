@@ -184,5 +184,70 @@ void main() {
 
       expect(find.textContaining('#'), findsOneWidget);
     });
+
+    testWidgets('shows error state with retry button on provider error', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        initialLocation: '/donor/batches',
+        routes: [
+          GoRoute(
+            path: '/donor/batches',
+            builder: (_, __) => const DonorHistoryScreen(),
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+            allBatchesProvider(
+              'donor-uid',
+            ).overrideWith((ref) => Stream.error(Exception('network error'))),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light(),
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Could not load donations'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
+    });
+
+    testWidgets('FAB navigates to /donor/log', (tester) async {
+      await tester.pumpWidget(_wrap([]));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Log'), findsOneWidget);
+    });
+
+    testWidgets('pagination shows page 2 when more than 5 batches', (
+      tester,
+    ) async {
+      final batches = List.generate(
+        7,
+        (i) => _makeBatch(id: 'batch${i.toString().padLeft(3, '0')}aa'),
+      );
+      await tester.pumpWidget(_wrap(batches));
+      await tester.pumpAndSettle();
+
+      // First page: total label shows 7, page button "2" exists
+      expect(find.text('7 Total'), findsOneWidget);
+      expect(find.text('2'), findsOneWidget);
+
+      // Tap page 2
+      await tester.tap(find.text('2'));
+      await tester.pumpAndSettle();
+
+      // Second page: page button "1" now present (unselected), "2" still shown
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('7 Total'), findsOneWidget);
+    });
   });
 }
