@@ -75,7 +75,7 @@ Future<ProviderContainer> _container(
   );
   // Subscribe then drain two microtask turns so Stream.value emits and
   // the dependent NotificationsNotifier rebuilds with the correct role.
-  c.listen(authStateProvider, (_, __) {});
+  c.listen(authStateProvider, (prev, next) {});
   await Future.microtask(() {});
   await Future.microtask(() {});
   return c;

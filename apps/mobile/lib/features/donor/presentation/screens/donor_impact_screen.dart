@@ -9,6 +9,7 @@ import 'package:saveameal/features/donor/presentation/providers/donor_provider.d
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/donor_brand_title.dart';
 
 class DonorImpactScreen extends ConsumerWidget {
   const DonorImpactScreen({super.key});
@@ -36,21 +37,8 @@ class DonorImpactScreen extends ConsumerWidget {
       backgroundColor: cs.surface,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.location_on, color: ac.brand, size: 20),
-            const SizedBox(width: 4),
-            Text(
-              'SaveAMeal',
-              style: textTheme.titleLarge?.copyWith(
-                color: ac.brand,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+        titleSpacing: Spacing.md,
+        title: const DonorBrandTitle(),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),

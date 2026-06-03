@@ -10,6 +10,7 @@ import 'package:saveameal/features/donor/presentation/providers/notification_pre
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/donor_brand_title.dart';
 
 class DonorAccountScreen extends ConsumerStatefulWidget {
   const DonorAccountScreen({super.key});
@@ -44,21 +45,8 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
       backgroundColor: cs.surface,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.location_on, color: Color(0xFF006E2F), size: 20),
-            const SizedBox(width: 4),
-            Text(
-              'SaveAMeal',
-              style: textTheme.titleLarge?.copyWith(
-                color: const Color(0xFF006E2F),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+        titleSpacing: Spacing.md,
+        title: const DonorBrandTitle(),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
