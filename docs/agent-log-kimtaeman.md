@@ -1026,6 +1026,13 @@ Summary:  1 file changed, 9 insertions(+), 4 deletions(-)
 
 
 ---
+Date: 2026-06-03 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Implement donor batch detail screen and donation history screen
+Prompt: checkout to new branch and implement for donor these features. batch details and donation history.
+
+---
 Date: 2026-06-02 HH:MM
 Member: Kim Taeman
 Agent: flutter-engineer
