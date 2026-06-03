@@ -1,6 +1,7 @@
 import 'package:saveameal/features/beneficiary/data/datasources/intake_remote_datasource.dart';
 import 'package:saveameal/features/beneficiary/data/models/intake_request_model.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
 import 'package:saveameal/features/beneficiary/domain/repositories/intake_repository.dart';
 
 class FirestoreIntakeRepository implements IntakeRepository {
@@ -69,6 +70,14 @@ class FirestoreIntakeRepository implements IntakeRepository {
   ) => _datasource
       .watchIntakeAvailability(beneficiaryId)
       .map(_stringToAvailability);
+
+  @override
+  Stream<IntakeRequestDetail?> watchIntakeRequestDetail(String batchId) =>
+      _datasource
+          .watchBatch(batchId)
+          .map(
+            (batch) => batch == null ? null : batchModelToDetailDomain(batch),
+          );
 
   static String _availabilityToString(BeneficiaryIntakeAvailability a) =>
       switch (a) {
