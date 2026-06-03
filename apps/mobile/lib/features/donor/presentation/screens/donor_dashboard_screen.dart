@@ -35,7 +35,12 @@ class DonorDashboardScreen extends ConsumerWidget {
 
     final batches = batchesAsync.asData?.value ?? [];
     final metrics = metricsAsync.asData?.value ?? DonorMetrics.empty;
-    final isOffline = batchesAsync.hasError || metricsAsync.hasError;
+    // Only show the offline banner when an error left us with no data at all.
+    // hasValue stays true when Hive cache or a prior Firestore emission exists,
+    // so stale-but-valid data stays visible without the misleading banner.
+    final isOffline =
+        (batchesAsync.hasError && !batchesAsync.hasValue) ||
+        (metricsAsync.hasError && !metricsAsync.hasValue);
 
     final orgName = user?.name ?? 'Donor';
     final cs = Theme.of(context).colorScheme;
@@ -127,9 +132,15 @@ class _DashboardHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.location_on, color: cs.primary),
+              Image.asset('assets/images/logo.png', height: 28),
               const SizedBox(width: Spacing.xs),
-              Text('SaveAMeal', style: textTheme.titleLarge),
+              Text(
+                'SaveAMeal',
+                style: textTheme.titleLarge?.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           Row(

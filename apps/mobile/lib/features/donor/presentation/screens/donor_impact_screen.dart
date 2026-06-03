@@ -202,50 +202,52 @@ class DonorImpactScreen extends ConsumerWidget {
                     ],
                   ),
                   child: Column(
-                    children: _kFixedCategories.asMap().entries.map((entry) {
-                      final i = entry.key;
-                      final cat = entry.value;
-                      final count = categoryMap[cat.$1] ?? 0;
-                      final pct = categoryTotal == 0
-                          ? 0
-                          : ((count / categoryTotal) * 100).round();
-                      return Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
-                            child: Row(
+                          children: _kAllCategories.asMap().entries.map((
+                            entry,
+                          ) {
+                            final i = entry.key;
+                            final cat = entry.value;
+                            final count = categoryMap[_categoryLabel(cat)] ?? 0;
+                            final pct = categoryTotal == 0
+                                ? 0
+                                : ((count / categoryTotal) * 100).round();
+                            return Column(
                               children: [
-                                Icon(
-                                  cat.$2,
-                                  color: const Color(0xFF006E2F),
-                                  size: 20,
-                                ),
-                                SizedBox(width: Spacing.sm),
-                                Expanded(
-                                  child: Text(
-                                    cat.$1,
-                                    style: textTheme.bodyMedium,
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        _iconForCategory(cat),
+                                        color: const Color(0xFF006E2F),
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: Spacing.sm),
+                                      Expanded(
+                                        child: Text(
+                                          _categoryLabel(cat),
+                                          style: textTheme.bodyMedium,
+                                        ),
+                                      ),
+                                      Text(
+                                        '$pct%',
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF006E2F),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Text(
-                                  '$pct%',
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF006E2F),
-                                  ),
-                                ),
+                                if (i < _kAllCategories.length - 1)
+                                  const Divider(height: 1, indent: Spacing.md),
                               ],
-                            ),
-                          ),
-                          if (i < _kFixedCategories.length - 1)
-                            const Divider(height: 1, indent: Spacing.md),
-                        ],
-                      );
-                    }).toList(),
-                  ),
+                            );
+                          }).toList(),
+                        ),
                 ),
 
                 SizedBox(height: Spacing.md),
@@ -257,14 +259,9 @@ class DonorImpactScreen extends ConsumerWidget {
     );
   }
 
-  static const _kFixedCategories = [
-    ('Fruits & Veggies', Icons.energy_savings_leaf),
-    ('Bakery', Icons.bakery_dining),
-    ('Prepared Meals', Icons.restaurant),
-    ('Dairy', Icons.water_drop),
-  ];
+  static const _kAllCategories = FoodCategory.values;
 
-  Map<String, int> _buildCategoryMap(List<Batch> batches) {
+  static Map<String, int> _buildCategoryMap(List<Batch> batches) {
     final counts = <String, int>{};
     for (final batch in batches) {
       for (final item in batch.items) {
@@ -275,13 +272,22 @@ class DonorImpactScreen extends ConsumerWidget {
     return counts;
   }
 
-  String _categoryLabel(FoodCategory category) => switch (category) {
-    FoodCategory.bakery => 'Bakery',
-    FoodCategory.produce => 'Fruits & Veggies',
-    FoodCategory.dairy => 'Dairy',
-    FoodCategory.meat => 'Prepared Meals',
-    FoodCategory.beverages => 'Prepared Meals',
-    FoodCategory.other => 'Prepared Meals',
+  static String _categoryLabel(FoodCategory category) => switch (category) {
+    FoodCategory.bakery    => 'Bakery',
+    FoodCategory.produce   => 'Produce',
+    FoodCategory.dairy     => 'Dairy',
+    FoodCategory.meat      => 'Meat',
+    FoodCategory.beverages => 'Beverages',
+    FoodCategory.other     => 'Other',
+  };
+
+  static IconData _iconForCategory(FoodCategory category) => switch (category) {
+    FoodCategory.bakery    => Icons.bakery_dining,
+    FoodCategory.produce   => Icons.energy_savings_leaf,
+    FoodCategory.dairy     => Icons.water_drop,
+    FoodCategory.meat      => Icons.set_meal,
+    FoodCategory.beverages => Icons.local_drink,
+    FoodCategory.other     => Icons.category,
   };
 }
 

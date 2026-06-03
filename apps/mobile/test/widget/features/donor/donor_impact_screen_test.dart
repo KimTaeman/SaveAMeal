@@ -189,8 +189,8 @@ void main() {
       expect(find.text('By Category'), findsOneWidget);
     });
 
-    // (6) Empty category state shows "No donations yet"
-    testWidgets('shows No donations yet when batch list is empty', (
+    // (6) All 6 categories render at 0% when batch list is empty
+    testWidgets('shows all categories at 0% when batch list is empty', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -213,7 +213,15 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('No donations yet'), findsOneWidget);
+      // All 6 fixed categories should render
+      expect(find.text('Bakery'), findsOneWidget);
+      expect(find.text('Produce'), findsOneWidget);
+      expect(find.text('Dairy'), findsOneWidget);
+      expect(find.text('Meat'), findsOneWidget);
+      expect(find.text('Beverages'), findsOneWidget);
+      expect(find.text('Other'), findsOneWidget);
+      // All show 0%
+      expect(find.text('0%'), findsNWidgets(6));
     });
 
     // (7) Metrics values render from provider
