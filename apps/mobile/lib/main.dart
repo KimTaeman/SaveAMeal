@@ -39,6 +39,7 @@ void main() async {
   await Future.wait([
     Hive.openBox<dynamic>('donor_batches'),
     Hive.openBox<dynamic>('donor_metrics'),
+    Hive.openBox<dynamic>('driver_profile'),
   ]);
 
   if (!kDebugMode) {
