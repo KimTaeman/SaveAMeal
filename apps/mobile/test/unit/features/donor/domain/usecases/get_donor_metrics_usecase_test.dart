@@ -22,6 +22,12 @@ class _FakeDonorRepository implements DonorRepository {
 
   @override
   Stream<List<Beneficiary>> getBeneficiaries() => const Stream.empty();
+
+  @override
+  Stream<List<Batch>> watchAllBatches(String donorId) => const Stream.empty();
+
+  @override
+  Stream<Batch> watchBatchById(String batchId) => const Stream.empty();
 }
 
 void main() {

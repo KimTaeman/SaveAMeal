@@ -366,6 +366,19 @@ class FirestoreService {
             .toList(),
       );
 
+  /// All batches for this donor regardless of status. Sorted client-side.
+  Stream<List<BatchModel>> watchAllBatchesForDonor(String donorId) => _db
+      .collection(FirestoreConstants.batches)
+      .where('donorId', isEqualTo: donorId)
+      .snapshots()
+      .map(
+        (qs) => qs.docs
+            .map(
+              (d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})),
+            )
+            .toList(),
+      );
+
   Stream<int> watchUserPoints(String uid) =>
       _db.collection(FirestoreConstants.users).doc(uid).snapshots().map((ds) {
         if (!ds.exists || ds.data() == null) return 0;

@@ -8,6 +8,8 @@ import 'package:saveameal/features/donor/domain/repositories/donor_repository.da
 import 'package:saveameal/features/donor/domain/usecases/create_batch_usecase.dart';
 import 'package:saveameal/features/donor/domain/usecases/get_donor_metrics_usecase.dart';
 import 'package:saveameal/features/donor/domain/usecases/watch_active_batches_usecase.dart';
+import 'package:saveameal/features/donor/domain/usecases/watch_all_batches_usecase.dart';
+import 'package:saveameal/features/donor/domain/usecases/watch_batch_by_id_usecase.dart';
 import 'package:saveameal/services/service_providers.dart';
 
 part 'donor_provider.g.dart';
@@ -43,3 +45,19 @@ Stream<DonorMetrics> donorMetrics(Ref ref, String donorId) =>
 @riverpod
 Stream<List<Beneficiary>> beneficiaries(Ref ref) =>
     ref.watch(donorRepositoryProvider).getBeneficiaries();
+
+@riverpod
+WatchAllBatchesUsecase watchAllBatchesUsecase(Ref ref) =>
+    WatchAllBatchesUsecase(ref.watch(donorRepositoryProvider));
+
+@riverpod
+WatchBatchByIdUsecase watchBatchByIdUsecase(Ref ref) =>
+    WatchBatchByIdUsecase(ref.watch(donorRepositoryProvider));
+
+@riverpod
+Stream<List<Batch>> allBatches(Ref ref, String donorId) =>
+    ref.watch(watchAllBatchesUsecaseProvider).call(donorId);
+
+@riverpod
+Stream<Batch> batchById(Ref ref, String batchId) =>
+    ref.watch(watchBatchByIdUsecaseProvider).call(batchId);
