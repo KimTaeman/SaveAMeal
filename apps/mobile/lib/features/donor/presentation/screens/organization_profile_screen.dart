@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/donor/domain/entities/user_profile_update.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
+import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
@@ -242,6 +243,21 @@ class _OrganizationProfileScreenState
             onPressed: () => context.push('/notifications'),
           ),
         ],
+      ),
+      bottomNavigationBar: DonorBottomNav(
+        currentIndex: 3,
+        onDestinationSelected: (index) {
+          switch (index) {
+            case 0:
+              context.go('/donor');
+            case 1:
+              context.go('/donor/impact');
+            case 2:
+              context.go('/donor/batches');
+            case 3:
+              context.go('/donor/account');
+          }
+        },
       ),
       body: Form(
         key: _formKey,

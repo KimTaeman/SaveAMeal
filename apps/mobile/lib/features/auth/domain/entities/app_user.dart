@@ -8,10 +8,12 @@ class AppUser {
     required this.name,
     required this.email,
     required this.role,
+    this.createdAt,
   });
 
   final String uid;
   final String name;
   final String email;
   final UserRole role;
+  final DateTime? createdAt;
 }

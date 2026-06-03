@@ -1059,3 +1059,9 @@ Files:
   ~ apps/mobile/test/widget/features/donor/donor_history_screen_test.dart
 Summary:  2 files changed, 8 insertions(+), 8 deletions(-)
 
+Files:
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_qr_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_summary_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/log_surplus_form_screen.dart
+Summary:  3 files changed, 175 insertions(+), 24 deletions(-)
+
