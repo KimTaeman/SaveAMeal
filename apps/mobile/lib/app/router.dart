@@ -23,6 +23,7 @@ import 'package:saveameal/features/donor/presentation/screens/batch_detail_scree
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_org_setup_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_history_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_account_screen.dart';
@@ -40,6 +41,7 @@ import 'package:saveameal/features/driver/presentation/screens/driver_map_screen
 import 'package:saveameal/features/driver/presentation/screens/job_detail_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/pickup_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/safety_verification_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/driver_impact_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
 import 'package:saveameal/features/notifications/presentation/screens/notifications_screen.dart';
 
@@ -137,6 +139,10 @@ GoRouter router(Ref ref) {
             ],
           ),
           GoRoute(
+            path: 'setup',
+            builder: (context, state) => const DonorOrgSetupScreen(),
+          ),
+          GoRoute(
             path: 'impact',
             builder: (context, state) => const DonorImpactScreen(),
           ),
@@ -168,6 +174,10 @@ GoRouter router(Ref ref) {
             path: 'job/:batchId',
             builder: (context, state) =>
                 JobDetailScreen(batch: state.extra! as BatchSummary),
+          ),
+          GoRoute(
+            path: 'impact',
+            builder: (context, state) => const DriverImpactScreen(),
           ),
           GoRoute(
             path: 'rescue',

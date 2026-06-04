@@ -263,7 +263,7 @@ class DonorImpactScreen extends ConsumerWidget {
 
   static String _categoryLabel(FoodCategory category) => switch (category) {
     FoodCategory.bakery => 'Bakery',
-    FoodCategory.produce => 'Produce',
+    FoodCategory.produce => 'Fruits & Veggies',
     FoodCategory.dairy => 'Dairy',
     FoodCategory.meat => 'Meat',
     FoodCategory.beverages => 'Beverages',

@@ -37,10 +37,25 @@ class FirestoreService {
     });
   }
 
-  Future<void> createUser(UserModel user) => _db
-      .collection(FirestoreConstants.users)
-      .doc(user.uid)
-      .set({...user.toJson(), 'createdAt': FieldValue.serverTimestamp()});
+  Future<void> createUser(UserModel user) {
+    final extra = user.role == UserRole.driver
+        ? {
+            'mealsSaved': 0,
+            'sproutPoints': 0,
+            'rank': 0,
+            'totalDrivers': 0,
+            'rankProgressCurrent': 0,
+            'rankProgressTarget': 100,
+            'currentRankName': 'Bronze',
+            'nextRankName': 'Silver',
+          }
+        : <String, dynamic>{};
+    return _db.collection(FirestoreConstants.users).doc(user.uid).set({
+      ...user.toJson(),
+      'createdAt': FieldValue.serverTimestamp(),
+      ...extra,
+    });
+  }
 
   Future<void> updateUser(String uid, Map<String, dynamic> fields) => _db
       .collection(FirestoreConstants.users)

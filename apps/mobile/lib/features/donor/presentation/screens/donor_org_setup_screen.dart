@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/donor/domain/entities/user_profile_update.dart';
@@ -7,6 +8,7 @@ import 'package:saveameal/features/donor/presentation/providers/donor_account_pr
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 import 'package:saveameal/shared/widgets/save_a_meal_logo.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DonorOrgSetupScreen extends ConsumerStatefulWidget {
   const DonorOrgSetupScreen({super.key});
@@ -32,14 +34,133 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
   final Set<String> _selectedSurplusTypes = {};
 
   bool _saving = false;
+  bool _fetchingLocation = false;
+  double? _latitude;
+  double? _longitude;
+
+  @override
+  void initState() {
+    super.initState();
+    _addressController.addListener(_onAddressChanged);
+  }
 
   @override
   void dispose() {
+    _addressController.removeListener(_onAddressChanged);
     _orgNameController.dispose();
     _managerController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
     super.dispose();
+  }
+
+  void _onAddressChanged() {
+    if (_addressController.text.isEmpty) {
+      _latitude = null;
+      _longitude = null;
+    }
+    setState(() {});
+  }
+
+  Future<void> _fetchLocation() async {
+    if (!mounted) return;
+    setState(() => _fetchingLocation = true);
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (mounted) {
+        setState(() {
+          _latitude = position.latitude;
+          _longitude = position.longitude;
+          _addressController.text =
+              '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+        });
+      }
+    } on PermissionDeniedException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location permission denied. Please enter your address manually.',
+            ),
+          ),
+        );
+      }
+    } on LocationServiceDisabledException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location services are disabled. Please enable them in device settings.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _fetchingLocation = false);
+    }
+  }
+
+  Future<void> _openInMaps() async {
+    final Uri uri;
+    if (_latitude != null && _longitude != null) {
+      uri = Uri.parse('https://maps.google.com/?q=$_latitude,$_longitude');
+    } else {
+      final encoded = Uri.encodeComponent(_addressController.text.trim());
+      uri = Uri.parse('https://maps.google.com/?q=$encoded');
+    }
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open Maps.')));
+    }
+  }
+
+  Widget _buildAddressSuffixIcon(ColorScheme cs) {
+    final canOpenMaps = _addressController.text.isNotEmpty || _latitude != null;
+    return SizedBox(
+      width: 96,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_fetchingLocation)
+            Padding(
+              padding: const EdgeInsets.all(Spacing.sm + 2),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: cs.primary,
+                ),
+              ),
+            )
+          else
+            IconButton(
+              iconSize: 20,
+              icon: Icon(Icons.my_location, color: cs.primary),
+              tooltip: 'Use current location',
+              onPressed: () => _fetchLocation(),
+            ),
+          IconButton(
+            iconSize: 20,
+            icon: Icon(
+              Icons.map_outlined,
+              color: canOpenMaps
+                  ? cs.primary
+                  : cs.onSurface.withValues(alpha: 0.38),
+            ),
+            tooltip: 'Open in Maps',
+            onPressed: canOpenMaps ? () => _openInMaps() : null,
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _save(String uid) async {
@@ -63,6 +184,8 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
                   ? null
                   : _addressController.text.trim(),
               surplusTypes: _selectedSurplusTypes.toList(),
+              latitude: _latitude,
+              longitude: _longitude,
             ),
           );
       ref.invalidate(currentUserProvider);
@@ -90,11 +213,20 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
+      appBar: AppBar(
+        backgroundColor: cs.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back to profile',
+          onPressed: () => context.push('/donor/account/personal'),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
             horizontal: Spacing.lg,
-            vertical: Spacing.xl,
+            vertical: Spacing.md,
           ),
           child: Form(
             key: _formKey,
@@ -104,7 +236,6 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
                 Center(child: SaveAMealLogo(size: 48)),
                 const SizedBox(height: Spacing.md),
 
-                // Step indicator
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -163,12 +294,24 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
                   decoration: _inputDecoration(context, 'Phone Number'),
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return null;
+                    final digits = v.replaceAll(RegExp(r'\D'), '');
+                    if (digits.length < 9 || digits.length > 15) {
+                      return 'Enter a valid phone number (9–15 digits)';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: Spacing.md),
 
                 TextFormField(
                   controller: _addressController,
-                  decoration: _inputDecoration(context, 'Street Address'),
+                  decoration: _inputDecoration(
+                    context,
+                    'Street Address',
+                    suffixIcon: _buildAddressSuffixIcon(cs),
+                  ),
                   maxLines: 2,
                   textInputAction: TextInputAction.done,
                 ),
@@ -295,10 +438,15 @@ class _StepConnector extends StatelessWidget {
       Container(width: 40, height: 2, color: cs.primary);
 }
 
-InputDecoration _inputDecoration(BuildContext context, String label) {
+InputDecoration _inputDecoration(
+  BuildContext context,
+  String label, {
+  Widget? suffixIcon,
+}) {
   final cs = Theme.of(context).colorScheme;
   return InputDecoration(
     labelText: label,
+    suffixIcon: suffixIcon,
     labelStyle: TextStyle(color: cs.onSurfaceVariant),
     filled: true,
     fillColor: cs.surfaceContainerLowest,

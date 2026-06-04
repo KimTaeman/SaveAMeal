@@ -11,6 +11,8 @@ class UserProfileUpdate {
     this.bannerUrl,
     this.operatingHours,
     this.surplusTypes,
+    this.latitude,
+    this.longitude,
   });
 
   final String? name;
@@ -23,4 +25,6 @@ class UserProfileUpdate {
   final String? bannerUrl;
   final List<Map<String, String>>? operatingHours;
   final List<String>? surplusTypes;
+  final double? latitude;
+  final double? longitude;
 }

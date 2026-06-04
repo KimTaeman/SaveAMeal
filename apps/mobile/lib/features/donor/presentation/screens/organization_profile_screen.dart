@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
@@ -10,6 +11,7 @@ import 'package:saveameal/features/donor/presentation/providers/donor_account_pr
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OrganizationProfileScreen extends ConsumerStatefulWidget {
   const OrganizationProfileScreen({super.key});
@@ -53,9 +55,19 @@ class _OrganizationProfileScreenState
   // Save state
   bool _saving = false;
   bool _initialized = false;
+  bool _fetchingLocation = false;
+  double? _latitude;
+  double? _longitude;
+
+  @override
+  void initState() {
+    super.initState();
+    _addressController.addListener(_onAddressChanged);
+  }
 
   @override
   void dispose() {
+    _addressController.removeListener(_onAddressChanged);
     _nameController.dispose();
     _managerController.dispose();
     _phoneController.dispose();
@@ -108,6 +120,115 @@ class _OrganizationProfileScreenState
     });
   }
 
+  void _onAddressChanged() {
+    if (_addressController.text.isEmpty) {
+      _latitude = null;
+      _longitude = null;
+    }
+    setState(() {});
+  }
+
+  Future<void> _fetchLocation() async {
+    if (!mounted) return;
+    setState(() => _fetchingLocation = true);
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (mounted) {
+        setState(() {
+          _latitude = position.latitude;
+          _longitude = position.longitude;
+          _addressController.text =
+              '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+        });
+      }
+    } on PermissionDeniedException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location permission denied. Please enter your address manually.',
+            ),
+          ),
+        );
+      }
+    } on LocationServiceDisabledException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location services are disabled. Please enable them in device settings.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _fetchingLocation = false);
+    }
+  }
+
+  Future<void> _openInMaps() async {
+    final Uri uri;
+    if (_latitude != null && _longitude != null) {
+      uri = Uri.parse('https://maps.google.com/?q=$_latitude,$_longitude');
+    } else {
+      final encoded = Uri.encodeComponent(_addressController.text.trim());
+      uri = Uri.parse('https://maps.google.com/?q=$encoded');
+    }
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open Maps.')));
+    }
+  }
+
+  Widget _buildAddressSuffixIcon(ColorScheme cs) {
+    final canOpenMaps = _addressController.text.isNotEmpty || _latitude != null;
+    return SizedBox(
+      width: 96,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_fetchingLocation)
+            Padding(
+              padding: const EdgeInsets.all(Spacing.sm + 2),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: cs.primary,
+                ),
+              ),
+            )
+          else
+            IconButton(
+              iconSize: 20,
+              icon: Icon(Icons.my_location, color: cs.primary),
+              tooltip: 'Use current location',
+              onPressed: () => _fetchLocation(),
+            ),
+          IconButton(
+            iconSize: 20,
+            icon: Icon(
+              Icons.map_outlined,
+              color: canOpenMaps
+                  ? cs.primary
+                  : cs.onSurface.withValues(alpha: 0.38),
+            ),
+            tooltip: 'Open in Maps',
+            onPressed: canOpenMaps ? () => _openInMaps() : null,
+          ),
+        ],
+      ),
+    );
+  }
+
   String _errorMessage(String prefix, Object e) {
     if (e is FirebaseException) return '$prefix — ${e.code}';
     return '$prefix. Please try again.';
@@ -158,6 +279,8 @@ class _OrganizationProfileScreenState
               operatingHours: _operatingHours,
               surplusTypes: _selectedSurplusTypes.toList(),
               bannerUrl: _bannerUrl,
+              latitude: _latitude,
+              longitude: _longitude,
             ),
           );
       // Invalidate the cached user so the provider re-fetches fresh data from
@@ -199,6 +322,8 @@ class _OrganizationProfileScreenState
       _phoneController.text = userModel.phone ?? '';
       _addressController.text = userModel.streetAddress ?? '';
       _bannerUrl = userModel.bannerUrl;
+      _latitude = userModel.latitude;
+      _longitude = userModel.longitude;
       _selectedSurplusTypes = Set.from(userModel.surplusTypes);
       final hours = userModel.operatingHours.isNotEmpty
           ? userModel.operatingHours
@@ -395,6 +520,7 @@ class _OrganizationProfileScreenState
                 emailText: emailText,
                 textTheme: textTheme,
                 onNameChanged: () => setState(() {}),
+                addressSuffixIcon: _buildAddressSuffixIcon(cs),
               ),
               const SizedBox(height: Spacing.md),
               // Operating Hours card
@@ -460,6 +586,7 @@ class _StoreDetailsCard extends StatelessWidget {
     required this.emailText,
     required this.textTheme,
     required this.onNameChanged,
+    this.addressSuffixIcon,
   });
 
   final TextEditingController nameController;
@@ -469,6 +596,7 @@ class _StoreDetailsCard extends StatelessWidget {
   final String emailText;
   final TextTheme textTheme;
   final VoidCallback onNameChanged;
+  final Widget? addressSuffixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -533,9 +661,10 @@ class _StoreDetailsCard extends StatelessWidget {
           const SizedBox(height: Spacing.md),
           TextFormField(
             controller: addressController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Street Address',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
+              suffixIcon: addressSuffixIcon,
             ),
             maxLines: 3,
           ),
