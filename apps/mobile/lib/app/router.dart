@@ -38,6 +38,7 @@ import 'package:saveameal/features/driver/presentation/screens/driver_map_screen
 import 'package:saveameal/features/driver/presentation/screens/job_detail_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/pickup_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/safety_verification_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/driver_impact_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
 import 'package:saveameal/features/notifications/presentation/screens/notifications_screen.dart';
 
@@ -146,6 +147,10 @@ GoRouter router(Ref ref) {
             path: 'job/:batchId',
             builder: (context, state) =>
                 JobDetailScreen(batch: state.extra! as BatchSummary),
+          ),
+          GoRoute(
+            path: 'impact',
+            builder: (context, state) => const DriverImpactScreen(),
           ),
           GoRoute(
             path: 'rescue',

@@ -1,4 +1,15 @@
 ---
+Date: 2026-06-04 00:00
+Member: KimTaeman
+Agent: flutter-engineer
+Task: Implement DriverImpactScreen — rank card, stats, leaderboard, nav wiring
+Prompt: use /new-feature to implement driver impact. Use design reference PNG for UI.
+
+Outcome: Full Clean Architecture stack for driver impact: 2 domain entities (DriverImpact, LeaderboardEntry), 1 repository interface, 2 use cases, 2 Freezed models, 1 datasource, 1 repository impl, 1 provider file, 1 screen, 1 widget test (10 cases). Router updated with /driver/impact. Impact tab nav wired in driver_map_screen and driver_account_screen.
+Decisions: Separate DriverImpactRepository (not merged into DriverRepository) to isolate impact/leaderboard concern from the delivery flow. Leaderboard stored as leaderboard/{period} doc with entries array. build_runner required for Freezed models.
+Handoff: Run `dart run build_runner build --delete-conflicting-outputs`. Add Firestore fields to users/{uid}: rank, totalDrivers, mealsSaved, sproutPoints, rankProgressCurrent, rankProgressTarget, currentRankName, nextRankName. Create leaderboard/thisMonth doc with entries array.
+Review: PENDING
+---
 Date: 2026-06-03 00:00
 Member: KimTaeman
 Agent: flutter-engineer
@@ -1064,4 +1075,58 @@ Files:
   ~ apps/mobile/lib/features/donor/presentation/screens/batch_summary_screen.dart
   ~ apps/mobile/lib/features/donor/presentation/screens/log_surplus_form_screen.dart
 Summary:  3 files changed, 175 insertions(+), 24 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_account_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_map_screen.dart
+  ? apps/mobile/lib/features/driver/data/datasources/driver_impact_datasource.dart (untracked)
+  ? apps/mobile/lib/features/driver/data/models/driver_impact_model.dart (untracked)
+  ? apps/mobile/lib/features/driver/data/models/leaderboard_entry_model.dart (untracked)
+  ? apps/mobile/lib/features/driver/data/repositories/driver_impact_repository_impl.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/entities/driver_impact.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/entities/leaderboard_entry.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/repositories/driver_impact_repository.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/usecases/get_driver_impact_usecase.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/usecases/get_leaderboard_usecase.dart (untracked)
+  ? apps/mobile/lib/features/driver/presentation/providers/driver_impact_provider.dart (untracked)
+  ? apps/mobile/lib/features/driver/presentation/screens/driver_impact_screen.dart (untracked)
+  ? apps/mobile/test/widget/driver/driver_impact_screen_test.dart (untracked)
+Summary:  3 files changed, 7 insertions(+)
+
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_account_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_map_screen.dart
+  ? apps/mobile/lib/features/driver/data/datasources/driver_impact_datasource.dart (untracked)
+  ? apps/mobile/lib/features/driver/data/models/driver_impact_model.dart (untracked)
+  ? apps/mobile/lib/features/driver/data/models/leaderboard_entry_model.dart (untracked)
+  ? apps/mobile/lib/features/driver/data/repositories/driver_impact_repository_impl.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/entities/driver_impact.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/entities/leaderboard_entry.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/repositories/driver_impact_repository.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/usecases/get_driver_impact_usecase.dart (untracked)
+  ? apps/mobile/lib/features/driver/domain/usecases/get_leaderboard_usecase.dart (untracked)
+  ? apps/mobile/lib/features/driver/presentation/providers/driver_impact_provider.dart (untracked)
+  ? apps/mobile/lib/features/driver/presentation/screens/driver_impact_screen.dart (untracked)
+  ? apps/mobile/test/widget/driver/driver_impact_screen_test.dart (untracked)
+Summary:  3 files changed, 7 insertions(+)
+
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ? apps/mobile/lib/features/driver/data/datasources/driver_impact_datasource.dart (untracked)
+  + apps/mobile/lib/features/driver/data/models/driver_impact_model.dart
+  + apps/mobile/lib/features/driver/data/models/leaderboard_entry_model.dart
+  + apps/mobile/lib/features/driver/data/repositories/driver_impact_repository_impl.dart
+  + apps/mobile/lib/features/driver/domain/entities/driver_impact.dart
+  + apps/mobile/lib/features/driver/domain/entities/leaderboard_entry.dart
+  + apps/mobile/lib/features/driver/domain/repositories/driver_impact_repository.dart
+  + apps/mobile/lib/features/driver/domain/usecases/get_driver_impact_usecase.dart
+  ? apps/mobile/lib/features/driver/domain/usecases/get_leaderboard_usecase.dart (untracked)
+  + apps/mobile/lib/features/driver/presentation/providers/driver_impact_provider.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_account_screen.dart
+  ? apps/mobile/lib/features/driver/presentation/screens/driver_impact_screen.dart (untracked)
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_map_screen.dart
+  ? apps/mobile/test/widget/driver/driver_impact_screen_test.dart (untracked)
+Summary:  14 files changed, 767 insertions(+)
 

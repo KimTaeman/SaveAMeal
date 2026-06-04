@@ -33,6 +33,8 @@ class DonorAccountRepositoryImpl implements DonorAccountRepository {
       bannerUrl: model.bannerUrl,
       operatingHours: model.operatingHours,
       surplusTypes: model.surplusTypes,
+      latitude: model.latitude,
+      longitude: model.longitude,
     );
   }
 }
