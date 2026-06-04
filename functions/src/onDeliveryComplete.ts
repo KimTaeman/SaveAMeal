@@ -4,8 +4,28 @@ import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { logger } from 'firebase-functions/v2';
 import { computeByCategory, computeTotals } from './computations';
 
+export async function writeBeneficiaryNotification(
+  db: FirebaseFirestore.Firestore,
+  params: { beneficiaryId: string | undefined; batchId: string },
+): Promise<void> {
+  const { beneficiaryId, batchId } = params;
+  if (!beneficiaryId) return;
+  await db
+    .collection('notifications')
+    .doc(beneficiaryId)
+    .collection('items')
+    .add({
+      type: 'delivery_arrived',
+      title: 'Food has arrived',
+      body: 'Tap to confirm receipt',
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      isRead: false,
+      actionBatchId: batchId,
+    });
+}
+
 export const onDeliveryComplete = onDocumentUpdated(
-  'batches/{batchId}',
+  { document: 'batches/{batchId}', region: 'asia-southeast1' },
   async (event) => {
     const before = event.data?.before.data();
     const after = event.data?.after.data();
@@ -88,6 +108,14 @@ export const onDeliveryComplete = onDocumentUpdated(
     );
 
     await Promise.all(ops);
+
+    await writeBeneficiaryNotification(admin.firestore(), {
+      beneficiaryId,
+      batchId,
+    }).catch((e) =>
+      logger.warn(`onDeliveryComplete: notification write failed — ${e}`),
+    );
+
     logger.info(
       `onDeliveryComplete: batch ${batchId} — ` +
       `${totalKg} kg, ${totalMeals} meals, ${totalCo2e} kg CO₂e`,
