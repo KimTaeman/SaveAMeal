@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -51,12 +53,12 @@ class DriverProfileNotifier extends _$DriverProfileNotifier {
     });
   }
 
-  Future<void> uploadAvatar(String localFilePath) async {
+  Future<void> uploadAvatar(Uint8List bytes) async {
     final current = state.value;
     if (current == null) return;
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final url = await _uploadAvatar(current.uid, localFilePath);
+      final url = await _uploadAvatar(current.uid, bytes);
       final updated = current.copyWith(photoUrl: url);
       await _updateProfile(updated);
       return updated;

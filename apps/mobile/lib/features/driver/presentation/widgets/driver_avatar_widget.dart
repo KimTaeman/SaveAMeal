@@ -19,9 +19,8 @@ class DriverAvatarWidget extends ConsumerWidget {
           imageQuality: 80,
         );
         if (picked == null) return;
-        await ref
-            .read(driverProfileProvider.notifier)
-            .uploadAvatar(picked.path);
+        final bytes = await picked.readAsBytes();
+        await ref.read(driverProfileProvider.notifier).uploadAvatar(bytes);
       },
       child: Stack(
         alignment: Alignment.bottomRight,

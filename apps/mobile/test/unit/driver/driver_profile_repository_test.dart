@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:saveameal/features/driver/data/datasources/driver_profile_local_datasource.dart';
 import 'package:saveameal/features/driver/data/datasources/driver_profile_remote_datasource.dart';
@@ -22,7 +24,7 @@ class _FakeRemote implements DriverProfileRemoteDatasourceImpl {
   Future<void> updateProfile(DriverProfileModel model) async {}
 
   @override
-  Future<String> uploadAvatar(String uid, String localFilePath) async =>
+  Future<String> uploadAvatar(String uid, Uint8List bytes) async =>
       'https://example.com/avatar.jpg';
 }
 
@@ -128,7 +130,7 @@ void main() {
       final remote = _FakeRemote(profile: testModel);
       final repo = DriverProfileRepositoryImpl(remote, local);
 
-      final url = await repo.uploadAvatar('uid-1', '/path/to/image.jpg');
+      final url = await repo.uploadAvatar('uid-1', Uint8List(0));
       expect(url, equals('https://example.com/avatar.jpg'));
     });
   });

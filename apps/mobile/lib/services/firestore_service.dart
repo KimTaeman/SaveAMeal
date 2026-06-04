@@ -37,8 +37,10 @@ class FirestoreService {
     });
   }
 
-  Future<void> createUser(UserModel user) =>
-      _db.collection(FirestoreConstants.users).doc(user.uid).set(user.toJson());
+  Future<void> createUser(UserModel user) => _db
+      .collection(FirestoreConstants.users)
+      .doc(user.uid)
+      .set({...user.toJson(), 'createdAt': FieldValue.serverTimestamp()});
 
   Future<void> updateUser(String uid, Map<String, dynamic> fields) => _db
       .collection(FirestoreConstants.users)
@@ -270,6 +272,13 @@ class FirestoreService {
     };
     if (notes != null && notes.isNotEmpty) data['deliveryNotes'] = notes;
     await ref.update(data);
+
+    final driverId = snap.data()!['driverId'] as String?;
+    if (driverId != null && driverId.isNotEmpty) {
+      await _db.collection(FirestoreConstants.users).doc(driverId).update({
+        'totalPickups': FieldValue.increment(1),
+      });
+    }
   }
 
   Future<void> upsertDriverLocation(DriverLocationModel loc) => _db

@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -14,7 +14,7 @@ abstract class DriverProfileRemoteDatasource {
 
   /// Uploads a local file to `avatars/drivers/{uid}.jpg` in Firebase Storage
   /// and returns the public download URL.
-  Future<String> uploadAvatar(String uid, String localFilePath);
+  Future<String> uploadAvatar(String uid, Uint8List bytes);
 }
 
 class DriverProfileRemoteDatasourceImpl
@@ -23,12 +23,33 @@ class DriverProfileRemoteDatasourceImpl
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
 
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
   @override
   Future<DriverProfileModel> getProfile(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
     final data = doc.data();
     if (data == null) throw Exception('Driver profile not found for $uid');
-    return DriverProfileModel.fromJson({...data, 'uid': uid});
+    final json = <String, dynamic>{...data, 'uid': uid};
+    if (json['joinDate'] == null && data['createdAt'] is Timestamp) {
+      final dt = (data['createdAt'] as Timestamp).toDate();
+      json['joinDate'] =
+          '${dt.day.toString().padLeft(2, '0')} ${_months[dt.month - 1]} ${dt.year}';
+    }
+    return DriverProfileModel.fromJson(json);
   }
 
   @override
@@ -52,9 +73,9 @@ class DriverProfileRemoteDatasourceImpl
   }
 
   @override
-  Future<String> uploadAvatar(String uid, String localFilePath) async {
+  Future<String> uploadAvatar(String uid, Uint8List bytes) async {
     final ref = _storage.ref('avatars/drivers/$uid.jpg');
-    await ref.putFile(File(localFilePath));
+    await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
     return ref.getDownloadURL();
   }
 }

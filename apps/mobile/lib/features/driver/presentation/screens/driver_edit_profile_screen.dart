@@ -156,8 +156,19 @@ class _DriverEditProfileScreenState
                           children: [
                             // Avatar upload
                             Center(
-                              child: _AvatarUploadWidget(
-                                photoUrl: profile.photoUrl,
+                              child: Column(
+                                children: [
+                                  DriverAvatarWidget(
+                                    photoUrl: profile.photoUrl,
+                                  ),
+                                  const SizedBox(height: Spacing.xs),
+                                  Text(
+                                    'Upload Photo',
+                                    style: textTheme.labelMedium?.copyWith(
+                                      color: cs.primary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: Spacing.lg),
@@ -322,38 +333,6 @@ class _DriverEditProfileScreenState
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-// ── Avatar upload widget ──────────────────────────────────────────────────────
-
-class _AvatarUploadWidget extends StatelessWidget {
-  const _AvatarUploadWidget({required this.photoUrl});
-
-  final String? photoUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Photo upload coming soon')),
-        );
-      },
-      child: Column(
-        children: [
-          DriverAvatarWidget(photoUrl: photoUrl),
-          const SizedBox(height: Spacing.xs),
-          Text(
-            'Upload Photo',
-            style: textTheme.labelMedium?.copyWith(color: cs.primary),
-          ),
-        ],
       ),
     );
   }

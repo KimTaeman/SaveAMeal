@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:saveameal/features/driver/data/datasources/driver_profile_local_datasource.dart';
 import 'package:saveameal/features/driver/data/datasources/driver_profile_remote_datasource.dart';
 import 'package:saveameal/features/driver/data/models/driver_profile_model.dart';
@@ -31,8 +33,8 @@ class DriverProfileRepositoryImpl implements DriverProfileRepository {
   }
 
   @override
-  Future<String> uploadAvatar(String uid, String localFilePath) =>
-      _remote.uploadAvatar(uid, localFilePath);
+  Future<String> uploadAvatar(String uid, Uint8List bytes) =>
+      _remote.uploadAvatar(uid, bytes);
 
   @override
   Future<DriverProfile?> getCachedProfile(String uid) => _local.getProfile(uid);

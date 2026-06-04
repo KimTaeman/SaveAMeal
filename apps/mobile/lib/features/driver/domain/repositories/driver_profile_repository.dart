@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:saveameal/features/driver/domain/entities/driver_profile.dart';
 
 abstract class DriverProfileRepository {
@@ -12,7 +14,7 @@ abstract class DriverProfileRepository {
   /// Uploads a local image file to Firebase Storage and returns the download
   /// URL. Does NOT write the URL back to Firestore — caller must follow up
   /// with [updateProfile].
-  Future<String> uploadAvatar(String uid, String localFilePath);
+  Future<String> uploadAvatar(String uid, Uint8List bytes);
 
   /// Returns the last-cached profile from Hive, or null if cache is empty.
   /// Never throws.
