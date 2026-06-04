@@ -437,13 +437,7 @@ class _BeneficiaryPersonalInformationScreenState
           ],
         ),
       ),
-      bottomNavigationBar: BeneficiaryBottomNav(
-        currentIndex: 3,
-        onDestinationSelected: (i) {
-          if (i == 0) context.go('/beneficiary');
-          if (i == 3) context.go('/beneficiary/account');
-        },
-      ),
+      bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 3),
     );
   }
 }

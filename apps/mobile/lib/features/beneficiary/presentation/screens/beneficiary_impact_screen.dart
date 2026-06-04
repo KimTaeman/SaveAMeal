@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/beneficiary_impact.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_impact_provider.dart';
@@ -132,21 +131,7 @@ class BeneficiaryImpactScreen extends ConsumerWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BeneficiaryBottomNav(
-        currentIndex: 2,
-        onDestinationSelected: (index) {
-          switch (index) {
-            case 0:
-              context.go('/beneficiary');
-            case 1:
-              context.go('/beneficiary');
-            case 2:
-              break; // already here
-            case 3:
-              context.go('/beneficiary/account');
-          }
-        },
-      ),
+      bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 2),
     );
   }
 }
