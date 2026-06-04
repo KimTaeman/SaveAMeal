@@ -56,8 +56,6 @@ AppNotification _notif(
   isRead: isRead,
 );
 
-// Returns a container whose auth stream has already emitted, so the
-// NotificationsNotifier is guaranteed to have the correct role when read.
 Future<ProviderContainer> _container(
   List<AppNotification> notifs, {
   AppUser? user = _donor,
@@ -74,11 +72,16 @@ Future<ProviderContainer> _container(
       ),
     ],
   );
-  // Subscribe then drain two microtask turns so Stream.value emits and
-  // the dependent NotificationsNotifier rebuilds with the correct role.
+  // Subscribe to both async chains so they emit before the notifier is read.
   c.listen(authStateProvider, (prev, next) {});
-  await Future.microtask(() {});
-  await Future.microtask(() {});
+  c.listen(notificationsStreamProvider, (prev, next) {});
+  // Drain enough microtask turns for the full dependency chain to settle:
+  // authState → notificationsStream → notificationsNotifier
+  for (var i = 0; i < 5; i++) {
+    await Future.microtask(() {});
+  }
+  // One timer turn to allow stream subscriptions to fully propagate.
+  await Future<void>.delayed(Duration.zero);
   return c;
 }
 
