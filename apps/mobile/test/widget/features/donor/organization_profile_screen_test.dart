@@ -269,10 +269,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(
-        find.text('Something went wrong. Please try again.'),
-        findsOneWidget,
-      );
+      expect(find.text('Save failed. Please try again.'), findsOneWidget);
     });
 
     testWidgets('tapping edit on Operating Hours enters edit mode', (

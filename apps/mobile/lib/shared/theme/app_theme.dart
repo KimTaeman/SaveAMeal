@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 
 abstract final class AppTheme {
-  static const _seed = Color(0xFF3DBE6C);
+  // Darkened from 0xFF3DBE6C to meet WCAG AA contrast (≥4.5:1) with white text.
+  static const _seed = Color(0xFF1A7A3A);
 
   static ThemeData light() => ThemeData(
     useMaterial3: true,

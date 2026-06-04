@@ -10,6 +10,7 @@ class Batch {
     required this.pickupAddress,
     required this.status,
     this.driverId,
+    this.volunteerName,
     this.beneficiaryId,
     this.photoUrl,
     this.qrCode,
@@ -25,6 +26,7 @@ class Batch {
   final String pickupAddress;
   final BatchStatus status;
   final String? driverId;
+  final String? volunteerName;
   final String? beneficiaryId;
   final String? photoUrl;
   final String? qrCode;

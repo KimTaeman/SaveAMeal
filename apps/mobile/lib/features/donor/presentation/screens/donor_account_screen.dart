@@ -6,9 +6,11 @@ import 'package:saveameal/features/auth/presentation/providers/auth_provider.dar
 import 'package:saveameal/features/donor/domain/entities/donor_metrics.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
+import 'package:saveameal/features/donor/presentation/providers/notification_preference_provider.dart';
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/donor_brand_title.dart';
 
 class DonorAccountScreen extends ConsumerStatefulWidget {
   const DonorAccountScreen({super.key});
@@ -18,8 +20,6 @@ class DonorAccountScreen extends ConsumerStatefulWidget {
 }
 
 class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
-  bool _notificationsEnabled = false;
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -45,21 +45,8 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
       backgroundColor: cs.surface,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.location_on, color: Color(0xFF006E2F), size: 20),
-            const SizedBox(width: 4),
-            Text(
-              'SaveAMeal',
-              style: textTheme.titleLarge?.copyWith(
-                color: const Color(0xFF006E2F),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+        titleSpacing: Spacing.md,
+        title: const DonorBrandTitle(),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
@@ -139,6 +126,15 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (user?.createdAt != null) ...[
+                      const SizedBox(height: Spacing.xs),
+                      Text(
+                        'Member since ${_monthName(user!.createdAt!.month)} ${user.createdAt!.year}',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: Spacing.md),
                     // Stat chips
                     Row(
@@ -146,7 +142,7 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
                         Expanded(
                           child: _StatChip(
                             icon: Icons.eco,
-                            value: '${metrics.totalKg} kg',
+                            value: _formatKg(metrics.totalKg),
                             label: 'Total Donations',
                           ),
                         ),
@@ -186,9 +182,17 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
                     title: const Text('Push Notifications'),
                     subtitle: const Text('New Pickups'),
                     trailing: Switch(
-                      value: _notificationsEnabled,
-                      onChanged: (v) =>
-                          setState(() => _notificationsEnabled = v),
+                      value: ref.watch(notificationPreferenceProvider),
+                      onChanged: (v) {
+                        final notifier = ref.read(
+                          notificationPreferenceProvider.notifier,
+                        );
+                        if (v) {
+                          notifier.enable(uid);
+                        } else {
+                          notifier.disable(uid);
+                        }
+                      },
                     ),
                   ),
                   const Divider(height: 1, indent: Spacing.md),
@@ -210,17 +214,19 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
             ),
             const SizedBox(height: Spacing.lg),
             // Log out button
-            OutlinedButton(
+            OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 foregroundColor: ac.danger,
                 side: BorderSide(color: ac.danger),
                 minimumSize: const Size(double.infinity, 48),
+                shape: const StadiumBorder(),
               ),
+              icon: const Icon(Icons.logout),
+              label: const Text('Log Out'),
               onPressed: () async {
                 final usecase = ref.read(signOutUsecaseProvider);
                 await usecase.call();
               },
-              child: const Text('Log Out'),
             ),
             const SizedBox(height: Spacing.md),
           ],
@@ -243,6 +249,27 @@ class _DonorAccountScreenState extends ConsumerState<DonorAccountScreen> {
       ),
     );
   }
+}
+
+String _monthName(int month) => const [
+  '',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+][month];
+
+String _formatKg(double kg) {
+  if (kg == kg.truncateToDouble()) return '${kg.toInt()} kg';
+  return '${kg.toStringAsFixed(1)} kg';
 }
 
 class _StatChip extends StatelessWidget {

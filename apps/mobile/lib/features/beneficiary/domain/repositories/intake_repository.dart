@@ -1,6 +1,8 @@
 // Pure Dart — zero Flutter or Firebase imports.
 
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
 
 abstract class IntakeRepository {
   Stream<List<IntakeRequest>> watchActiveDeliveries(String beneficiaryId);
@@ -28,4 +30,11 @@ abstract class IntakeRepository {
   Stream<BeneficiaryIntakeAvailability> watchIntakeAvailability(
     String beneficiaryId,
   );
+
+  Stream<IntakeRequestDetail?> watchIntakeRequestDetail(
+    String batchId,
+    String beneficiaryId,
+  );
+
+  Stream<List<RecentDelivery>> watchRecentDeliveries(String beneficiaryId);
 }

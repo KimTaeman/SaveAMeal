@@ -72,6 +72,15 @@ class DonorRepositoryImpl implements DonorRepository {
       .getBeneficiaries()
       .map((models) => models.map(_toBeneficiary).toList());
 
+  @override
+  Stream<List<domain.Batch>> watchAllBatches(String donorId) => _datasource
+      .watchAllBatches(donorId)
+      .map((models) => models.map(_toBatch).toList());
+
+  @override
+  Stream<domain.Batch> watchBatchById(String batchId) =>
+      _datasource.watchBatchById(batchId).map(_toBatch);
+
   // ── Mappers ────────────────────────────────────────────────────────────────
 
   domain.Batch _toBatch(bm.BatchModel m) => domain.Batch(
@@ -81,6 +90,7 @@ class DonorRepositoryImpl implements DonorRepository {
     pickupAddress: m.pickupAddress,
     status: domain.BatchStatus.values.byName(m.status.name),
     driverId: m.driverId,
+    volunteerName: m.volunteerName,
     beneficiaryId: m.beneficiaryId,
     photoUrl: m.photoUrl,
     qrCode: m.qrCode,
@@ -97,6 +107,7 @@ class DonorRepositoryImpl implements DonorRepository {
     pickupAddress: b.pickupAddress,
     status: bm.BatchStatus.values.byName(b.status.name),
     driverId: b.driverId,
+    volunteerName: b.volunteerName,
     beneficiaryId: b.beneficiaryId,
     photoUrl: b.photoUrl,
     qrCode: b.qrCode,
@@ -108,7 +119,10 @@ class DonorRepositoryImpl implements DonorRepository {
 
   BatchItem _toBatchItem(BatchItemModel m) => BatchItem(
     name: m.name,
-    category: FoodCategory.values.byName(m.category),
+    category: FoodCategory.values.firstWhere(
+      (c) => c.name == m.category,
+      orElse: () => FoodCategory.other,
+    ),
     weightKg: m.weightKg,
     expiryTime: m.expiryTime,
     photoUrl: m.photoUrl,

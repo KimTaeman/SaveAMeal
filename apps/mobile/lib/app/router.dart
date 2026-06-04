@@ -12,13 +12,17 @@ import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_order_history_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_org_profile_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_personal_information_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/delivery_detail_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/tracking_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/batch_detail_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_history_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_account_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_impact_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/organization_profile_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/personal_information_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/scanner_screen.dart';
@@ -64,6 +68,13 @@ GoRouter router(Ref ref) {
       ),
       GoRoute(
         path: '/donor',
+        redirect: (context, state) {
+          final authAsync = ref.read(authStateProvider);
+          final user = authAsync.asData?.value;
+          if (user == null) return '/login';
+          if (user.role != UserRole.donor) return '/role-router';
+          return null;
+        },
         builder: (context, state) => const DonorDashboardScreen(),
         routes: [
           GoRoute(
@@ -87,19 +98,24 @@ GoRouter router(Ref ref) {
             ],
           ),
           GoRoute(
-            path: 'batch/:batchId/qr',
+            path: 'batch/:batchId',
             builder: (context, state) =>
-                BatchQrScreen(batchId: state.pathParameters['batchId']!),
+                BatchDetailScreen(batchId: state.pathParameters['batchId']!),
+            routes: [
+              GoRoute(
+                path: 'qr',
+                builder: (context, state) =>
+                    BatchQrScreen(batchId: state.pathParameters['batchId']!),
+              ),
+            ],
           ),
           GoRoute(
             path: 'impact',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('Impact'))),
+            builder: (context, state) => const DonorImpactScreen(),
           ),
           GoRoute(
             path: 'batches',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('All Batches'))),
+            builder: (context, state) => const DonorHistoryScreen(),
           ),
           GoRoute(
             path: 'account',
@@ -156,6 +172,10 @@ GoRouter router(Ref ref) {
             path: 'delivery/:batchId',
             builder: (context, state) =>
                 DeliveryDetailScreen(batchId: state.pathParameters['batchId']!),
+          ),
+          GoRoute(
+            path: 'impact',
+            builder: (context, state) => const BeneficiaryImpactScreen(),
           ),
           GoRoute(
             path: 'tracking',

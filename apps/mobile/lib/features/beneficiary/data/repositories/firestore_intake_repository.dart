@@ -1,6 +1,8 @@
 import 'package:saveameal/features/beneficiary/data/datasources/intake_remote_datasource.dart';
 import 'package:saveameal/features/beneficiary/data/models/intake_request_model.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
 import 'package:saveameal/features/beneficiary/domain/repositories/intake_repository.dart';
 
 class FirestoreIntakeRepository implements IntakeRepository {
@@ -69,6 +71,34 @@ class FirestoreIntakeRepository implements IntakeRepository {
   ) => _datasource
       .watchIntakeAvailability(beneficiaryId)
       .map(_stringToAvailability);
+
+  @override
+  Stream<IntakeRequestDetail?> watchIntakeRequestDetail(
+    String batchId,
+    String beneficiaryId,
+  ) => _datasource.watchBatch(batchId).map((batch) {
+    if (batch == null) return null;
+    // Ownership check — reject batches that don't belong to the requesting user.
+    if (batch.beneficiaryId != beneficiaryId) return null;
+    return batchModelToDetailDomain(batch);
+  });
+
+  @override
+  Stream<List<RecentDelivery>> watchRecentDeliveries(String beneficiaryId) =>
+      _datasource
+          .watchRecentDeliveriesForBeneficiary(beneficiaryId)
+          .map(
+            (batches) => batches
+                .map(
+                  (b) => RecentDelivery(
+                    batchId: b.id,
+                    deliveredAt: b.deliveredAt ?? b.updatedAt ?? DateTime.now(),
+                    portions: b.items.length,
+                    donorName: b.donorName,
+                  ),
+                )
+                .toList(),
+          );
 
   static String _availabilityToString(BeneficiaryIntakeAvailability a) =>
       switch (a) {

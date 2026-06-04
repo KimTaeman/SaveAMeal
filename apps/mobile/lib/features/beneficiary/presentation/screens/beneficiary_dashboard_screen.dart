@@ -212,6 +212,8 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
               context.go('/beneficiary');
             case 3:
               context.go('/beneficiary/account');
+            case 2:
+              context.go('/beneficiary/impact');
           }
         },
       ),

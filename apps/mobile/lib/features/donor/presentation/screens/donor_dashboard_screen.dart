@@ -8,6 +8,7 @@ import 'package:saveameal/features/donor/presentation/providers/donor_provider.d
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/donor_brand_title.dart';
 import 'package:saveameal/shared/widgets/logout_button.dart';
 
 class DonorDashboardScreen extends ConsumerWidget {
@@ -120,8 +121,6 @@ class _DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: Spacing.md,
@@ -130,19 +129,7 @@ class _DashboardHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Image.asset('assets/images/logo.png', height: 28),
-              const SizedBox(width: Spacing.xs),
-              Text(
-                'SaveAMeal',
-                style: textTheme.titleLarge?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+          const DonorBrandTitle(),
           Row(
             children: [
               IconButton(
@@ -329,20 +316,6 @@ class _BatchCard extends StatelessWidget {
     final ac = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
 
-    final shortId = batch.id.length >= 8
-        ? batch.id.substring(0, 8).toUpperCase()
-        : batch.id.toUpperCase();
-
-    final subtitle =
-        '${batch.portions} items • ${batch.weightKg}kg • ${_statusLabel(batch.status)} • ${_formatDate(batch.createdAt)}';
-
-    final trailing = batch.status == BatchStatus.open
-        ? IconButton(
-            icon: const Icon(Icons.qr_code),
-            onPressed: () => context.push('/donor/batch/${batch.id}/qr'),
-          )
-        : Icon(Icons.check_circle_outline, color: ac.success);
-
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: Spacing.md,
@@ -351,23 +324,36 @@ class _BatchCard extends StatelessWidget {
       child: Card(
         color: cs.surfaceContainerLow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 0,
-        child: ListTile(
-          leading: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(8),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push('/donor/batch/${batch.id}'),
+          child: ListTile(
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.inventory_2_outlined,
+                color: cs.onSurfaceVariant,
+              ),
             ),
-            child: Icon(Icons.inventory_2_outlined, color: cs.onSurfaceVariant),
+            title: Text(
+              'Batch #${batch.id.substring(0, 8).toUpperCase()}',
+              style: textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              '${batch.portions} items • ${batch.weightKg.toStringAsFixed(1)}kg'
+              ' • ${_statusLabel(batch.status)}'
+              '${batch.createdAt != null ? ' • ${_formatDate(batch.createdAt!)}' : ''}',
+              style: textTheme.bodySmall,
+            ),
+            trailing: Icon(Icons.check_circle_outline, color: ac.success),
           ),
-          title: Text(
-            'Batch #$shortId',
-            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(subtitle, style: textTheme.bodySmall),
-          trailing: trailing,
         ),
       ),
     );

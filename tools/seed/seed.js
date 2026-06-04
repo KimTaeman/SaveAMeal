@@ -31,6 +31,7 @@ const path  = require('path');
 const args           = process.argv.slice(2);
 const useEmulator    = args.includes('--emulator');
 const cleanFirst     = args.includes('--clean');
+const demoMode       = args.includes('--demo');
 const keyIdx         = args.indexOf('--key');
 const keyPath        = keyIdx >= 0 ? args[keyIdx + 1] : null;
 const addDriverIdx      = args.indexOf('--add-driver');
@@ -437,6 +438,150 @@ const IMPACT_METRICS = [
   { id: 'donor_006', totalKg: 5.75, totalMeals: 11, totalCO2e: 14.4, totalDeliveries: 1 },
 ];
 
+// ── Demo setup ─────────────────────────────────────────────────────────────────
+//
+// Creates the three demo Firebase Auth accounts (donor / driver / beneficiary),
+// registers them in Firestore, and seeds a ready-to-use demo batch.
+// Safe to run multiple times — uses merge: true and getUserByEmail to avoid
+// duplicates if accounts already exist.
+
+const DEMO_ACCOUNTS = [
+  {
+    email:   'demo.donor@saveameal.th',
+    password: 'qwer1234',
+    role:    'donor',
+    name:    'Khun Siriporn',
+    orgName: 'FreshMart Supermarket',
+  },
+  {
+    email:   'demo.driver@saveameal.th',
+    password: 'qwer1234',
+    role:    'driver',
+    name:    'Nattapong',
+    orgName: null,
+  },
+  {
+    email:   'demo.beneficiary@saveameal.th',
+    password: 'qwer1234',
+    role:    'beneficiary',
+    name:    'Sister Maria',
+    orgName: 'Klongtoey Community Center',
+  },
+];
+
+async function getOrCreateAuthUser({ email, password, name }) {
+  try {
+    const existing = await admin.auth().getUserByEmail(email);
+    console.log(`  ~  Auth account already exists: ${email}  (${existing.uid})`);
+    return existing;
+  } catch (e) {
+    if (e.code === 'auth/user-not-found') {
+      const created = await admin.auth().createUser({ email, password, displayName: name });
+      console.log(`  ✓  Created Auth account: ${email}  (${created.uid})`);
+      return created;
+    }
+    throw e;
+  }
+}
+
+async function setupDemo() {
+  console.log('\nSetting up demo accounts and seed data...\n');
+
+  const uids = {};
+
+  for (const acc of DEMO_ACCOUNTS) {
+    const authUser = await getOrCreateAuthUser(acc);
+    uids[acc.role] = authUser.uid;
+
+    await db.collection('users').doc(authUser.uid).set({
+      uid:     authUser.uid,
+      name:    acc.name,
+      email:   acc.email,
+      role:    acc.role,
+      phone:   null,
+      orgName: acc.orgName,
+      status:  acc.role === 'beneficiary' ? 'accepting' : null,
+      points:  0,
+    }, { merge: true });
+    console.log(`  ✓  users/${authUser.uid}  (${acc.role}: ${acc.name})`);
+  }
+
+  // beneficiaries collection entry (needed for intake status + tracking map)
+  await db.collection('beneficiaries').doc(uids.beneficiary).set({
+    id:           uids.beneficiary,
+    name:         'Sister Maria Shelter',
+    address:      '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
+    lat:          13.7246,
+    lng:          100.5235,
+    intakeStatus: 'accepting',
+  }, { merge: true });
+  console.log(`  ✓  beneficiaries/${uids.beneficiary}`);
+
+  // Empty impact metrics so the donor dashboard shows clean zeros on first login
+  await db.collection('impactMetrics').doc(uids.donor).set({
+    id:               uids.donor,
+    totalKg:          0.0,
+    totalMeals:       0,
+    totalCO2e:        0.0,
+    totalDeliveries:  0,
+  }, { merge: true });
+  console.log(`  ✓  impactMetrics/${uids.donor}  (zeroed)`);
+
+  // Demo batch — open, tied to real Auth UIDs so accept-job + notifications work
+  const batchId  = 'demo_batch_001';
+  const batchNow = new Date();
+  const expiryTs = new Date(batchNow.getTime() + 8 * 3600000).toISOString();
+
+  await db.collection('batches').doc(batchId).set({
+    id:                  batchId,
+    donorId:             uids.donor,
+    donorName:           'FreshMart Supermarket',
+    donorContact:        null,
+    pickupAddress:       '1031 Ploenchit Rd, Lumphini, Pathumwan, Bangkok 10330',
+    beneficiaryId:       uids.beneficiary,
+    beneficiaryName:     'Sister Maria Shelter',
+    beneficiaryAddress:  '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
+    status:              'open',
+    pickupWindowStart:   '21:00',
+    pickupWindowEnd:     '22:30',
+    specialInstructions: 'Demo batch. Ask for Khun Siriporn at the service entrance.',
+    items: [
+      {
+        name:       'Cooked Meals Assortment',
+        category:   'other',
+        weightKg:   15.2,
+        expiryTime: expiryTs,
+        photoUrl:   null,
+      },
+    ],
+    driverId:        null,
+    qrCode:          batchId,
+    claimedAt:       null,
+    pickedUpAt:      null,
+    deliveredAt:     null,
+    photoUrl:        null,
+    pickupPhotoUrl:  null,
+    deliveryNotes:   null,
+    rating:          null,
+    feedback:        null,
+    createdAt:       batchNow.toISOString(),
+    updatedAt:       batchNow.toISOString(),
+  });
+  console.log(`  ✓  batches/${batchId}  (status: open)`);
+
+  console.log('\n─────────────────────────────────────────────────────────');
+  console.log('Demo ready! Login credentials:\n');
+  console.log(`  Donor       demo.donor@saveameal.th        / qwer1234`);
+  console.log(`  Driver      demo.driver@saveameal.th       / qwer1234`);
+  console.log(`  Beneficiary demo.beneficiary@saveameal.th  / qwer1234`);
+  console.log('\nFirestore UIDs:');
+  console.log(`  Donor       ${uids.donor}`);
+  console.log(`  Driver      ${uids.driver}`);
+  console.log(`  Beneficiary ${uids.beneficiary}`);
+  console.log('\nDemo batch: demo_batch_001  (QR code: demo_batch_001)');
+  console.log('─────────────────────────────────────────────────────────\n');
+}
+
 // ── Firestore batch-write helpers ──────────────────────────────────────────────
 
 async function writeAll(collectionName, docs, idField = 'id') {
@@ -477,6 +622,12 @@ async function main() {
   console.log('\nSaveAMeal seed script');
   console.log(`Project : saveameal-87187`);
   console.log(`Target  : ${useEmulator ? 'Firestore emulator (localhost:8080)' : 'live Firestore'}`);
+
+  // ── Demo mode: create Auth accounts + seed demo batch in one shot ─────────
+  if (demoMode) {
+    await setupDemo();
+    return;
+  }
 
   // ── Quick-register a real Firebase Auth UID without wiping seed data ──────
   if (addDriverUid) {

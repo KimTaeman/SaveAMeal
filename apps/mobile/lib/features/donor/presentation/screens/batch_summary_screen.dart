@@ -48,7 +48,7 @@ class _BatchSummaryScreenState extends ConsumerState<BatchSummaryScreen> {
       _uploadPhotosFireAndForget(items);
       ref.read(batchSessionProvider.notifier).clear();
       ref.read(batchBeneficiaryProvider.notifier).clear();
-      if (mounted) context.go('/donor');
+      if (mounted) context.go('/donor/batch/$_batchId/qr');
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
@@ -90,6 +90,18 @@ class _BatchSummaryScreenState extends ConsumerState<BatchSummaryScreen> {
       appBar: AppBar(
         title: const Text('Batch Summary'),
         leading: BackButton(onPressed: () => context.pop()),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(24),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Review and manage items before submitting.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
       ),
       body: Column(
         children: [
