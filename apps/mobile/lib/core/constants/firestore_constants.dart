@@ -5,4 +5,6 @@ abstract final class FirestoreConstants {
   static const String impactMetrics = 'impactMetrics';
   static const String globalMetricsId = 'global';
   static const String beneficiaries = 'beneficiaries';
+  static const String notifications = 'notifications';
+  static const String notificationItems = 'items';
 }
