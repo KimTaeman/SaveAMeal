@@ -101,6 +101,18 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ── notifications ──────────────────────────────────────────────────────────
+    // Each user reads and writes only their own notification items.
+    // Cloud Functions write these via Admin SDK (bypasses rules).
+    match /notifications/{userId}/items/{itemId} {
+      allow read:   if isSignedIn() && uid() == userId;
+      allow update: if isSignedIn() && uid() == userId
+                    && request.resource.data.diff(resource.data)
+                         .affectedKeys().hasOnly(['isRead']);
+      allow create: if false;
+      allow delete: if false;
+    }
+
     // ── leaderboard ────────────────────────────────────────────────────────────
     // Written by Cloud Functions / seed script; all signed-in drivers may read.
     match /leaderboard/{period} {
