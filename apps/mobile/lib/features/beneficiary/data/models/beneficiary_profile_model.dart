@@ -36,6 +36,8 @@ abstract class BeneficiaryProfileModel with _$BeneficiaryProfileModel {
     orgType: beneficiaryModel?.orgType,
     contactEmail: beneficiaryModel?.contactEmail,
     missionStatement: beneficiaryModel?.missionStatement,
+    latitude: beneficiaryModel?.lat,
+    longitude: beneficiaryModel?.lng,
     joinedAt: joinedAt,
   );
 }

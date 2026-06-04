@@ -7,6 +7,8 @@ class BeneficiaryOrgProfileUpdate {
     this.orgType,
     this.contactEmail,
     this.missionStatement,
+    this.latitude,
+    this.longitude,
   });
 
   final String? orgName;
@@ -14,4 +16,6 @@ class BeneficiaryOrgProfileUpdate {
   final String? orgType;
   final String? contactEmail;
   final String? missionStatement;
+  final double? latitude;
+  final double? longitude;
 }

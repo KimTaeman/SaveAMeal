@@ -56,3 +56,15 @@ Outcome: rate_delivery_screen_test.dart already existed and all 8 tests passed. 
 Decisions: (1) TrackingScreen calls firestoreServiceProvider.getBeneficiary in initState — overrode firestoreServiceProvider with a _FakeFirestoreService using noSuchMethod for all un-stubbed members. (2) GoogleMap renders as an empty box in widget tests (no platform channel needed) — confirmed by probe test before writing suite. (3) For the loading state test, used tester.pump() (one frame) rather than pumpAndSettle so the StreamController-backed AsyncValue stays in loading state. (4) Used driverLocationProvider('driver_001').overrideWith() to avoid real Firestore calls.
 Handoff: Both test files are at test/widget/features/beneficiary/. RateDeliveryScreen is a TODO stub — its tests should be replaced with real feature tests once the screen is implemented.
 Review: PENDING
+
+---
+Date: 2026-06-04 00:00
+Member: NichapaJongKmutt
+Agent: flutter-engineer
+Task: Mirror location + Google Maps functionality from donor OrganizationProfileScreen into beneficiary BeneficiaryOrgProfileScreen
+Prompt: Add a 'Use Current Location' button (geolocator) and a 'View on Map' button (url_launcher) to the beneficiary BeneficiaryOrgProfileScreen address field, identical in pattern to the donor OrganizationProfileScreen. Propagate latitude/longitude through all layers: entity, model, datasource, repository, use case, and screen.
+
+Outcome: Added latitude/longitude fields to BeneficiaryOrgProfileUpdate entity, BeneficiaryProfile entity, and BeneficiaryProfileModel.toDomain(). Updated datasource to write lat/lng to Firestore (matching BeneficiaryModel field names). Updated BeneficiaryOrgProfileScreen with _latitude/_longitude state, _getCurrentLocation(), _openInMaps(), _buildAddressSuffixIcon(), address listener to clear coords on empty, pre-fill coords from profile, and suffix icon on the address TextFormField. flutter analyze: no issues. dart format: 0 changes.
+Decisions: Used 'lat'/'lng' as the Firestore field names (to match the existing BeneficiaryModel freezed fields) rather than 'latitude'/'longitude'. No changes were needed to the repository interface, repository impl, or use case — they all pass the entity through unchanged. The provider file required no changes either.
+Handoff: All layers compile cleanly. No new dependencies added (geolocator and url_launcher were already present). The domain layer remains Flutter-free. Ready for QA or architect review.
+Review: PENDING
