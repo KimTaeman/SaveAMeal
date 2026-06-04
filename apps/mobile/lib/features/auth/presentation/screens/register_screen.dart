@@ -137,6 +137,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   decoration: _inputDecoration(context, 'Phone Number'),
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return null;
+                    final digits = v.replaceAll(RegExp(r'\D'), '');
+                    if (digits.length < 9 || digits.length > 15) {
+                      return 'Enter a valid phone number (9–15 digits)';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: Spacing.md),
 
