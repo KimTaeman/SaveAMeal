@@ -54,9 +54,16 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
     super.dispose();
   }
 
-  void _onAddressChanged() => setState(() {});
+  void _onAddressChanged() {
+    if (_addressController.text.isEmpty) {
+      _latitude = null;
+      _longitude = null;
+    }
+    setState(() {});
+  }
 
   Future<void> _fetchLocation() async {
+    if (!mounted) return;
     setState(() => _fetchingLocation = true);
     try {
       final position = await Geolocator.getCurrentPosition(
@@ -64,12 +71,14 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
           accuracy: LocationAccuracy.high,
         ),
       );
-      setState(() {
-        _latitude = position.latitude;
-        _longitude = position.longitude;
-        _addressController.text =
-            '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
-      });
+      if (mounted) {
+        setState(() {
+          _latitude = position.latitude;
+          _longitude = position.longitude;
+          _addressController.text =
+              '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+        });
+      }
     } on PermissionDeniedException {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -85,7 +94,7 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Location permission denied. Please enter your address manually.',
+              'Location services are disabled. Please enable them in device settings.',
             ),
           ),
         );

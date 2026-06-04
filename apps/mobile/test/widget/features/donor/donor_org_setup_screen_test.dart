@@ -125,6 +125,10 @@ void main() {
       GeolocatorPlatform.instance = _FakeGeolocatorPlatform();
     });
 
+    tearDown(() {
+      GeolocatorPlatform.instance = _FakeGeolocatorPlatform();
+    });
+
     testWidgets('renders title', (tester) async {
       await tester.pumpWidget(_buildApp());
       await tester.pumpAndSettle();
