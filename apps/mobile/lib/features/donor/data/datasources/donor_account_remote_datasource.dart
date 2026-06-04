@@ -31,4 +31,6 @@ Map<String, dynamic> _toFirestoreMap(UserProfileUpdate u) => {
   if (u.bannerUrl != null) 'bannerUrl': u.bannerUrl,
   if (u.operatingHours != null) 'operatingHours': u.operatingHours,
   if (u.surplusTypes != null) 'surplusTypes': u.surplusTypes,
+  if (u.latitude != null) 'latitude': u.latitude,
+  if (u.longitude != null) 'longitude': u.longitude,
 };
