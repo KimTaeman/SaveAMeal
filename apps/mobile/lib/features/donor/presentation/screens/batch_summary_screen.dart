@@ -9,6 +9,7 @@ import 'package:saveameal/features/donor/domain/entities/batch.dart';
 import 'package:saveameal/features/donor/domain/entities/batch_item.dart';
 import 'package:saveameal/features/donor/domain/entities/food_category.dart';
 import 'package:saveameal/features/donor/presentation/providers/batch_session_provider.dart';
+import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
 import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
@@ -33,11 +34,14 @@ class _BatchSummaryScreenState extends ConsumerState<BatchSummaryScreen> {
     setState(() => _submitting = true);
 
     final beneficiary = ref.read(batchBeneficiaryProvider);
+    final profile = ref.read(currentUserProvider).asData?.value;
     final batch = Batch(
       id: _batchId,
       donorId: donorId,
       items: items,
-      pickupAddress: '',
+      pickupAddress: profile?.streetAddress ?? '',
+      pickupLat: profile?.latitude ?? 0.0,
+      pickupLng: profile?.longitude ?? 0.0,
       status: BatchStatus.open,
       qrCode: 'saveameal://batch/$_batchId',
       beneficiaryId: beneficiary?.id,

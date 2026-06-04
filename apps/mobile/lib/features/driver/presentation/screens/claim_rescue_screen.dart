@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
@@ -7,12 +10,75 @@ import 'package:saveameal/features/driver/presentation/providers/driver_notifier
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class ClaimRescueScreen extends ConsumerWidget {
+class ClaimRescueScreen extends ConsumerStatefulWidget {
   const ClaimRescueScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ClaimRescueScreen> createState() => _ClaimRescueScreenState();
+}
+
+class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
+  LatLng? _currentPosition;
+  GoogleMapController? _mapController;
+  StreamSubscription<Position>? _positionSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _startLocationTracking();
+  }
+
+  @override
+  void dispose() {
+    _positionSub?.cancel();
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  void _startLocationTracking() {
+    _positionSub =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 10,
+          ),
+        ).listen((pos) {
+          if (!mounted) return;
+          setState(
+            () => _currentPosition = LatLng(pos.latitude, pos.longitude),
+          );
+        });
+    // Also get a one-shot initial position immediately
+    Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+          ),
+        )
+        .then((pos) {
+          if (!mounted) return;
+          setState(
+            () => _currentPosition = LatLng(pos.latitude, pos.longitude),
+          );
+        })
+        .catchError((_) {});
+  }
+
+  Future<void> _openNavigation(String address) async {
+    final encoded = Uri.encodeComponent(address);
+    final uri = Uri.parse('https://maps.google.com/maps?daddr=$encoded');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Could not open Maps.')));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final driverState = ref.watch(driverProvider);
     final uid = ref.watch(authStateProvider).asData?.value?.uid ?? '';
     final batch = ref.watch(activeBatchForDriverProvider(uid)).asData?.value;
@@ -37,8 +103,21 @@ class ClaimRescueScreen extends ConsumerWidget {
         ? '${batch.totalPortions}x ${batch.items.first.name}'
         : '${batch?.totalPortions ?? 0}x portions';
 
+    final destLatLng = LatLng(batch?.lat ?? 13.7563, batch?.lng ?? 100.5018);
+
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    final polylines = _currentPosition != null
+        ? <Polyline>{
+            Polyline(
+              polylineId: const PolylineId('route'),
+              points: [_currentPosition!, destLatLng],
+              color: cs.primary,
+              width: 4,
+            ),
+          }
+        : <Polyline>{};
 
     return Scaffold(
       appBar: AppBar(
@@ -73,55 +152,78 @@ class ClaimRescueScreen extends ConsumerWidget {
             child: Stack(
               children: [
                 GoogleMap(
+                  onMapCreated: (c) => _mapController = c,
                   initialCameraPosition: CameraPosition(
-                    target: LatLng(
-                      batch?.lat ?? 13.7563,
-                      batch?.lng ?? 100.5018,
-                    ),
+                    target: destLatLng,
                     zoom: 14,
                   ),
-                  markers: batch != null
-                      ? {
-                          Marker(
-                            markerId: const MarkerId('dest'),
-                            position: LatLng(batch.lat, batch.lng),
-                          ),
-                        }
-                      : {},
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  polylines: polylines,
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId('dest'),
+                      position: destLatLng,
+                    ),
+                  },
                 ),
-                // TODO(driver): replace with real ETA from Maps Directions API
                 Positioned(
                   right: Spacing.sm,
                   bottom: Spacing.sm,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Spacing.sm,
-                      vertical: Spacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: cs.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: cs.shadow.withValues(alpha: 0.15),
-                          blurRadius: 4,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      FloatingActionButton.small(
+                        heroTag: 'navigate',
+                        onPressed: address != '—'
+                            ? () => _openNavigation(address)
+                            : null,
+                        backgroundColor: cs.primary,
+                        child: const Icon(
+                          Icons.navigation,
+                          color: Colors.white,
+                          size: 18,
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.access_time, size: 14, color: cs.primary),
-                        const SizedBox(width: Spacing.xs),
-                        Text(
-                          '~14 min',
-                          style: textTheme.labelSmall?.copyWith(
-                            color: cs.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      ),
+                      const SizedBox(height: Spacing.xs),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Spacing.sm,
+                          vertical: Spacing.xs,
                         ),
-                      ],
-                    ),
+                        decoration: BoxDecoration(
+                          color: cs.surface,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: cs.shadow.withValues(alpha: 0.15),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: cs.primary,
+                            ),
+                            const SizedBox(width: Spacing.xs),
+                            Text(
+                              _currentPosition != null
+                                  ? 'Live route'
+                                  : 'Locating…',
+                              style: textTheme.labelSmall?.copyWith(
+                                color: cs.onSurface,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -200,28 +302,7 @@ class ClaimRescueScreen extends ConsumerWidget {
           ),
         ],
       ),
-      // TODO(driver): wire destinations to router when Impact and Account screens exist
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: 0,
-        onDestinationSelected: (_) {},
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart),
-            label: 'Impact',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Account',
-          ),
-        ],
-      ),
+      bottomNavigationBar: _DriverBottomNav(currentIndex: 0),
     );
   }
 
@@ -267,6 +348,40 @@ class _InfoRow extends StatelessWidget {
               Text(value, style: textTheme.bodySmall),
             ],
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DriverBottomNav extends StatelessWidget {
+  const _DriverBottomNav({required this.currentIndex});
+  final int currentIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return NavigationBar(
+      selectedIndex: currentIndex,
+      onDestinationSelected: (i) {
+        if (i == 0) context.go('/driver');
+        if (i == 1) context.go('/driver/impact');
+        if (i == 2) context.go('/driver/account');
+      },
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.eco_outlined),
+          selectedIcon: Icon(Icons.eco),
+          label: 'Impact',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.person_outline),
+          selectedIcon: Icon(Icons.person),
+          label: 'Account',
         ),
       ],
     );
