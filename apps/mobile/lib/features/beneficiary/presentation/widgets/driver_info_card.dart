@@ -36,6 +36,7 @@ class DriverInfoCard extends ConsumerWidget {
         .take(2)
         .map((w) => w.isEmpty ? '' : w[0].toUpperCase())
         .join();
+    final eta = detail.estimatedArrivalMinutes?.clamp(1, 600);
 
     return Card(
       elevation: 0,
@@ -163,9 +164,9 @@ class DriverInfoCard extends ConsumerWidget {
                   ),
                 ),
                 // ETA — merge the two-line label into one screen-reader string.
-                if (detail.estimatedArrivalMinutes != null)
+                if (eta != null)
                   Semantics(
-                    label: 'ETA: ${detail.estimatedArrivalMinutes} minutes',
+                    label: 'ETA: $eta minutes',
                     excludeSemantics: true,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -177,7 +178,7 @@ class DriverInfoCard extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          '${detail.estimatedArrivalMinutes} min',
+                          '$eta min',
                           style: textTheme.titleMedium?.copyWith(
                             color: cs.primary,
                             fontWeight: FontWeight.bold,

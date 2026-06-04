@@ -5,8 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/core/logging/app_logger.dart';
-import 'package:saveameal/core/utils/distance_utils.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
+import 'package:saveameal/features/driver/domain/usecases/update_batch_eta_usecase.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
 
@@ -20,13 +20,21 @@ class DriverNotifier extends _$DriverNotifier {
   double? _destLat;
   double? _destLng;
   int? _lastEtaMinutes;
+  // Beneficiary coords cached from the active-batch stream (written to Firestore
+  // by the claimBatch transaction). Used in confirmPickup to switch the ETA
+  // destination without a ref.read on a stream provider.
+  double? _beneficiaryLat;
+  double? _beneficiaryLng;
+  StreamSubscription<BatchSummary?>? _activeBatchSub;
   // Cached at build time so _stopTracking can be called safely from onDispose,
   // where ref.read is no longer permitted.
   late DriverRepository _repo;
+  late UpdateBatchEtaUsecase _etaUsecase;
 
   @override
   DriverState build() {
     _repo = ref.read(driverRepositoryProvider);
+    _etaUsecase = ref.read(updateBatchEtaUsecaseProvider);
     ref.onDispose(_stopTracking);
     return const DriverState();
   }
@@ -53,6 +61,17 @@ class DriverNotifier extends _$DriverNotifier {
     _destLat = batch?.lat;
     _destLng = batch?.lng;
     _lastEtaMinutes = null;
+    // Subscribe to the active-batch stream to cache beneficiary delivery coords
+    // as soon as the claimBatch transaction propagates them from Firestore.
+    _beneficiaryLat = null;
+    _beneficiaryLng = null;
+    _activeBatchSub?.cancel();
+    _activeBatchSub = _repo.getActiveBatch(driverId).listen((b) {
+      if (b != null && b.beneficiaryLat != null && b.beneficiaryLng != null) {
+        _beneficiaryLat = b.beneficiaryLat;
+        _beneficiaryLng = b.beneficiaryLng;
+      }
+    });
     // unawaited — permission dialog must not block the state transition
     unawaited(_startTracking(driverId));
     if (batch != null) {
@@ -86,19 +105,16 @@ class DriverNotifier extends _$DriverNotifier {
       step: DriverStep.pickedUp,
       rescuePhase: ClaimRescuePhase.enRouteBeneficiary,
     );
-    // Switch ETA destination to beneficiary delivery coordinates.
-    if (_activeDriverId != null) {
-      final activeBatch = ref
-          .read(activeBatchForDriverProvider(_activeDriverId!))
-          .asData
-          ?.value;
-      if (activeBatch != null &&
-          activeBatch.beneficiaryLat != null &&
-          activeBatch.beneficiaryLng != null) {
-        _destLat = activeBatch.beneficiaryLat;
-        _destLng = activeBatch.beneficiaryLng;
-        _lastEtaMinutes = null;
-      }
+    // Switch ETA destination to beneficiary delivery coordinates (cached from
+    // the active-batch stream subscription started in claimBatch).
+    if (_beneficiaryLat != null && _beneficiaryLng != null) {
+      _destLat = _beneficiaryLat;
+      _destLng = _beneficiaryLng;
+      _lastEtaMinutes = null;
+    } else {
+      AppLogger.warning(
+        'confirmPickup: beneficiary coordinates unavailable — ETA destination not updated',
+      );
     }
   }
 
@@ -119,6 +135,11 @@ class DriverNotifier extends _$DriverNotifier {
   void setActiveDriverIdForTest(String driverId) {
     _activeDriverId = driverId;
   }
+
+  // For testing only — exposes the current ETA destination so tests can verify
+  // that confirmPickup correctly switches from pickup to beneficiary coordinates.
+  @visibleForTesting
+  (double?, double?) get etaDestinationForTest => (_destLat, _destLng);
 
   Future<void> _startTracking(String driverId) async {
     try {
@@ -159,6 +180,10 @@ class DriverNotifier extends _$DriverNotifier {
       AppLogger.warning('Initial location fix failed', error: e);
     }
 
+    // Guard: if disposed while awaiting the initial position fix, don't start
+    // the timer — it would be impossible to cancel and would leak.
+    if (_activeDriverId == null) return;
+
     _locationTimer?.cancel();
     _locationTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
       try {
@@ -181,6 +206,8 @@ class DriverNotifier extends _$DriverNotifier {
   void _stopTracking() {
     _locationTimer?.cancel();
     _locationTimer = null;
+    _activeBatchSub?.cancel();
+    _activeBatchSub = null;
     if (_activeDriverId != null) {
       _repo
           .deleteLocation(_activeDriverId!)
@@ -194,6 +221,8 @@ class DriverNotifier extends _$DriverNotifier {
     _destLat = null;
     _destLng = null;
     _lastEtaMinutes = null;
+    _beneficiaryLat = null;
+    _beneficiaryLng = null;
   }
 
   Future<void> _writeEtaIfChanged(double driverLat, double driverLng) async {
@@ -203,13 +232,16 @@ class DriverNotifier extends _$DriverNotifier {
     final destLat = _destLat;
     final destLng = _destLng;
     if (batchId == null || destLat == null || destLng == null) return;
-
-    final newEta = etaMinutes(driverLat, driverLng, destLat, destLng);
-    if (newEta == _lastEtaMinutes) return;
-
     try {
-      await _repo.updateBatchEta(batchId, newEta);
-      _lastEtaMinutes = newEta;
+      final newEta = await _etaUsecase.call(
+        batchId: batchId,
+        driverLat: driverLat,
+        driverLng: driverLng,
+        destLat: destLat,
+        destLng: destLng,
+        lastEtaMinutes: _lastEtaMinutes,
+      );
+      if (newEta != null) _lastEtaMinutes = newEta;
     } catch (e) {
       AppLogger.warning('ETA update failed', error: e);
     }
