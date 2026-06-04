@@ -139,7 +139,7 @@ class BeneficiaryImpactScreen extends ConsumerWidget {
             case 0:
               context.go('/beneficiary');
             case 1:
-              context.go('/beneficiary');
+              context.go('/beneficiary/history');
             case 2:
               break; // already here
             case 3:
