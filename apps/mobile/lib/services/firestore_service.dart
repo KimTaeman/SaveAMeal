@@ -352,9 +352,12 @@ class FirestoreService {
 
   /// Upserts the driver's entry in leaderboard/thisMonth, re-sorts by score,
   /// assigns sequential ranks, and writes the updated list back. Also updates
-  /// the driver's rank and totalDrivers fields in their user document.
+  /// Updates leaderboard/thisMonth and the driver's rank/totalDrivers field.
+  /// Uses two separate writes instead of a transaction to avoid the combined
+  /// commit being rejected by Firestore security rules when the two writes
+  /// span different permission scopes (leaderboard + users).
   Future<void> _rebuildLeaderboard(String driverId, int deliveredMeals) async {
-    // Read the driver's updated profile for display fields.
+    // Read driver profile for display fields.
     final driverSnap = await _db
         .collection(FirestoreConstants.users)
         .doc(driverId)
@@ -369,41 +372,41 @@ class FirestoreService {
         .collection(FirestoreConstants.leaderboard)
         .doc('thisMonth');
 
-    await _db.runTransaction((tx) async {
-      final lSnap = await tx.get(leaderboardRef);
-      final entries = List<Map<String, dynamic>>.from(
-        ((lSnap.data()?['entries'] as List<dynamic>?) ?? []).map(
-          (e) => Map<String, dynamic>.from(e as Map),
-        ),
-      );
+    // Read current leaderboard entries.
+    final lSnap = await leaderboardRef.get();
+    final entries = List<Map<String, dynamic>>.from(
+      ((lSnap.data()?['entries'] as List<dynamic>?) ?? []).map(
+        (e) => Map<String, dynamic>.from(e as Map),
+      ),
+    );
 
-      // Remove any stale entry for this driver and insert the updated one.
-      entries.removeWhere((e) => e['uid'] == driverId);
-      entries.add({
-        'uid': driverId,
-        'driverName': driverName,
-        'zone': zone,
-        'score': newMealsSaved,
-        'avatarUrl': avatarUrl,
-      });
+    // Upsert this driver's entry.
+    entries.removeWhere((e) => e['uid'] == driverId);
+    entries.add({
+      'uid': driverId,
+      'driverName': driverName,
+      'zone': zone,
+      'score': newMealsSaved,
+      'avatarUrl': avatarUrl,
+    });
 
-      // Sort descending by score and assign ranks.
-      entries.sort(
-        (a, b) =>
-            ((b['score'] as int?) ?? 0).compareTo((a['score'] as int?) ?? 0),
-      );
-      for (var i = 0; i < entries.length; i++) {
-        entries[i]['rank'] = i + 1;
-      }
+    // Sort by score descending and assign sequential ranks.
+    entries.sort(
+      (a, b) =>
+          ((b['score'] as int?) ?? 0).compareTo((a['score'] as int?) ?? 0),
+    );
+    for (var i = 0; i < entries.length; i++) {
+      entries[i]['rank'] = i + 1;
+    }
 
-      tx.set(leaderboardRef, {'entries': entries});
+    // Write leaderboard (covered by leaderboard allow write: isDriver rule).
+    await leaderboardRef.set({'entries': entries});
 
-      // Update the driver's rank and totalDrivers in their user document.
-      final driverRank = entries.indexWhere((e) => e['uid'] == driverId) + 1;
-      tx.update(_db.collection(FirestoreConstants.users).doc(driverId), {
-        'rank': driverRank,
-        'totalDrivers': entries.length,
-      });
+    // Write driver's new rank and fleet size (covered by users allow update rule).
+    final driverRank = entries.indexWhere((e) => e['uid'] == driverId) + 1;
+    await _db.collection(FirestoreConstants.users).doc(driverId).update({
+      'rank': driverRank,
+      'totalDrivers': entries.length,
     });
   }
 
