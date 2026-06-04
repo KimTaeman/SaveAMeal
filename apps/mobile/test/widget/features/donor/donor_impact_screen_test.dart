@@ -200,9 +200,7 @@ void main() {
             activeBatchesProvider(
               'test-donor-uid',
             ).overrideWith((ref) => Stream.value(<Batch>[])),
-            donorMetricsProvider(
-              'test-donor-uid',
-            ).overrideWith(
+            donorMetricsProvider('test-donor-uid').overrideWith(
               (ref) => Stream.value(
                 const DonorMetrics(
                   donorId: 'test-donor-uid',
