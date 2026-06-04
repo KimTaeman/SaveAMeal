@@ -314,7 +314,7 @@ class _InventoryItemCard extends StatelessWidget {
 
   static const _categoryNames = {
     FoodCategory.bakery: 'Bakery',
-    FoodCategory.produce: 'Produce',
+    FoodCategory.produce: 'Fruits & Veggies',
     FoodCategory.dairy: 'Dairy',
     FoodCategory.meat: 'Meat',
     FoodCategory.beverages: 'Beverages',
