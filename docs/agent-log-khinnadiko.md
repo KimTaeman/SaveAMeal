@@ -213,3 +213,10 @@ Decisions: Extended IntakeStatus enum with open/delivered/closed instead of reus
 Handoff: Ready for QA/architect review. The mapper test update (delivered→IntakeStatus.delivered, closed→IntakeStatus.closed) is a breaking change from the previous mapping — check that no other feature depends on delivered/closed mapping to IntakeStatus.collected.
 Review: PENDING
 
+Files:
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/active_delivery_card.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart
+Summary:  4 files changed, 371 insertions(+), 110 deletions(-)
+
