@@ -159,13 +159,11 @@ void main() {
       );
     });
 
-    testWidgets('renders Primary Location field', (tester) async {
+    testWidgets('renders location field with city/zip hint', (tester) async {
       await tester.pumpWidget(_buildApp());
       await tester.pumpAndSettle();
-      expect(
-        find.widgetWithText(TextFormField, 'Primary Location'),
-        findsOneWidget,
-      );
+      // Field now uses hintText to match Figma; verify by finding the GPS icon.
+      expect(find.byIcon(Icons.my_location), findsOneWidget);
     });
 
     testWidgets('renders Save button', (tester) async {
@@ -240,10 +238,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(
-        find.text('Something went wrong. Please try again.'),
-        findsOneWidget,
-      );
+      expect(find.text('Save failed. Please try again.'), findsOneWidget);
     });
 
     testWidgets('upload photo widget has accessibility semantics', (

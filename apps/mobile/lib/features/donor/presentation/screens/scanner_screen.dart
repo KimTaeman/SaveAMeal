@@ -43,7 +43,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
       final uri = Uri.parse(
         'https://world.openfoodfacts.org/api/v0/product/$barcode.json',
       );
-      final response = await http.get(uri).timeout(const Duration(seconds: 4));
+      final response = await http.get(uri).timeout(const Duration(seconds: 7));
       if (response.statusCode != 200) return null;
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       if (data['status'] != 1) return null;
@@ -71,10 +71,31 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     final productName = await _lookupProductName(raw);
     if (!mounted) return;
     setState(() => _lookingUp = false);
+
+    // productName is null when the barcode isn't in the Open Food Facts
+    // database (common for Thai / local products). Pre-fill the name field
+    // with the barcode string so the user can see the scan succeeded and
+    // edit the name, rather than arriving at a completely blank form.
+    final prefillName = productName ?? raw;
+    final foundInDb = productName != null;
+
     context.push(
       '/donor/log/form',
-      extra: {'barcode': raw, 'name': productName},
+      extra: {'barcode': raw, 'name': prefillName},
     );
+
+    // Show feedback after push so it appears over the form screen.
+    if (!mounted) return;
+    if (!foundInDb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Product not found — barcode filled in, please edit the name.',
+          ),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   void _enterManually() {

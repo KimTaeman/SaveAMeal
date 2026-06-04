@@ -11,6 +11,7 @@ import 'package:saveameal/features/donor/presentation/providers/batch_session_pr
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/donor_brand_title.dart';
 
 class LogSurplusFormScreen extends ConsumerStatefulWidget {
   const LogSurplusFormScreen({
@@ -104,19 +105,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.pop()),
         titleSpacing: 0,
-        title: Row(
-          children: [
-            Image.asset('assets/images/logo.png', height: 28),
-            const SizedBox(width: Spacing.xs),
-            Text(
-              'SaveAMeal',
-              style: textTheme.titleLarge?.copyWith(
-                color: cs.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+        title: const DonorBrandTitle(),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),

@@ -120,15 +120,14 @@ Task: Fix 5 blocking PR findings from /pr-review on feat/beneficiary-impact-scre
 Prompt: fix the blocking findings
 
 Outcome: All 5 blocking issues resolved. (1) Removed direct FirebaseFirestore.instance from beneficiary_impact_provider.dart — now routes through firestoreServiceProvider by adding a public .db getter to FirestoreService. (2) Added VALID_CATEGORIES whitelist in computeByCategory() to prevent arbitrary user-supplied strings from becoming Firestore map keys. (3) Added 5 computeByCategory() tests to computations.test.ts — all 9 TS tests pass. (4) Added isValidId() slash-guard in onDeliveryComplete.ts for both beneficiaryId and donorId writes. (5) Darkened app_theme.dart seed from #3DBE6C to #1A7A3A to meet WCAG AA 4.5:1 contrast with white text. flutter analyze: 0 issues. build_runner: 20 outputs written.
-Decisions: Added FirebaseFirestore get db => _db getter on FirestoreService rather than refactoring the datasource constructor — minimal change, respects existing DI pattern without touching generated .g.dart files.
+Decisions: Added FirebaseFirestore get db => \_db getter on FirestoreService rather than refactoring the datasource constructor — minimal change, respects existing DI pattern without touching generated .g.dart files.
 Handoff: All blocking findings fixed. Re-request review from security-reviewer and architect before merging to main.
 Review: PENDING
 Files:
-  ~ apps/mobile/lib/features/beneficiary/presentation/providers/beneficiary_impact_provider.dart
-  ~ apps/mobile/lib/services/firestore_service.dart
-  ~ apps/mobile/lib/shared/theme/app_theme.dart
-Summary:  3 files changed, 6 insertions(+), 3 deletions(-)
-
+~ apps/mobile/lib/features/beneficiary/presentation/providers/beneficiary_impact_provider.dart
+~ apps/mobile/lib/services/firestore_service.dart
+~ apps/mobile/lib/shared/theme/app_theme.dart
+Summary: 3 files changed, 6 insertions(+), 3 deletions(-)
 
 ---
 
@@ -138,7 +137,7 @@ Agent: flutter-engineer
 Task: Implement SPEC-0006 Beneficiary Batch Detailed View — data layer, providers, widgets, screen, tests
 Prompt: Implement SPEC-0006 (Beneficiary Batch Detailed View) following the 9-step spec. Steps cover: extracting mapIntakeStatus + adding batchModelToDetailDomain mapper, adding watchIntakeRequestDetail to IntakeRepository and FirestoreIntakeRepository, wiring providers via riverpod codegen, implementing DriverInfoCard (ConsumerWidget with GoogleMap/placeholder), BatchItemsCard (StatelessWidget with item list), DeliveryDetailScreen (ConsumerStatefulWidget with 3 states), rewriting test stubs.
 
-Outcome: All 9 steps complete. mapIntakeStatus promoted to package-level top-level function. batchModelToDetailDomain added. IntakeRepository.watchIntakeRequestDetail added (domain). FirestoreIntakeRepository.watchIntakeRequestDetail implemented. Two new providers generated (watchIntakeRequestDetailUseCase, intakeRequestDetail). DriverInfoCard, BatchItemsCard, DeliveryDetailScreen fully implemented. UseCase test rewritten with handwritten _FakeIntakeRepository (no mockito). All 8 mapper test cases implemented and passing. Widget test compiles cleanly. flutter analyze: 0 issues. dart format: clean. 10/10 unit tests pass. 177/177 widget tests pass.
+Outcome: All 9 steps complete. mapIntakeStatus promoted to package-level top-level function. batchModelToDetailDomain added. IntakeRepository.watchIntakeRequestDetail added (domain). FirestoreIntakeRepository.watchIntakeRequestDetail implemented. Two new providers generated (watchIntakeRequestDetailUseCase, intakeRequestDetail). DriverInfoCard, BatchItemsCard, DeliveryDetailScreen fully implemented. UseCase test rewritten with handwritten \_FakeIntakeRepository (no mockito). All 8 mapper test cases implemented and passing. Widget test compiles cleanly. flutter analyze: 0 issues. dart format: clean. 10/10 unit tests pass. 177/177 widget tests pass.
 Decisions: Removed batch_item_model.dart import from intake_request_model.dart — redundant since items accessed via batch_model.dart's List<BatchItemModel>. Commented out delivery_detail_screen.dart import in widget test to eliminate unused_import warning while preserving the TODO scaffold for the QA phase when GoogleMap platform channel can be stubbed. DriverInfoCard uses ConsumerWidget (not ConsumerStatefulWidget) — no local state needed since GoogleMapController is not kept (liteModeEnabled, no camera animation required for display-only map).
 Handoff: Submit for review to architect or qa-engineer. Next steps: QA should uncomment the DeliveryDetailScreen widget test overrides once a GoogleMap platform stub is available. The intakeRequestDetailProvider(batchId) is ready to override.
 Review: PENDING
@@ -151,8 +150,8 @@ Agent: flutter-engineer
 Task: Add "Recent Deliveries" section to DeliveryDetailScreen — all layers from Firestore query through presentation widget
 Prompt: Add a "Recent Deliveries" section to DeliveryDetailScreen showing the last 3 completed deliveries for the beneficiary. Steps: (1) new RecentDelivery domain entity, (2) watchRecentDeliveriesForBeneficiary in FirestoreService, (3) add to datasource interface + impl, (4) add to IntakeRepository interface, (5) implement in FirestoreIntakeRepository, (6) add recentDeliveries Riverpod provider + run codegen, (7) create RecentDeliveriesSection widget, (8) insert widget into DeliveryDetailScreen below BatchItemsCard.
 
-Outcome: All 8 steps complete. RecentDelivery domain entity created (pure Dart). watchRecentDeliveriesForBeneficiary added to FirestoreService (limit 20, client-side sort + take(3), no composite index needed). Datasource interface and impl updated. IntakeRepository interface extended. FirestoreIntakeRepository.watchRecentDeliveries implemented. recentDeliveriesProvider generated via build_runner. RecentDeliveriesSection ConsumerWidget created with loading/error/empty -> SizedBox.shrink(), data -> full section. DeliveryDetailScreen updated to insert the section below BatchItemsCard. Fixed unnecessary_underscores lint (error callback named parameters) and updated _FakeIntakeRepository in unit test to implement the new interface method. 13 new widget tests added covering loading/error/empty/data states and all _formatRelativeDate branches. flutter analyze: 0 issues. dart format: clean. 247/247 tests pass.
-Decisions: Used Object/StackTrace named params in the error callback to satisfy both the unnecessary_underscores lint and no_leading_underscores_for_local_identifiers lint simultaneously. _FakeIntakeRepository in the existing usecase test required watchRecentDeliveries to be added (throws UnimplementedError) to keep the interface contract satisfied without touching test logic.
+Outcome: All 8 steps complete. RecentDelivery domain entity created (pure Dart). watchRecentDeliveriesForBeneficiary added to FirestoreService (limit 20, client-side sort + take(3), no composite index needed). Datasource interface and impl updated. IntakeRepository interface extended. FirestoreIntakeRepository.watchRecentDeliveries implemented. recentDeliveriesProvider generated via build_runner. RecentDeliveriesSection ConsumerWidget created with loading/error/empty -> SizedBox.shrink(), data -> full section. DeliveryDetailScreen updated to insert the section below BatchItemsCard. Fixed unnecessary_underscores lint (error callback named parameters) and updated \_FakeIntakeRepository in unit test to implement the new interface method. 13 new widget tests added covering loading/error/empty/data states and all \_formatRelativeDate branches. flutter analyze: 0 issues. dart format: clean. 247/247 tests pass.
+Decisions: Used Object/StackTrace named params in the error callback to satisfy both the unnecessary_underscores lint and no_leading_underscores_for_local_identifiers lint simultaneously. \_FakeIntakeRepository in the existing usecase test required watchRecentDeliveries to be added (throws UnimplementedError) to keep the interface contract satisfied without touching test logic.
 Handoff: Submit for review to architect or qa-engineer. The "View All" TextButton and each row's onTap are no-ops for this iteration — flag for the next spec to wire navigation to a full history screen.
 Review: PENDING
 
@@ -166,7 +165,7 @@ Prompt: Review the diff for feat/beneficiary-batches against main. Audit coverag
 
 Outcome: Full audit completed. 27 PR tests all pass. flutter analyze clean. dart format clean. No unbounded ListView violations. No Image.network usage. 4 blocking accessibility findings (no semantic labels on interactive widgets, "View All" touch target below 44dp) plus 5 warnings around silent stubs, empty-state coverage, and missing widget-level tests for BatchItemsCard and DriverInfoCard.
 Decisions: Marked accessibility findings as BLOCKING per WCAG 2.2 AA mandate in QA rules. Touch target shrinkWrap on View All is a direct Material tap-target spec violation. Silent error swallowing in RecentDeliveriesSection and DriverInfoCard (no logging) flagged as WARNING not BLOCKING because they are pre-existing patterns in the codebase.
-Handoff: Flutter engineer must add Semantics wrappers to all interactive widgets (DriverInfoCard map, View All button, each _DeliveryRow, notifications IconButton) and restore View All to MaterialTapTargetSize.padded or wrap in a SizedBox 44dp tall. Golden tests for DeliveryDetailScreen are missing — add one per the QA rule. BatchItemsCard and DriverInfoCard need dedicated widget tests.
+Handoff: Flutter engineer must add Semantics wrappers to all interactive widgets (DriverInfoCard map, View All button, each \_DeliveryRow, notifications IconButton) and restore View All to MaterialTapTargetSize.padded or wrap in a SizedBox 44dp tall. Golden tests for DeliveryDetailScreen are missing — add one per the QA rule. BatchItemsCard and DriverInfoCard need dedicated widget tests.
 Review: CHANGES REQUESTED by qa-engineer
 
 ---
@@ -183,6 +182,7 @@ Handoff: Flutter engineer implements against tech-specs/0007-beneficiary-order-h
 Review: PENDING
 
 ---
+
 Date: 2026-06-04 00:00
 Member: khinnadiko
 Agent: flutter-engineer

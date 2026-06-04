@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/beneficiary_impact.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_impact_provider.dart';
+import 'package:saveameal/features/beneficiary/presentation/widgets/beneficiary_bottom_nav.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/impact_category_row.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/impact_hero_card.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/impact_metric_tile.dart';
@@ -131,42 +132,20 @@ class BeneficiaryImpactScreen extends ConsumerWidget {
           ),
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: 2,
+      bottomNavigationBar: BeneficiaryBottomNav(
+        currentIndex: 2,
         onDestinationSelected: (index) {
           switch (index) {
             case 0:
               context.go('/beneficiary');
             case 1:
-              break; // Track — not yet implemented
+              context.go('/beneficiary');
             case 2:
               break; // already here
             case 3:
-              break; // Account — not yet implemented
+              context.go('/beneficiary/account');
           }
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.local_shipping_outlined),
-            selectedIcon: Icon(Icons.local_shipping),
-            label: 'Track',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.favorite_outline),
-            selectedIcon: Icon(Icons.favorite),
-            label: 'Impact',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Account',
-          ),
-        ],
       ),
     );
   }

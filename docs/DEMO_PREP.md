@@ -36,6 +36,28 @@ The script prints each account's Firebase Auth UID at the end — keep these han
 
 ---
 
+## Step 2 — Deploy Firestore + Storage security rules + CORS
+
+**Required — profile edits and image display in the web build will fail until these are run.**
+
+```bash
+# Deploy security rules
+firebase deploy --only firestore:rules,storage
+
+# Fix Storage CORS so the Flutter web build can load uploaded images
+# (browsers block cross-origin images without this)
+cd tools/seed
+npm run set-cors
+cd ../..
+```
+
+This deploys `firestore.rules` and `storage.rules` from the repo root.
+The storage rules were missing the `users/` path — added in this version.
+
+> Requires Firebase CLI: `npm install -g firebase-tools` then `firebase login`.
+
+---
+
 ## Step 4 — Verify FCM notifications work
 
 Before demo day, test push notifications:
@@ -138,6 +160,8 @@ firebase deploy --only functions --key tools/seed/serviceAccountKey.json
 
 ## Release Checklist
 
+- [ ] `firebase deploy --only firestore:rules,storage` run from repo root
+- [ ] `cd tools/seed && npm run set-cors` run ← **required for images to load in web build**
 - [ ] `npm run demo` completed successfully from `tools/seed/` (creates accounts + batch in one shot)
 - [ ] `users/{DONOR_UID}`, `users/{DRIVER_UID}`, `users/{BENEFICIARY_UID}` docs exist in Firestore
 - [ ] `beneficiaries/{BENEFICIARY_UID}` doc exists with `lat`/`lng`
