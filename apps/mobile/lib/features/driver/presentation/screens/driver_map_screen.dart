@@ -202,6 +202,7 @@ class _DriverBottomNav extends StatelessWidget {
       selectedIndex: currentIndex,
       onDestinationSelected: (i) {
         if (i == 0) context.go('/driver');
+        if (i == 2) context.go('/driver/account');
       },
       destinations: const [
         NavigationDestination(

@@ -29,6 +29,9 @@ import 'package:saveameal/features/donor/presentation/screens/personal_informati
 import 'package:saveameal/features/donor/presentation/screens/scanner_screen.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/presentation/screens/claim_rescue_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/driver_account_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/driver_edit_profile_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/driver_vehicle_details_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/delivery_completed_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/driver_map_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/job_detail_screen.dart';
@@ -162,6 +165,20 @@ GoRouter router(Ref ref) {
           GoRoute(
             path: 'completed',
             builder: (context, state) => const DeliveryCompletedScreen(),
+          ),
+          GoRoute(
+            path: 'account',
+            builder: (context, state) => const DriverAccountScreen(),
+            routes: [
+              GoRoute(
+                path: 'personal-info',
+                builder: (context, state) => const DriverEditProfileScreen(),
+              ),
+              GoRoute(
+                path: 'vehicle-details',
+                builder: (context, state) => const DriverVehicleDetailsScreen(),
+              ),
+            ],
           ),
         ],
       ),
