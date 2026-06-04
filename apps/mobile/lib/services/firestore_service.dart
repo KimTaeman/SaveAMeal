@@ -37,20 +37,28 @@ class FirestoreService {
     });
   }
 
-  Future<void> createUser(UserModel user) {
-    final extra = user.role == UserRole.driver
-        ? {
-            'mealsSaved': 0,
-            'sproutPoints': 0,
-            'rank': 0,
-            'totalDrivers': 0,
-            'rankProgressCurrent': 0,
-            'rankProgressTarget': 100,
-            'currentRankName': 'Bronze',
-            'nextRankName': 'Silver',
-          }
-        : <String, dynamic>{};
-    return _db.collection(FirestoreConstants.users).doc(user.uid).set({
+  Future<void> createUser(UserModel user) async {
+    Map<String, dynamic> extra = {};
+    if (user.role == UserRole.driver) {
+      // Count existing drivers so the new driver gets a real totalDrivers value.
+      final snap = await _db
+          .collection(FirestoreConstants.users)
+          .where('role', isEqualTo: 'driver')
+          .count()
+          .get();
+      final driverCount = (snap.count ?? 0) + 1;
+      extra = {
+        'mealsSaved': 0,
+        'sproutPoints': 0,
+        'rank': driverCount,
+        'totalDrivers': driverCount,
+        'rankProgressCurrent': 0,
+        'rankProgressTarget': 100,
+        'currentRankName': 'Bronze',
+        'nextRankName': 'Silver',
+      };
+    }
+    await _db.collection(FirestoreConstants.users).doc(user.uid).set({
       ...user.toJson(),
       'createdAt': FieldValue.serverTimestamp(),
       ...extra,
