@@ -2,20 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/confirm_receipt_provider.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
 class ConfirmReceiptScreen extends ConsumerStatefulWidget {
-  const ConfirmReceiptScreen({
-    super.key,
-    required this.batchId,
-    required this.detail,
-  });
+  const ConfirmReceiptScreen({super.key, required this.batchId});
 
   final String batchId;
-  final IntakeRequestDetail detail;
 
   @override
   ConsumerState<ConfirmReceiptScreen> createState() =>
@@ -29,6 +24,10 @@ class _ConfirmReceiptScreenState extends ConsumerState<ConfirmReceiptScreen> {
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final detail = ref
+        .watch(intakeRequestDetailProvider(widget.batchId))
+        .asData
+        ?.value;
     final state = ref.watch(confirmReceiptProvider(widget.batchId));
     final notifier = ref.read(confirmReceiptProvider(widget.batchId).notifier);
 
@@ -120,10 +119,10 @@ class _ConfirmReceiptScreenState extends ConsumerState<ConfirmReceiptScreen> {
                           ),
                         ),
                         Text(
-                          widget.detail.createdAt != null
+                          detail?.createdAt != null
                               ? DateFormat(
                                   'MMM dd, yyyy',
-                                ).format(widget.detail.createdAt!)
+                                ).format(detail!.createdAt!)
                               : '—',
                           style: textTheme.bodyMedium,
                         ),

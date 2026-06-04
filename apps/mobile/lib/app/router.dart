@@ -7,7 +7,6 @@ import 'package:saveameal/features/auth/presentation/screens/login_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/register_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/role_router_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/welcome_screen.dart';
-import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_account_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_order_history_screen.dart';
@@ -201,13 +200,9 @@ GoRouter router(Ref ref) {
             routes: [
               GoRoute(
                 path: 'confirm',
-                builder: (context, state) {
-                  final detail = state.extra as IntakeRequestDetail;
-                  return ConfirmReceiptScreen(
-                    batchId: state.pathParameters['batchId']!,
-                    detail: detail,
-                  );
-                },
+                builder: (context, state) => ConfirmReceiptScreen(
+                  batchId: state.pathParameters['batchId']!,
+                ),
               ),
             ],
           ),

@@ -64,7 +64,13 @@ service cloud.firestore {
         (isBeneficiary() && resource.data.beneficiaryId == uid()
           && resource.data.status in ['delivered', 'closed']
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
-               ['status', 'rating', 'feedback', 'updatedAt']))
+               ['status', 'rating', 'feedback', 'updatedAt'])
+          && (!('rating' in request.resource.data.diff(resource.data).affectedKeys())
+              || (request.resource.data.rating is int
+                  && request.resource.data.rating >= 1
+                  && request.resource.data.rating <= 5))
+          && (!('feedback' in request.resource.data.diff(resource.data).affectedKeys())
+              || request.resource.data.feedback.size() <= 300))
       );
 
       allow delete: if false;
