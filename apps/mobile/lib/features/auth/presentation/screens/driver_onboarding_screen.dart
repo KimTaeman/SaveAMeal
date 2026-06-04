@@ -45,7 +45,7 @@ class _DriverOnboardingScreenState
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _loading = true);
     try {
       final profileAsync = ref.read(driverProfileProvider);
@@ -153,146 +153,171 @@ class _DriverOnboardingScreenState
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         );
 
-    return PopScope(
-      canPop: false,
-      child: Scaffold(
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.lg,
-              vertical: Spacing.xl,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Center(child: SaveAMealLogo(size: 48)),
-                const SizedBox(height: Spacing.md),
-                const OnboardingStepIndicator(totalSteps: 2, currentStep: 2),
-                const SizedBox(height: Spacing.lg),
-                Text(
-                  'Set Up Your Vehicle',
-                  style: tt.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: cs.onSurface,
-                  ),
-                  textAlign: TextAlign.center,
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.lg,
+            vertical: Spacing.xl,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: 'Back to registration',
+                  onPressed: () => _confirmBack(context),
                 ),
-                const SizedBox(height: Spacing.xs),
-                Text(
-                  'Add your vehicle details so donors can identify you.',
-                  style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-                  textAlign: TextAlign.center,
+              ),
+              const Center(child: SaveAMealLogo(size: 48)),
+              const SizedBox(height: Spacing.md),
+              const OnboardingStepIndicator(totalSteps: 2, currentStep: 2),
+              const SizedBox(height: Spacing.lg),
+              Text(
+                'Set Up Your Vehicle',
+                style: tt.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
                 ),
-                const SizedBox(height: Spacing.xl),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextFormField(
-                        controller: _makeModelController,
-                        decoration: fieldDecoration(labelText: 'Make & Model'),
-                        textInputAction: TextInputAction.next,
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Make & model is required'
-                            : null,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      TextFormField(
-                        controller: _licensePlateController,
-                        decoration: fieldDecoration(labelText: 'License Plate'),
-                        textCapitalization: TextCapitalization.characters,
-                        textInputAction: TextInputAction.next,
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'License plate is required'
-                            : null,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      TextFormField(
-                        controller: _vehicleColorController,
-                        decoration: fieldDecoration(labelText: 'Vehicle Color'),
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedCargoCapacity,
-                        decoration: fieldDecoration(
-                          labelText: 'Cargo Capacity',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: Spacing.xs),
+              Text(
+                'Add your vehicle details so donors can identify you.',
+                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: Spacing.xl),
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextFormField(
+                      controller: _makeModelController,
+                      decoration: fieldDecoration(labelText: 'Make & Model'),
+                      textInputAction: TextInputAction.next,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Make & model is required'
+                          : null,
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    TextFormField(
+                      controller: _licensePlateController,
+                      decoration: fieldDecoration(labelText: 'License Plate'),
+                      textCapitalization: TextCapitalization.characters,
+                      textInputAction: TextInputAction.next,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'License plate is required'
+                          : null,
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    TextFormField(
+                      controller: _vehicleColorController,
+                      decoration: fieldDecoration(labelText: 'Vehicle Color'),
+                      textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedCargoCapacity,
+                      decoration: fieldDecoration(labelText: 'Cargo Capacity'),
+                      hint: Text(
+                        'Select capacity',
+                        style: tt.bodyMedium?.copyWith(
+                          color: cs.onSurfaceVariant,
                         ),
-                        hint: Text(
-                          'Select capacity',
-                          style: tt.bodyMedium?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
+                      ),
+                      items: _cargoOptions
+                          .map(
+                            (o) => DropdownMenuItem(value: o, child: Text(o)),
+                          )
+                          .toList(),
+                      onChanged: (val) =>
+                          setState(() => _selectedCargoCapacity = val),
+                      validator: (v) =>
+                          v == null ? 'Cargo capacity is required' : null,
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    SwitchListTile(
+                      title: Text(
+                        'Refrigerated Storage',
+                        style: tt.bodyLarge?.copyWith(color: cs.onSurface),
+                      ),
+                      subtitle: Text(
+                        'Required for cold chain rescues',
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
                         ),
-                        items: _cargoOptions
-                            .map(
-                              (o) => DropdownMenuItem(value: o, child: Text(o)),
+                      ),
+                      value: _refrigeratedStorage,
+                      onChanged: (val) =>
+                          setState(() => _refrigeratedStorage = val),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    TextFormField(
+                      controller: _insuranceController,
+                      decoration: fieldDecoration(
+                        labelText: 'Insurance Policy Number',
+                      ),
+                      textInputAction: TextInputAction.done,
+                    ),
+                    const SizedBox(height: Spacing.xl),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 52),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _loading ? null : _submit,
+                      child: _loading
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: cs.onPrimary,
+                              ),
                             )
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedCargoCapacity = val),
-                        validator: (v) =>
-                            v == null ? 'Cargo capacity is required' : null,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      SwitchListTile(
-                        title: Text(
-                          'Refrigerated Storage',
-                          style: tt.bodyLarge?.copyWith(color: cs.onSurface),
-                        ),
-                        subtitle: Text(
-                          'Required for cold chain rescues',
-                          style: tt.bodySmall?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
-                        value: _refrigeratedStorage,
-                        onChanged: (val) =>
-                            setState(() => _refrigeratedStorage = val),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      TextFormField(
-                        controller: _insuranceController,
-                        decoration: fieldDecoration(
-                          labelText: 'Insurance Policy Number',
-                        ),
-                        textInputAction: TextInputAction.done,
-                      ),
-                      const SizedBox(height: Spacing.xl),
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 52),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: _loading ? null : _submit,
-                        child: _loading
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: cs.onPrimary,
-                                ),
-                              )
-                            : const Text('Complete Setup'),
-                      ),
-                      const SizedBox(height: Spacing.sm),
-                      TextButton(
-                        onPressed: () => context.go('/driver'),
-                        child: const Text('Skip for now'),
-                      ),
-                    ],
-                  ),
+                          : const Text('Complete Setup'),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _confirmBack(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Go back to registration?'),
+        content: const Text(
+          'You will be signed out and returned to the registration page.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Go Back'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ref.read(signOutUsecaseProvider).call();
+      if (!context.mounted) return;
+      context.go('/register');
+    }
   }
 }
