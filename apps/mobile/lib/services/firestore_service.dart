@@ -380,6 +380,26 @@ class FirestoreService {
   Future<void> deleteDriverLocation(String driverId) =>
       _db.collection(FirestoreConstants.driverLocations).doc(driverId).delete();
 
+  Stream<UserModel?> watchUser(String uid) => _db
+      .collection(FirestoreConstants.users)
+      .doc(uid)
+      .snapshots()
+      .map(
+        (ds) => ds.exists && ds.data() != null
+            ? UserModel.fromJson(ds.data()!)
+            : null,
+      );
+
+  Stream<BeneficiaryModel?> watchBeneficiaryDoc(String uid) => _db
+      .collection(FirestoreConstants.beneficiaries)
+      .doc(uid)
+      .snapshots()
+      .map(
+        (ds) => ds.exists && ds.data() != null
+            ? BeneficiaryModel.fromJson({...ds.data()!, 'id': ds.id})
+            : null,
+      );
+
   Future<BeneficiaryModel?> getBeneficiary(String beneficiaryId) async {
     final doc = await _db
         .collection(FirestoreConstants.beneficiaries)
@@ -388,4 +408,21 @@ class FirestoreService {
     if (!doc.exists || doc.data() == null) return null;
     return BeneficiaryModel.fromJson({...doc.data()!, 'id': doc.id});
   }
+
+  Future<Map<String, dynamic>?> getBeneficiaryMap(String beneficiaryId) async {
+    final doc = await _db
+        .collection(FirestoreConstants.beneficiaries)
+        .doc(beneficiaryId)
+        .get();
+    if (!doc.exists || doc.data() == null) return null;
+    return {...doc.data()!, 'id': doc.id};
+  }
+
+  Future<void> updateBeneficiary(
+    String beneficiaryId,
+    Map<String, dynamic> data,
+  ) => _db
+      .collection(FirestoreConstants.beneficiaries)
+      .doc(beneficiaryId)
+      .set(data, SetOptions(merge: true));
 }

@@ -6,6 +6,7 @@ import 'package:saveameal/features/auth/presentation/providers/auth_provider.dar
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/active_delivery_card.dart';
+import 'package:saveameal/features/beneficiary/presentation/widgets/beneficiary_bottom_nav.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/how_pausing_works_section.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/intake_status_toggle.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/visibility_inactive_card.dart';
@@ -199,36 +200,20 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: 0,
+      bottomNavigationBar: BeneficiaryBottomNav(
+        currentIndex: 0,
         onDestinationSelected: (index) {
           switch (index) {
             case 0:
               context.go('/beneficiary');
+            case 1:
+              context.go('/beneficiary');
+            case 2:
+              context.go('/beneficiary');
+            case 3:
+              context.go('/beneficiary/account');
           }
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.local_shipping_outlined),
-            selectedIcon: Icon(Icons.local_shipping),
-            label: 'Track',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.favorite_outline),
-            selectedIcon: Icon(Icons.favorite),
-            label: 'Impact',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Account',
-          ),
-        ],
       ),
     );
   }
