@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/donor/domain/entities/user_profile_update.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
+import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
@@ -85,6 +86,21 @@ class _PersonalInformationScreenState
             onPressed: () => context.push('/notifications'),
           ),
         ],
+      ),
+      bottomNavigationBar: DonorBottomNav(
+        currentIndex: 3,
+        onDestinationSelected: (index) {
+          switch (index) {
+            case 0:
+              context.go('/donor');
+            case 1:
+              context.go('/donor/impact');
+            case 2:
+              context.go('/donor/batches');
+            case 3:
+              context.go('/donor/account');
+          }
+        },
       ),
       body: Form(
         key: _formKey,
@@ -221,7 +237,7 @@ class _PersonalInformationScreenState
                     TextFormField(
                       controller: _locationController,
                       decoration: InputDecoration(
-                        labelText: 'Primary Location',
+                        hintText: 'City, Neighborhood, or Zip',
                         border: const OutlineInputBorder(),
                         suffixIcon: _gettingLocation
                             ? const Padding(
@@ -296,7 +312,14 @@ class _PersonalInformationScreenState
   Future<void> _pickImage() async {
     try {
       final picker = ImagePicker();
-      final photo = await picker.pickImage(source: ImageSource.gallery);
+      // Resize and compress before upload — phone gallery photos are often
+      // 8–20 MB which would exceed Firebase Storage size limits.
+      final photo = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
       if (photo == null) return;
 
       final authUser = ref.read(authStateProvider).asData?.value;
@@ -311,6 +334,8 @@ class _PersonalInformationScreenState
       await ref
           .read(updateUserUsecaseProvider)
           .call(authUser.uid, UserProfileUpdate(photoUrl: downloadUrl));
+      // Refresh so the account screen shows the new avatar immediately.
+      ref.invalidate(currentUserProvider);
 
       if (!mounted) return;
       setState(() {
@@ -321,13 +346,7 @@ class _PersonalInformationScreenState
       if (!mounted) return;
       setState(() => _uploadingPhoto = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e is FirebaseException
-                ? 'Upload failed. Please try again.'
-                : 'Something went wrong. Please try again.',
-          ),
-        ),
+        SnackBar(content: Text(_errorMessage('Photo upload failed', e))),
       );
     }
   }
@@ -343,18 +362,17 @@ class _PersonalInformationScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e is FirebaseException
-                  ? 'Upload failed. Please try again.'
-                  : 'Something went wrong. Please try again.',
-            ),
-          ),
+          SnackBar(content: Text(_errorMessage('Could not get location', e))),
         );
       }
     } finally {
       if (mounted) setState(() => _gettingLocation = false);
     }
+  }
+
+  String _errorMessage(String prefix, Object e) {
+    if (e is FirebaseException) return '$prefix — ${e.code}';
+    return '$prefix. Please try again.';
   }
 
   Future<void> _save() async {
@@ -383,15 +401,9 @@ class _PersonalInformationScreenState
       context.pop();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e is FirebaseException
-                ? 'Upload failed. Please try again.'
-                : 'Something went wrong. Please try again.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_errorMessage('Save failed', e))));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

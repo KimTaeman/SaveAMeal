@@ -40,6 +40,8 @@ void main() async {
     Hive.openBox<dynamic>('donor_batches'),
     Hive.openBox<dynamic>('donor_metrics'),
     Hive.openBox<dynamic>('driver_profile'),
+    Hive.openBox<String>('delivery_history_cache'),
+    Hive.openBox<dynamic>('notification_prefs'),
   ]);
 
   if (!kDebugMode) {

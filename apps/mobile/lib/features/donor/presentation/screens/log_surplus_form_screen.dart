@@ -11,6 +11,7 @@ import 'package:saveameal/features/donor/presentation/providers/batch_session_pr
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/donor_brand_title.dart';
 
 class LogSurplusFormScreen extends ConsumerStatefulWidget {
   const LogSurplusFormScreen({
@@ -104,19 +105,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.pop()),
         titleSpacing: 0,
-        title: Row(
-          children: [
-            Image.asset('assets/images/logo.png', height: 28),
-            const SizedBox(width: Spacing.xs),
-            Text(
-              'SaveAMeal',
-              style: textTheme.titleLarge?.copyWith(
-                color: cs.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+        title: const DonorBrandTitle(),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
@@ -169,7 +158,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
               validator: (v) => v == null ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.md),
-            _fieldLabel(context, 'Quantity (kg)'),
+            _fieldLabel(context, 'Quantity (kg/portions)'),
             TextFormField(
               controller: _quantityController,
               keyboardType: const TextInputType.numberWithOptions(
@@ -243,13 +232,14 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
             _fieldLabel(context, 'Photo (optional)'),
             _PhotoPicker(photo: _photo, onTap: _pickPhoto),
             const SizedBox(height: Spacing.xl),
-            FilledButton(
+            FilledButton.icon(
               onPressed: _submit,
+              icon: const Icon(Icons.check_circle_outline),
+              label: const Text('Add to Batch'),
               style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 52),
                 shape: const StadiumBorder(),
               ),
-              child: const Text('Add to Batch'),
             ),
             const SizedBox(height: Spacing.md),
           ],

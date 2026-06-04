@@ -11,6 +11,9 @@ sealed class BeneficiaryModel with _$BeneficiaryModel {
     String? address,
     double? lat,
     double? lng,
+    String? orgType,
+    String? contactEmail,
+    String? missionStatement,
   }) = _BeneficiaryModel;
 
   factory BeneficiaryModel.fromJson(Map<String, dynamic> json) =>

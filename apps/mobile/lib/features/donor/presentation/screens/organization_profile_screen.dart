@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/donor/domain/entities/user_profile_update.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
+import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
@@ -107,8 +108,19 @@ class _OrganizationProfileScreenState
     });
   }
 
+  String _errorMessage(String prefix, Object e) {
+    if (e is FirebaseException) return '$prefix — ${e.code}';
+    return '$prefix. Please try again.';
+  }
+
   Future<void> _pickBanner(String uid) async {
-    final photo = await ImagePicker().pickImage(source: ImageSource.gallery);
+    // Banner is wide; cap at 1200 × 400 and compress to stay under 10 MB limit.
+    final photo = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1200,
+      maxHeight: 400,
+      imageQuality: 85,
+    );
     if (photo == null) return;
     setState(() => _uploadingBanner = true);
     try {
@@ -122,13 +134,7 @@ class _OrganizationProfileScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e is FirebaseException
-                  ? 'Upload failed. Please try again.'
-                  : 'Something went wrong. Please try again.',
-            ),
-          ),
+          SnackBar(content: Text(_errorMessage('Banner upload failed', e))),
         );
       }
     } finally {
@@ -168,13 +174,7 @@ class _OrganizationProfileScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e is FirebaseException
-                  ? 'Upload failed. Please try again.'
-                  : 'Something went wrong. Please try again.',
-            ),
-          ),
+          SnackBar(content: Text(_errorMessage('Save failed', e))),
         );
       }
     } finally {
@@ -242,6 +242,21 @@ class _OrganizationProfileScreenState
             onPressed: () => context.push('/notifications'),
           ),
         ],
+      ),
+      bottomNavigationBar: DonorBottomNav(
+        currentIndex: 3,
+        onDestinationSelected: (index) {
+          switch (index) {
+            case 0:
+              context.go('/donor');
+            case 1:
+              context.go('/donor/impact');
+            case 2:
+              context.go('/donor/batches');
+            case 3:
+              context.go('/donor/account');
+          }
+        },
       ),
       body: Form(
         key: _formKey,

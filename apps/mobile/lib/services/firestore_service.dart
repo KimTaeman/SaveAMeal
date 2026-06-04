@@ -110,6 +110,33 @@ class FirestoreService {
             .toList(),
       );
 
+  /// Returns the last 3 completed deliveries for a beneficiary, sorted by
+  /// deliveredAt descending (client-side, to avoid a composite Firestore index).
+  Stream<List<BatchModel>> watchRecentDeliveriesForBeneficiary(
+    String beneficiaryId,
+  ) => _db
+      .collection(FirestoreConstants.batches)
+      .where('beneficiaryId', isEqualTo: beneficiaryId)
+      .where('status', whereIn: ['delivered', 'closed'])
+      .limit(20)
+      .snapshots()
+      .map((qs) {
+        final docs =
+            qs.docs
+                .map(
+                  (d) => BatchModel.fromJson(
+                    _normalise({...d.data(), 'id': d.id}),
+                  ),
+                )
+                .toList()
+              ..sort((a, b) {
+                final ta = a.deliveredAt ?? a.updatedAt ?? DateTime(0);
+                final tb = b.deliveredAt ?? b.updatedAt ?? DateTime(0);
+                return tb.compareTo(ta);
+              });
+        return docs.take(3).toList();
+      });
+
   // Combines two live Firestore queries: all open (pending) batches system-wide
   // plus this volunteer's own claimed/pickedUp batches. A StreamController is
   // used because Firestore does not support cross-field OR queries natively and
@@ -402,6 +429,26 @@ class FirestoreService {
   Future<void> deleteDriverLocation(String driverId) =>
       _db.collection(FirestoreConstants.driverLocations).doc(driverId).delete();
 
+  Stream<UserModel?> watchUser(String uid) => _db
+      .collection(FirestoreConstants.users)
+      .doc(uid)
+      .snapshots()
+      .map(
+        (ds) => ds.exists && ds.data() != null
+            ? UserModel.fromJson(ds.data()!)
+            : null,
+      );
+
+  Stream<BeneficiaryModel?> watchBeneficiaryDoc(String uid) => _db
+      .collection(FirestoreConstants.beneficiaries)
+      .doc(uid)
+      .snapshots()
+      .map(
+        (ds) => ds.exists && ds.data() != null
+            ? BeneficiaryModel.fromJson({...ds.data()!, 'id': ds.id})
+            : null,
+      );
+
   Future<BeneficiaryModel?> getBeneficiary(String beneficiaryId) async {
     final doc = await _db
         .collection(FirestoreConstants.beneficiaries)
@@ -410,4 +457,59 @@ class FirestoreService {
     if (!doc.exists || doc.data() == null) return null;
     return BeneficiaryModel.fromJson({...doc.data()!, 'id': doc.id});
   }
+
+  /// Fetches a single page of delivered/closed batches for [beneficiaryId].
+  /// Uses cursor-based pagination via startAfterDocument. Results are sorted
+  /// by deliveredAt descending client-side (in FirestoreIntakeRepository) to
+  /// avoid requiring a composite Firestore index on (beneficiaryId, status,
+  /// deliveredAt) — the same no-orderBy pattern used by
+  /// watchRecentDeliveriesForBeneficiary.
+  Future<(List<BatchModel>, Object? nextCursor)> fetchDeliveryHistoryPage({
+    required String beneficiaryId,
+    required int pageSize,
+    Object? cursor,
+  }) async {
+    Query<Map<String, dynamic>> query = _db
+        .collection(FirestoreConstants.batches)
+        .where('beneficiaryId', isEqualTo: beneficiaryId)
+        .where('status', whereIn: ['delivered', 'closed'])
+        .limit(pageSize);
+
+    if (cursor != null) {
+      if (cursor is! DocumentSnapshot) {
+        throw ArgumentError(
+          'cursor must be a DocumentSnapshot, got ${cursor.runtimeType}',
+        );
+      }
+      query = query.startAfterDocument(cursor);
+    }
+
+    final snapshot = await query.get();
+    final nextCursor = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+    final models = snapshot.docs
+        .map(
+          (doc) =>
+              BatchModel.fromJson(_normalise({...doc.data(), 'id': doc.id})),
+        )
+        .toList();
+    return (models, nextCursor);
+  }
+
+  Future<Map<String, dynamic>?> getBeneficiaryMap(String beneficiaryId) async {
+    final doc = await _db
+        .collection(FirestoreConstants.beneficiaries)
+        .doc(beneficiaryId)
+        .get();
+    if (!doc.exists || doc.data() == null) return null;
+    return {...doc.data()!, 'id': doc.id};
+  }
+
+  Future<void> updateBeneficiary(
+    String beneficiaryId,
+    Map<String, dynamic> data,
+  ) => _db
+      .collection(FirestoreConstants.beneficiaries)
+      .doc(beneficiaryId)
+      .set(data, SetOptions(merge: true));
+  FirebaseFirestore get db => _db;
 }

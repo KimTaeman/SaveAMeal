@@ -13,7 +13,9 @@ class AuthRepositoryImpl implements AuthRepository {
       _datasource.watchAuthState().asyncMap((firebaseUser) async {
         if (firebaseUser == null) return null;
         final model = await _datasource.getUser(firebaseUser.uid);
-        return model == null ? null : _toEntity(model);
+        return model == null
+            ? null
+            : _toEntity(model, createdAt: firebaseUser.metadata.creationTime);
       });
 
   @override
@@ -43,11 +45,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> signOut() => _datasource.signOut();
 
-  AppUser _toEntity(m.UserModel model) => AppUser(
+  AppUser _toEntity(m.UserModel model, {DateTime? createdAt}) => AppUser(
     uid: model.uid,
     name: model.name,
     email: model.email,
     role: _toDomainRole(model.role),
+    createdAt: createdAt,
   );
 
   UserRole _toDomainRole(m.UserRole r) => switch (r) {

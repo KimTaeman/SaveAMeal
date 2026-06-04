@@ -7,8 +7,14 @@ import 'package:saveameal/features/auth/presentation/screens/login_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/register_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/role_router_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/welcome_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_account_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_order_history_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_org_profile_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_personal_information_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/delivery_detail_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/delivery_history_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/tracking_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_detail_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
@@ -178,12 +184,30 @@ GoRouter router(Ref ref) {
       ),
       GoRoute(
         path: '/beneficiary',
+        redirect: (context, state) {
+          final user = ref.read(authStateProvider).asData?.value;
+          if (user == null) return '/login';
+          if (user.role != UserRole.beneficiary) return '/role-router';
+          return null;
+        },
         builder: (context, state) => const BeneficiaryHomeScreen(),
         routes: [
           GoRoute(
             path: 'delivery/:batchId',
             builder: (context, state) =>
                 DeliveryDetailScreen(batchId: state.pathParameters['batchId']!),
+          ),
+          GoRoute(
+            path: 'history',
+            builder: (context, state) {
+              final currentUser = ref.read(authStateProvider).asData?.value;
+              if (currentUser == null) return const BeneficiaryHomeScreen();
+              return DeliveryHistoryScreen(beneficiaryId: currentUser.uid);
+            },
+          ),
+          GoRoute(
+            path: 'impact',
+            builder: (context, state) => const BeneficiaryImpactScreen(),
           ),
           GoRoute(
             path: 'tracking',
@@ -195,6 +219,27 @@ GoRouter router(Ref ref) {
                 beneficiaryId: extra['beneficiaryId']!,
               );
             },
+          ),
+          GoRoute(
+            path: 'account',
+            builder: (context, state) => const BeneficiaryAccountScreen(),
+            routes: [
+              GoRoute(
+                path: 'personal',
+                builder: (context, state) =>
+                    const BeneficiaryPersonalInformationScreen(),
+              ),
+              GoRoute(
+                path: 'org',
+                builder: (context, state) =>
+                    const BeneficiaryOrgProfileScreen(),
+              ),
+              GoRoute(
+                path: 'orders',
+                builder: (context, state) =>
+                    const BeneficiaryOrderHistoryScreen(),
+              ),
+            ],
           ),
         ],
       ),
