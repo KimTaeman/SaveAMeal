@@ -185,7 +185,7 @@ void main() {
 
       // bakery (500) and produce (1000) are non-zero; dairy (0) must not render
       expect(find.text('Bakery'), findsOneWidget);
-      expect(find.text('Produce'), findsOneWidget);
+      expect(find.text('Fruits & Veggies'), findsOneWidget);
       expect(find.text('Dairy'), findsNothing);
     });
 
@@ -232,7 +232,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Bakery'), findsNothing);
-      expect(find.text('Produce'), findsNothing);
+      expect(find.text('Fruits & Veggies'), findsNothing);
     });
 
     // 8. Error state — offline banner shown with correct copy
