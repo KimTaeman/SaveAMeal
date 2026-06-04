@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 
-class BeneficiaryBottomNav extends StatelessWidget {
+class BeneficiaryBottomNav extends ConsumerWidget {
   const BeneficiaryBottomNav({
     required this.currentIndex,
     this.onDestinationSelected,
@@ -12,7 +15,11 @@ class BeneficiaryBottomNav extends StatelessWidget {
   final void Function(int)? onDestinationSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final uid = ref.watch(authStateProvider).asData?.value?.uid ?? '';
+    final deliveries =
+        ref.watch(activeDeliveriesProvider(uid)).asData?.value ?? const [];
+
     return NavigationBar(
       selectedIndex: currentIndex,
       onDestinationSelected: (index) {
@@ -22,6 +29,14 @@ class BeneficiaryBottomNav extends StatelessWidget {
           switch (index) {
             case 0:
               context.go('/beneficiary');
+            case 1:
+              if (deliveries.isNotEmpty) {
+                context.go('/beneficiary/delivery/${deliveries.first.batchId}');
+              } else {
+                context.go('/beneficiary/history');
+              }
+            case 2:
+              context.go('/beneficiary/impact');
             case 3:
               context.go('/beneficiary/account');
           }

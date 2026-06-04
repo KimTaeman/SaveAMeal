@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/delivery_history_notifier.dart';
+import 'package:saveameal/features/beneficiary/presentation/widgets/beneficiary_bottom_nav.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/delivery_history_row.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/order_history_stats_bar.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
@@ -33,19 +34,23 @@ class _DeliveryHistoryScreenState extends ConsumerState<DeliveryHistoryScreen> {
       loading: () => Scaffold(
         appBar: _buildAppBar(context),
         body: const Center(child: CircularProgressIndicator()),
+        bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 1),
       ),
       error: (err, st) => Scaffold(
         appBar: _buildAppBar(context),
         body: _ErrorBody(onRetry: notifier.refresh),
+        bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 1),
       ),
       data: (state) {
         if (state.items.isEmpty && !state.hasMore) {
           return Scaffold(
             appBar: _buildAppBar(context),
             body: const _EmptyBody(),
+            bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 1),
           );
         }
         return Scaffold(
+          bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 1),
           body: RefreshIndicator(
             onRefresh: notifier.refresh,
             child: CustomScrollView(

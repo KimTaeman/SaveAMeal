@@ -200,19 +200,7 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BeneficiaryBottomNav(
-        currentIndex: 0,
-        onDestinationSelected: (index) {
-          switch (index) {
-            case 0 || 1:
-              context.go('/beneficiary');
-            case 2:
-              context.go('/beneficiary/impact');
-            case 3:
-              context.go('/beneficiary/account');
-          }
-        },
-      ),
+      bottomNavigationBar: BeneficiaryBottomNav(currentIndex: 0),
     );
   }
 }
