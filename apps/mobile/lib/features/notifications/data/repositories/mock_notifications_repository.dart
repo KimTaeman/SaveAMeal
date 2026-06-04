@@ -58,7 +58,10 @@ class MockNotificationsRepository implements NotificationsRepository {
   final _controller = StreamController<List<AppNotification>>.broadcast();
 
   @override
-  Stream<List<AppNotification>> watchAll(String uid) => _controller.stream;
+  Stream<List<AppNotification>> watchAll(String uid) async* {
+    yield List.unmodifiable(_items);
+    yield* _controller.stream;
+  }
 
   @override
   Future<void> markRead(String uid, String id) async {
