@@ -18,7 +18,7 @@ class ImpactCategoryRow extends StatelessWidget {
       case FoodCategory.bakery:
         return 'Bakery';
       case FoodCategory.produce:
-        return 'Produce';
+        return 'Fruits & Veggies';
       case FoodCategory.dairy:
         return 'Dairy';
       case FoodCategory.meat:
