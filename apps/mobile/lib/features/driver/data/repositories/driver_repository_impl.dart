@@ -48,9 +48,8 @@ class DriverRepositoryImpl implements DriverRepository {
     beneficiaryAddress: m.beneficiaryAddress ?? '',
     beneficiaryName: m.beneficiaryName ?? '',
     totalPortions: m.items.length,
-    // lat/lng placeholder until geocoding is added to donor log-batch flow
-    lat: 13.7563,
-    lng: 100.5018,
+    lat: m.pickupLat != 0.0 ? m.pickupLat : 13.7563,
+    lng: m.pickupLng != 0.0 ? m.pickupLng : 100.5018,
     foodCategory: m.items.isNotEmpty ? m.items.first.category : 'local_dining',
     pickupWindowStart: m.pickupWindowStart,
     pickupWindowEnd: m.pickupWindowEnd,

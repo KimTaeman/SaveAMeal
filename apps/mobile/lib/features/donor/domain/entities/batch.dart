@@ -12,6 +12,8 @@ class Batch {
     this.driverId,
     this.volunteerName,
     this.beneficiaryId,
+    this.pickupLat = 0.0,
+    this.pickupLng = 0.0,
     this.photoUrl,
     this.qrCode,
     this.rating,
@@ -28,6 +30,8 @@ class Batch {
   final String? driverId;
   final String? volunteerName;
   final String? beneficiaryId;
+  final double pickupLat;
+  final double pickupLng;
   final String? photoUrl;
   final String? qrCode;
   final int? rating;

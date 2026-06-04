@@ -35,6 +35,9 @@ sealed class BatchModel with _$BatchModel {
     String? photoUrl,
     String? pickupPhotoUrl,
     String? qrCode,
+    // Pickup coordinates (set at batch creation from donor profile)
+    @Default(0.0) double pickupLat,
+    @Default(0.0) double pickupLng,
     // Delivery outcome
     String? deliveryNotes,
     int? rating,

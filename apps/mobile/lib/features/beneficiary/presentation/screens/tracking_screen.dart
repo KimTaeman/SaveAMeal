@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:saveameal/core/models/driver_location_model.dart';
+import 'package:saveameal/core/constants/maps_constants.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
@@ -119,6 +120,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
         children: [
           Expanded(
             child: GoogleMap(
+              mapId: MapsConstants.mapId,
               initialCameraPosition: CameraPosition(
                 target: _cameraTarget(driverLoc),
                 zoom: 14,

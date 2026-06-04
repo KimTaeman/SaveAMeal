@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:saveameal/core/models/driver_location_model.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
+import 'package:saveameal/core/constants/maps_constants.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
@@ -55,6 +56,7 @@ class DriverInfoCard extends ConsumerWidget {
                     // Map or placeholder
                     if (detail.volunteerId != null && driverLoc != null)
                       GoogleMap(
+                        mapId: MapsConstants.mapId,
                         initialCameraPosition: CameraPosition(
                           target: LatLng(driverLoc.lat, driverLoc.lng),
                           zoom: 14,

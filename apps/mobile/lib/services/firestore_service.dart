@@ -327,8 +327,14 @@ class FirestoreService {
 
     final driverId = snap.data()!['driverId'] as String?;
     if (driverId != null && driverId.isNotEmpty) {
+      final items = (snap.data()!['items'] as List?) ?? [];
+      final meals = items.isEmpty ? 10 : items.length * 10;
       await _db.collection(FirestoreConstants.users).doc(driverId).update({
         'totalPickups': FieldValue.increment(1),
+        'mealsSaved': FieldValue.increment(meals),
+        'sproutPoints': FieldValue.increment(meals),
+        'points': FieldValue.increment(meals),
+        'rankProgressCurrent': FieldValue.increment(meals),
       });
     }
   }
