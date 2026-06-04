@@ -106,7 +106,7 @@ service cloud.firestore {
     // transaction). Any signed-in driver may read and write so the ranking
     // is rebuilt in real time without a Cloud Function.
     match /leaderboard/{period} {
-      allow read:  if isSignedIn() && isDriver();
+      allow read:  if isSignedIn();
       allow write: if isSignedIn() && isDriver();
     }
   }
