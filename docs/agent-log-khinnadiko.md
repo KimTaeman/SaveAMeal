@@ -193,3 +193,23 @@ Outcome: Fully implemented SPEC-0007. All layers complete: domain (category fiel
 Decisions: (1) refresh() re-runs fetch logic inline instead of invalidateSelf() — avoids Riverpod 3.x autoDispose ref-invalidation after async gaps. (2) intl: ^0.19.0 added as explicit pubspec dep — not transitive in this project. (3) AppUser.name used as orgName in subtitle (entity has no organisationName field — OQ). (4) withValues(alpha:) used instead of deprecated withOpacity.
 Handoff: Submit PR for review. Reviewer must verify: domain layer has no Flutter/Firestore imports; Firestore composite index deployed before live; OQ-4 (currentUser.uid == batch.beneficiaryId) confirmed with backend team; intl dep addition approved per CLAUDE.md new-dep rule.
 Review: PENDING
+Files:
+  ? apps/mobile/lib/features/beneficiary/domain/usecases/confirm_receipt_usecase.dart (untracked)
+  ? apps/mobile/lib/features/beneficiary/presentation/providers/confirm_receipt_provider.dart (untracked)
+  ? apps/mobile/test/unit/features/beneficiary/confirm_receipt_notifier_test.dart (untracked)
+  ? apps/mobile/test/unit/features/beneficiary/confirm_receipt_usecase_test.dart (untracked)
+  ? apps/mobile/test/widget/features/beneficiary/confirm_receipt_screen_test.dart (untracked)
+
+---
+
+Date: 2026-06-04 00:00
+Member: khinnadiko
+Agent: flutter-engineer
+Task: Implement SPEC-0008 Confirm Receipt feature end-to-end
+Prompt: Implement the "Confirm Receipt" feature (SPEC-0008) in the SaveAMeal Flutter app. Full spec at tech-specs/0008-confirm-receipt.md. Build all layers: domain, data, presentation, routing, and tests.
+
+Outcome: Fully implemented SPEC-0008. All layers complete: IntakeRepository.confirmReceipt added, ConfirmReceiptUseCase implemented, FirestoreService.confirmReceipt added, ConfirmReceiptNotifier with setRating/setFeedback/submit implemented, ConfirmReceiptScreen (replacing RateDeliveryScreen stub), DeliveryDetailScreen updated with _ConfirmReceiptButton and _ConfirmationBanner, router updated with delivery/:batchId/confirm route. IntakeStatus enum extended with open/delivered/closed values and mapper updated. 185 tests pass, flutter analyze clean, dart format applied.
+Decisions: Extended IntakeStatus enum with open/delivered/closed instead of reusing collected — necessary for the UI to distinguish between delivered (show CTA) and closed (show banner). Updated intake_request_detail_mapper_test.dart to match new mappings. Used _waitForAuth helper in notifier tests to keep autoDispose auth provider alive during async submit calls. Kept confirmReceiptProvider (not confirmReceiptNotifierProvider) as the generated provider name per build_runner output.
+Handoff: Ready for QA/architect review. The mapper test update (delivered→IntakeStatus.delivered, closed→IntakeStatus.closed) is a breaking change from the previous mapping — check that no other feature depends on delivered/closed mapping to IntakeStatus.collected.
+Review: PENDING
+

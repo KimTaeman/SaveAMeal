@@ -7,6 +7,7 @@ import 'package:saveameal/features/auth/presentation/screens/login_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/register_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/role_router_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/welcome_screen.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_account_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_order_history_screen.dart';
@@ -15,6 +16,7 @@ import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/delivery_detail_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/delivery_history_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/rate_delivery_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/tracking_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_detail_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
@@ -196,6 +198,18 @@ GoRouter router(Ref ref) {
             path: 'delivery/:batchId',
             builder: (context, state) =>
                 DeliveryDetailScreen(batchId: state.pathParameters['batchId']!),
+            routes: [
+              GoRoute(
+                path: 'confirm',
+                builder: (context, state) {
+                  final detail = state.extra as IntakeRequestDetail;
+                  return ConfirmReceiptScreen(
+                    batchId: state.pathParameters['batchId']!,
+                    detail: detail,
+                  );
+                },
+              ),
+            ],
           ),
           GoRoute(
             path: 'history',

@@ -10,6 +10,7 @@ import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.d
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/delivery_detail_screen.dart';
 import 'package:saveameal/shared/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
 
 final _dispatched = IntakeRequestDetail(
   batchId: 'b_001',
@@ -37,6 +38,38 @@ final _cancelled = IntakeRequestDetail(
   weightKg: 5.0,
   items: [IntakeItem(name: 'pork', category: 'meat', weightKg: 5.0)],
   cancellationReason: 'Driver unavailable',
+);
+
+final _delivered = IntakeRequestDetail(
+  batchId: 'b_001',
+  beneficiaryId: 'ben_001',
+  donorId: 'donor_001',
+  donorName: 'Central Bakery',
+  status: IntakeStatus.delivered,
+  portions: 2,
+  weightKg: 10.0,
+  items: [IntakeItem(name: 'Croissants', category: 'bread', weightKg: 5.0)],
+);
+
+final _closed = IntakeRequestDetail(
+  batchId: 'b_001',
+  beneficiaryId: 'ben_001',
+  donorId: 'donor_001',
+  donorName: 'Central Bakery',
+  status: IntakeStatus.closed,
+  portions: 2,
+  weightKg: 10.0,
+  items: [IntakeItem(name: 'Croissants', category: 'bread', weightKg: 5.0)],
+);
+
+final _open = IntakeRequestDetail(
+  batchId: 'b_001',
+  beneficiaryId: 'ben_001',
+  donorId: 'donor_001',
+  status: IntakeStatus.open,
+  portions: 1,
+  weightKg: 5.0,
+  items: [IntakeItem(name: 'Rice', category: 'grain', weightKg: 5.0)],
 );
 
 /// Builds the screen with provider overrides to avoid real Firestore/Maps calls.
@@ -120,5 +153,149 @@ void main() {
       expect(find.text('Delivery not found'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
+
+    // ── Confirm Receipt feature tests ─────────────────────────────────────
+
+    // (1) "Confirm Receipt" button is visible when status == delivered
+    testWidgets(
+      '"Confirm Receipt" button is visible when status == delivered',
+      (tester) async {
+        await tester.pumpWidget(
+          _buildScreen('b_001', Stream.value(_delivered)),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Confirm Receipt'), findsOneWidget);
+      },
+    );
+
+    // (2) button is absent when status == open
+    testWidgets('"Confirm Receipt" button is absent when status == open', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildScreen('b_001', Stream.value(_open)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Confirm Receipt'), findsNothing);
+    });
+
+    // (3) button is absent when status == dispatched
+    testWidgets(
+      '"Confirm Receipt" button is absent when status == dispatched',
+      (tester) async {
+        await tester.pumpWidget(
+          _buildScreen(
+            'b_001',
+            Stream.value(_dispatched),
+            driverId: 'driver_001',
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Confirm Receipt'), findsNothing);
+      },
+    );
+
+    // (4) button is absent when status == cancelled
+    testWidgets('"Confirm Receipt" button is absent when status == cancelled', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildScreen('b_002', Stream.value(_cancelled)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Confirm Receipt'), findsNothing);
+    });
+
+    // (5) button is absent when status == closed
+    testWidgets('"Confirm Receipt" button is absent when status == closed', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildScreen('b_001', Stream.value(_closed)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Confirm Receipt'), findsNothing);
+    });
+
+    // (6) tapping the button navigates to the confirm route
+    testWidgets('tapping "Confirm Receipt" pushes to the confirm route', (
+      tester,
+    ) async {
+      String? pushedRoute;
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/beneficiary/delivery/:batchId',
+            builder: (_, state) =>
+                _buildScreen('b_001', Stream.value(_delivered)),
+            routes: [
+              GoRoute(
+                path: 'confirm',
+                builder: (context, state) =>
+                    const Scaffold(body: Text('Confirm screen')),
+              ),
+            ],
+          ),
+        ],
+        observers: [_RouteObserver(onPush: (r) => pushedRoute = r)],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            intakeRequestDetailProvider(
+              'b_001',
+            ).overrideWith((_) => Stream.value(_delivered)),
+            recentDeliveriesProvider(
+              'ben_001',
+            ).overrideWith((_) => Stream.value(<RecentDelivery>[])),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light(),
+            routerConfig: router,
+          ),
+        ),
+      );
+
+      router.go('/beneficiary/delivery/b_001');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Confirm Receipt'));
+      await tester.pumpAndSettle();
+
+      expect(pushedRoute, contains('confirm'));
+    });
+
+    // (7) _ConfirmationBanner is shown when status == closed
+    testWidgets(
+      '_ConfirmationBanner "Receipt confirmed" is shown when status == closed',
+      (tester) async {
+        await tester.pumpWidget(_buildScreen('b_001', Stream.value(_closed)));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Receipt confirmed'), findsOneWidget);
+      },
+    );
+
+    // (8) _ConfirmationBanner is absent when status != closed
+    testWidgets('_ConfirmationBanner is absent when status != closed', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildScreen('b_001', Stream.value(_delivered)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Receipt confirmed'), findsNothing);
+    });
   });
+}
+
+class _RouteObserver extends NavigatorObserver {
+  _RouteObserver({required this.onPush});
+  final void Function(String route) onPush;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    final name = route.settings.name;
+    if (name != null) onPush(name);
+  }
 }

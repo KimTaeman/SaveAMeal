@@ -1,6 +1,14 @@
 // Pure Dart — zero Flutter or Firebase imports.
 
-enum IntakeStatus { pending, dispatched, collected, cancelled }
+enum IntakeStatus {
+  open,
+  pending,
+  dispatched,
+  delivered,
+  collected,
+  closed,
+  cancelled,
+}
 
 enum BeneficiaryIntakeAvailability { accepting, fullBusy }
 
