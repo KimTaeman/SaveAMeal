@@ -28,16 +28,20 @@ class _FakeNotificationsRepository implements NotificationsRepository {
   List<AppNotification> _items;
 
   @override
-  List<AppNotification> getAll() => List.unmodifiable(_items);
+  Stream<List<AppNotification>> watchAll(String uid) =>
+      Stream.value(List.unmodifiable(_items));
 
   @override
-  void markRead(String id) => _items = _items
-      .map((n) => n.id == id ? n.copyWith(isRead: true) : n)
-      .toList();
+  Future<void> markRead(String uid, String id) async {
+    _items = _items
+        .map((n) => n.id == id ? n.copyWith(isRead: true) : n)
+        .toList();
+  }
 
   @override
-  void markAllRead() =>
-      _items = _items.map((n) => n.copyWith(isRead: true)).toList();
+  Future<void> markAllRead(String uid) async {
+    _items = _items.map((n) => n.copyWith(isRead: true)).toList();
+  }
 }
 
 // ── Seed data ─────────────────────────────────────────────────────────────────

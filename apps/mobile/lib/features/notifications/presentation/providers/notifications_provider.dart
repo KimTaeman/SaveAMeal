@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
@@ -28,10 +29,19 @@ NotificationReadStore notificationReadStore(Ref ref) =>
 class NotificationsNotifier extends _$NotificationsNotifier {
   @override
   List<AppNotification> build() {
-    final role = ref.watch(authStateProvider).asData?.value?.role;
+    final user = ref.watch(authStateProvider).asData?.value;
+    final uid = user?.uid ?? '';
+    final role = user?.role;
     final readStore = ref.watch(notificationReadStoreProvider);
     final readIds = readStore.loadReadIds();
-    final all = ref.watch(notificationsRepositoryProvider).getAll();
+    final repo = ref.watch(notificationsRepositoryProvider);
+
+    // Subscribe to the stream; seed with empty list until first event arrives.
+    final all = ref.watch(
+      StreamProvider.autoDispose<List<AppNotification>>(
+        (ref) => repo.watchAll(uid),
+      ).select((snap) => snap.asData?.value ?? const []),
+    );
 
     final filtered = role == UserRole.donor
         ? all.where((n) => _kDonorTypes.contains(n.type)).toList()
@@ -43,16 +53,20 @@ class NotificationsNotifier extends _$NotificationsNotifier {
   }
 
   void markRead(String id) {
+    final uid = ref.read(authStateProvider).asData?.value?.uid ?? '';
     final store = ref.read(notificationReadStoreProvider);
     store.saveReadIds({...store.loadReadIds(), id});
+    ref.read(notificationsRepositoryProvider).markRead(uid, id);
     state = state
         .map((n) => n.id == id ? n.copyWith(isRead: true) : n)
         .toList();
   }
 
   void markAllRead() {
+    final uid = ref.read(authStateProvider).asData?.value?.uid ?? '';
     final store = ref.read(notificationReadStoreProvider);
     store.saveReadIds(state.map((n) => n.id).toSet());
+    ref.read(notificationsRepositoryProvider).markAllRead(uid);
     state = state.map((n) => n.copyWith(isRead: true)).toList();
   }
 }

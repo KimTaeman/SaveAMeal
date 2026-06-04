@@ -14,13 +14,14 @@ class _FakeRepository implements NotificationsRepository {
   _FakeRepository(this._items);
 
   @override
-  List<AppNotification> getAll() => _items;
+  Stream<List<AppNotification>> watchAll(String uid) =>
+      Stream.value(List.unmodifiable(_items));
 
   @override
-  void markRead(String id) {}
+  Future<void> markRead(String uid, String id) async {}
 
   @override
-  void markAllRead() {}
+  Future<void> markAllRead(String uid) async {}
 }
 
 class _InMemoryReadStore implements NotificationReadStore {
