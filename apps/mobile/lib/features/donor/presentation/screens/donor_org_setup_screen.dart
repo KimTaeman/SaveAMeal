@@ -164,7 +164,7 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
   }
 
   Future<void> _save(String uid) async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _saving = true);
     try {

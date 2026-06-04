@@ -45,7 +45,7 @@ class _DriverOnboardingScreenState
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _loading = true);
     try {
       final profileAsync = ref.read(driverProfileProvider);

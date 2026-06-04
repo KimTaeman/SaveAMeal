@@ -52,7 +52,7 @@ class _BeneficiaryOnboardingScreenState
   }
 
   Future<void> _handleSave() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     final uid = ref.read(authStateProvider).asData?.value?.uid ?? '';
     if (uid.isEmpty) return;
     setState(() => _saving = true);
