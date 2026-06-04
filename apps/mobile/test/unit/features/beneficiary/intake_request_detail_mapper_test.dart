@@ -13,6 +13,7 @@ void main() {
     String status = 'pickedUp',
     String? driverId,
     String? volunteerName,
+    int? estimatedArrivalMinutes,
   }) => BatchModel(
     id: 'b_001',
     donorId: 'donor_001',
@@ -21,6 +22,7 @@ void main() {
     status: BatchStatus.values.firstWhere((s) => s.name == status),
     driverId: driverId,
     volunteerName: volunteerName,
+    estimatedArrivalMinutes: estimatedArrivalMinutes,
     beneficiaryId: 'ben_001',
     items: items,
   );
@@ -104,6 +106,20 @@ void main() {
       final detail = batchModelToDetailDomain(batch);
 
       expect(detail.volunteerId, 'driver_42');
+    });
+
+    test('estimatedArrivalMinutes is passed through from batch', () {
+      final batch = makeBatch(estimatedArrivalMinutes: 18);
+      final detail = batchModelToDetailDomain(batch);
+
+      expect(detail.estimatedArrivalMinutes, 18);
+    });
+
+    test('estimatedArrivalMinutes is null when batch field is null', () {
+      final batch = makeBatch();
+      final detail = batchModelToDetailDomain(batch);
+
+      expect(detail.estimatedArrivalMinutes, isNull);
     });
 
     test('status maps correctly from BatchStatus to IntakeStatus', () {

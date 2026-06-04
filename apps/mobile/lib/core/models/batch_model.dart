@@ -16,6 +16,7 @@ sealed class BatchModel with _$BatchModel {
     required BatchStatus status,
     String? driverId,
     String? volunteerName,
+    int? estimatedArrivalMinutes,
     String? beneficiaryId,
     // Denormalised beneficiary info (written at batch creation time)
     String? beneficiaryName,
