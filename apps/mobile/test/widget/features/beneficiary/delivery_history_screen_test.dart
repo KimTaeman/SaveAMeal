@@ -261,6 +261,113 @@ void main() {
     },
   );
 
+  testWidgets(
+    'shows spinner inside Load More button when isLoadingMore is true',
+    (tester) async {
+      final state = DeliveryHistoryState(
+        items: _fakeDeliveries(3),
+        hasMore: true,
+        isLoadingMore: true,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            deliveryHistoryProvider(
+              _kBeneficiaryId,
+            ).overrideWith(() => _StubNotifier(state)),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light(),
+            routerConfig: _makeRouter(),
+          ),
+        ),
+      );
+      // Use pump() instead of pumpAndSettle() — the CircularProgressIndicator
+      // keeps animating and pumpAndSettle would time out.
+      await tester.pump();
+      await tester.pump();
+
+      // The "Load More History" label is present inside the OutlinedButton.icon.
+      expect(
+        find.text('Load More History', skipOffstage: false),
+        findsOneWidget,
+      );
+      // Inline spinner is rendered (inside button icon area when isLoadingMore).
+      // skipOffstage: false because the footer may be below the visible area.
+      expect(
+        find.byType(CircularProgressIndicator, skipOffstage: false),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('shows inline error row when loadMoreError is set', (
+    tester,
+  ) async {
+    final state = DeliveryHistoryState(
+      items: _fakeDeliveries(3),
+      hasMore: true,
+      isLoadingMore: false,
+      loadMoreError: Exception('load more failed'),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deliveryHistoryProvider(
+            _kBeneficiaryId,
+          ).overrideWith(() => _StubNotifier(state)),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.light(),
+          routerConfig: _makeRouter(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Failed to load more. ', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(find.text('Retry', skipOffstage: false), findsOneWidget);
+    expect(
+      find.byIcon(Icons.error_outline, skipOffstage: false),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('stats bar shows disclaimer when hasMore is true', (
+    tester,
+  ) async {
+    final state = DeliveryHistoryState(
+      items: _fakeDeliveries(3),
+      hasMore: true,
+      isLoadingMore: false,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deliveryHistoryProvider(
+            _kBeneficiaryId,
+          ).overrideWith(() => _StubNotifier(state)),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.light(),
+          routerConfig: _makeRouter(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('*Showing totals for loaded deliveries', skipOffstage: false),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('tapping a row navigates to /beneficiary/delivery/:batchId', (
     tester,
   ) async {

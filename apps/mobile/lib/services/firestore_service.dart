@@ -467,7 +467,12 @@ class FirestoreService {
         .limit(pageSize);
 
     if (cursor != null) {
-      query = query.startAfterDocument(cursor as DocumentSnapshot);
+      if (cursor is! DocumentSnapshot) {
+        throw ArgumentError(
+          'cursor must be a DocumentSnapshot, got ${cursor.runtimeType}',
+        );
+      }
+      query = query.startAfterDocument(cursor);
     }
 
     final snapshot = await query.get();

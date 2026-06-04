@@ -234,7 +234,13 @@ class _EmptyBody extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_outlined, size: 72, color: cs.onSurfaceVariant),
+            ExcludeSemantics(
+              child: Icon(
+                Icons.inbox_outlined,
+                size: 72,
+                color: cs.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: Spacing.md),
             Text(
               'Your delivery history will appear here',
@@ -264,7 +270,13 @@ class _ErrorBody extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.cloud_off, size: 56, color: cs.onSurfaceVariant),
+            ExcludeSemantics(
+              child: Icon(
+                Icons.cloud_off,
+                size: 56,
+                color: cs.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: Spacing.md),
             Text(
               'Could not load delivery history.',

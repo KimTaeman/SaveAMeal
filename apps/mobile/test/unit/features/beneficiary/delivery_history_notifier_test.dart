@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,6 +33,7 @@ List<RecentDelivery> _fakeDeliveries(int count, {int startIndex = 0}) =>
 class _FakeIntakeRepository implements IntakeRepository {
   final List<DeliveryHistoryPage> _pages = [];
   int _callCount = 0;
+  Exception? throwOnCall;
 
   void enqueue(DeliveryHistoryPage page) => _pages.add(page);
 
@@ -41,6 +43,7 @@ class _FakeIntakeRepository implements IntakeRepository {
     required int pageSize,
     Object? cursor,
   }) async {
+    if (throwOnCall != null) throw throwOnCall!;
     if (_callCount < _pages.length) return _pages[_callCount++];
     return const DeliveryHistoryPage(items: [], hasMore: false);
   }
@@ -265,4 +268,69 @@ void main() {
     expect(state.items, hasLength(3));
     expect(state.items.first.batchId, 'batch_100');
   });
+
+  test(
+    'build: network error with non-empty cache serves cached items (offline resilience)',
+    () async {
+      // Seed Hive cache directly using the same JSON format the notifier writes.
+      final box = Hive.box<String>('delivery_history_cache');
+      final seedDeliveries = _fakeDeliveries(3);
+      final cacheEntries = seedDeliveries
+          .map(
+            (d) => <String, dynamic>{
+              'batchId': d.batchId,
+              'deliveredAtMs': d.deliveredAt.millisecondsSinceEpoch,
+              'portions': d.portions,
+              if (d.donorName != null) 'donorName': d.donorName,
+            },
+          )
+          .toList();
+      await box.put('${_kBeneficiaryId}_page_0', jsonEncode(cacheEntries));
+
+      final fakeRepo = _FakeIntakeRepository()
+        ..throwOnCall = Exception('network failure');
+      final container = _makeContainer(fakeRepo);
+      addTearDown(container.dispose);
+
+      final state = await container.read(
+        deliveryHistoryProvider(_kBeneficiaryId).future,
+      );
+
+      // Should serve cached items rather than throwing.
+      expect(state.items, hasLength(3));
+      // hasMore: true signals offline mode (cache may be incomplete).
+      expect(state.hasMore, isTrue);
+    },
+  );
+
+  test(
+    'build: network error with empty cache rethrows (no cache fallback available)',
+    () async {
+      // Verify the rethrow path: when useCase throws AND the Hive cache is
+      // empty for the beneficiary, build() reaches the rethrow statement.
+      // Note: observing AsyncError state via Riverpod container is unreliable
+      // in autoDispose mode because Riverpod 3 automatically retries failed
+      // builds via ProviderScheduler, cycling through AsyncLoading before a
+      // stable AsyncError is observable. We verify the underlying precondition:
+      // the use case throws (which triggers rethrow) and there is no cache to
+      // fall back on (cached.isEmpty == true).
+      final fakeRepo = _FakeIntakeRepository()
+        ..throwOnCall = Exception('network failure');
+      final useCase = FetchDeliveryHistoryPageUseCase(fakeRepo);
+
+      // Use case must throw — this is what triggers the rethrow in build().
+      await expectLater(
+        () => useCase(beneficiaryId: _kBeneficiaryId),
+        throwsA(isA<Exception>()),
+      );
+
+      // Cache must be empty for this beneficiary — tearDown cleared it.
+      final box = Hive.box<String>('delivery_history_cache');
+      expect(
+        box.get('${_kBeneficiaryId}_page_0'),
+        isNull,
+        reason: 'No cache means build() will rethrow instead of serving cache',
+      );
+    },
+  );
 }

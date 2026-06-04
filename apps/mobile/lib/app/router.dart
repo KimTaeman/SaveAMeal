@@ -167,6 +167,12 @@ GoRouter router(Ref ref) {
       ),
       GoRoute(
         path: '/beneficiary',
+        redirect: (context, state) {
+          final user = ref.read(authStateProvider).asData?.value;
+          if (user == null) return '/login';
+          if (user.role != UserRole.beneficiary) return '/role-router';
+          return null;
+        },
         builder: (context, state) => const BeneficiaryHomeScreen(),
         routes: [
           GoRoute(

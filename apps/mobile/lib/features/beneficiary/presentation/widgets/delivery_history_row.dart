@@ -135,7 +135,13 @@ class _StatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_outline, size: 12, color: acColors.success),
+          ExcludeSemantics(
+            child: Icon(
+              Icons.check_circle_outline,
+              size: 12,
+              color: acColors.success,
+            ),
+          ),
           const SizedBox(width: 2),
           Text(
             'Delivered',
@@ -157,15 +163,21 @@ class _CategoryIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (icon, color) = _iconAndColor(category, acColors);
+    final label = _categoryLabel(category);
 
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        shape: BoxShape.circle,
+    return Semantics(
+      label: label,
+      child: ExcludeSemantics(
+        child: Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
       ),
-      child: Icon(icon, size: 16, color: color),
     );
   }
 
