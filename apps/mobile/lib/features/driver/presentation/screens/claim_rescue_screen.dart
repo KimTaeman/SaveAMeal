@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:saveameal/core/constants/maps_constants.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
@@ -153,6 +154,7 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
               children: [
                 GoogleMap(
                   onMapCreated: (c) => _mapController = c,
+                  mapId: MapsConstants.mapId,
                   initialCameraPosition: CameraPosition(
                     target: destLatLng,
                     zoom: 14,
