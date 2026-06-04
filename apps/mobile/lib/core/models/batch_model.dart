@@ -39,6 +39,9 @@ sealed class BatchModel with _$BatchModel {
     // Pickup coordinates (set at batch creation from donor profile)
     @Default(0.0) double pickupLat,
     @Default(0.0) double pickupLng,
+    // Delivery coordinates (denormalised from beneficiary doc at claim time)
+    double? beneficiaryLat,
+    double? beneficiaryLng,
     // Delivery outcome
     String? deliveryNotes,
     int? rating,

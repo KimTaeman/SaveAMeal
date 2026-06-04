@@ -271,19 +271,45 @@ class FirestoreService {
         throw const BatchAlreadyClaimedException();
       }
 
+      final existingBeneficiaryId = snap.data()!['beneficiaryId'] as String?;
+      final resolvedBeneficiaryId =
+          (existingBeneficiaryId != null && existingBeneficiaryId.isNotEmpty)
+          ? existingBeneficiaryId
+          : autoId;
+
       final update = <String, dynamic>{
         'status': 'claimed',
         'driverId': driverId,
         'claimedAt': FieldValue.serverTimestamp(),
       };
 
-      if (snap.data()!['beneficiaryId'] == null && autoId != null) {
+      if (existingBeneficiaryId == null && autoId != null) {
         update['beneficiaryId'] = autoId;
+      }
+
+      // Denormalise beneficiary delivery coordinates so the driver app can
+      // calculate ETA to drop-off without a second collection query.
+      if (resolvedBeneficiaryId != null) {
+        final benRef = _db
+            .collection(FirestoreConstants.beneficiaries)
+            .doc(resolvedBeneficiaryId);
+        final benSnap = await tx.get(benRef);
+        if (benSnap.exists && benSnap.data() != null) {
+          final lat = (benSnap.data()!['lat'] as num?)?.toDouble();
+          final lng = (benSnap.data()!['lng'] as num?)?.toDouble();
+          if (lat != null) update['beneficiaryLat'] = lat;
+          if (lng != null) update['beneficiaryLng'] = lng;
+        }
       }
 
       tx.update(batchRef, update);
     });
   }
+
+  Future<void> updateBatchEta(String batchId, int eta) => _db
+      .collection(FirestoreConstants.batches)
+      .doc(batchId)
+      .update({'estimatedArrivalMinutes': eta});
 
   /// Returns the ID of the first beneficiary currently accepting food,
   /// or null if none are available.
