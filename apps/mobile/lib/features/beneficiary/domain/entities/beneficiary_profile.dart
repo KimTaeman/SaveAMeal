@@ -15,6 +15,8 @@ class BeneficiaryProfile {
     this.orgType,
     this.contactEmail,
     this.missionStatement,
+    this.latitude,
+    this.longitude,
     this.joinedAt,
   });
 
@@ -33,5 +35,7 @@ class BeneficiaryProfile {
   final String? contactEmail; // from beneficiaries/{uid}.contactEmail — NEW
   final String?
   missionStatement; // from beneficiaries/{uid}.missionStatement — NEW
+  final double? latitude; // from beneficiaries/{uid}.lat
+  final double? longitude; // from beneficiaries/{uid}.lng
   final DateTime? joinedAt; // derived in datasource from FirebaseAuth metadata
 }
