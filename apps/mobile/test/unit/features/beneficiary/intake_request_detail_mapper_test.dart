@@ -108,11 +108,11 @@ void main() {
 
     test('status maps correctly from BatchStatus to IntakeStatus', () {
       final cases = {
-        'open': IntakeStatus.pending,
+        'open': IntakeStatus.open,
         'claimed': IntakeStatus.dispatched,
         'pickedUp': IntakeStatus.dispatched,
-        'delivered': IntakeStatus.collected,
-        'closed': IntakeStatus.collected,
+        'delivered': IntakeStatus.delivered,
+        'closed': IntakeStatus.closed,
         'cancelled': IntakeStatus.cancelled,
       };
 

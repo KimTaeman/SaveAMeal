@@ -8,6 +8,7 @@ import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.d
 import 'package:saveameal/features/beneficiary/domain/repositories/intake_repository.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/accept_delivery_job_usecase.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/confirm_delivery_usecase.dart';
+import 'package:saveameal/features/beneficiary/domain/usecases/confirm_receipt_usecase.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/toggle_intake_status_usecase.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/watch_active_deliveries_usecase.dart';
 import 'package:saveameal/features/beneficiary/domain/usecases/watch_intake_request_detail_usecase.dart';
@@ -45,6 +46,10 @@ ConfirmDeliveryUseCase confirmDeliveryUseCase(Ref ref) =>
 @riverpod
 WatchIntakeRequestDetailUseCase watchIntakeRequestDetailUseCase(Ref ref) =>
     WatchIntakeRequestDetailUseCase(ref.watch(intakeRepositoryProvider));
+
+@riverpod
+ConfirmReceiptUseCase confirmReceiptUseCase(Ref ref) =>
+    ConfirmReceiptUseCase(ref.watch(intakeRepositoryProvider));
 
 // ── Stream providers ───────────────────────────────────────────────────────
 

@@ -49,4 +49,20 @@ abstract class IntakeRepository {
     required int pageSize,
     Object? cursor,
   });
+
+  /// Closes the batch and writes optional rating/feedback in a single Firestore
+  /// partial update.
+  ///
+  /// [beneficiaryId] is resolved from the auth session by the use case's caller
+  /// (the Riverpod notifier); it is passed here for logging and tracing only.
+  /// Firestore security rules enforce ownership independently.
+  ///
+  /// [rating]   — 1–5; null if the beneficiary did not leave a rating.
+  /// [feedback] — free text; null if the beneficiary did not leave feedback.
+  Future<void> confirmReceipt({
+    required String batchId,
+    required String beneficiaryId,
+    int? rating,
+    String? feedback,
+  });
 }

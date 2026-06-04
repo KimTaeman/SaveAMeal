@@ -85,6 +85,10 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
           children: [
             if (detail.status == IntakeStatus.cancelled)
               _CancellationBanner(detail: detail),
+            if (detail.status == IntakeStatus.delivered)
+              _ConfirmReceiptButton(batchId: widget.batchId, detail: detail),
+            if (detail.status == IntakeStatus.closed)
+              const _ConfirmationBanner(),
             Padding(
               padding: const EdgeInsets.only(
                 left: Spacing.md,
@@ -172,6 +176,75 @@ class _CancellationBanner extends StatelessWidget {
               detail.cancellationReason!,
               style: textTheme.bodySmall?.copyWith(color: ac.onWarning),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConfirmReceiptButton extends StatelessWidget {
+  const _ConfirmReceiptButton({required this.batchId, required this.detail});
+
+  final String batchId;
+  final IntakeRequestDetail detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final ac = Theme.of(context).extension<AppColors>()!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.sm,
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          icon: const Icon(Icons.check_circle_outline),
+          label: const Text('Confirm Receipt'),
+          onPressed: () => context.push(
+            '/beneficiary/delivery/$batchId/confirm',
+            extra: detail,
+          ),
+          style: FilledButton.styleFrom(
+            backgroundColor: ac.success,
+            foregroundColor: ac.onSuccess,
+            minimumSize: const Size(double.infinity, 48),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ConfirmationBanner extends StatelessWidget {
+  const _ConfirmationBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final ac = Theme.of(context).extension<AppColors>()!;
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.sm,
+      ),
+      padding: const EdgeInsets.all(Spacing.md),
+      decoration: BoxDecoration(
+        color: ac.success.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: ac.success.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle, color: ac.success),
+          const SizedBox(width: Spacing.sm),
+          Text(
+            'Receipt confirmed',
+            style: textTheme.bodyMedium?.copyWith(
+              color: ac.success,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

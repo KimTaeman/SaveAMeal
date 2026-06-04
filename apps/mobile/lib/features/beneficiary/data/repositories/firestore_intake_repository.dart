@@ -105,6 +105,18 @@ class FirestoreIntakeRepository implements IntakeRepository {
           );
 
   @override
+  Future<void> confirmReceipt({
+    required String batchId,
+    required String beneficiaryId,
+    int? rating,
+    String? feedback,
+  }) => _datasource.confirmReceipt(
+    batchId: batchId,
+    rating: rating,
+    feedback: feedback,
+  );
+
+  @override
   Future<DeliveryHistoryPage> fetchDeliveryHistoryPage({
     required String beneficiaryId,
     required int pageSize,

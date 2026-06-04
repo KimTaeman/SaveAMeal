@@ -92,6 +92,14 @@ class _FakeIntakeRepository implements IntakeRepository {
   @override
   Stream<List<RecentDelivery>> watchRecentDeliveries(String b) =>
       throw UnimplementedError();
+
+  @override
+  Future<void> confirmReceipt({
+    required String batchId,
+    required String beneficiaryId,
+    int? rating,
+    String? feedback,
+  }) => throw UnimplementedError();
 }
 
 ProviderContainer _makeContainer(_FakeIntakeRepository fakeRepo) =>

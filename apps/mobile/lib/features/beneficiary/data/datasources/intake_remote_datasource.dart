@@ -40,6 +40,15 @@ abstract class IntakeRemoteDatasource {
     required int pageSize,
     Object? cursor,
   });
+
+  /// Performs the Firestore partial update. beneficiaryId is intentionally
+  /// omitted here — it is not written to the document; Firestore rules
+  /// enforce caller identity via Firebase Auth.
+  Future<void> confirmReceipt({
+    required String batchId,
+    int? rating,
+    String? feedback,
+  });
 }
 
 class IntakeRemoteDatasourceImpl implements IntakeRemoteDatasource {
@@ -104,5 +113,16 @@ class IntakeRemoteDatasourceImpl implements IntakeRemoteDatasource {
     beneficiaryId: beneficiaryId,
     pageSize: pageSize,
     cursor: cursor,
+  );
+
+  @override
+  Future<void> confirmReceipt({
+    required String batchId,
+    int? rating,
+    String? feedback,
+  }) => _firestoreService.confirmReceipt(
+    batchId: batchId,
+    rating: rating,
+    feedback: feedback,
   );
 }

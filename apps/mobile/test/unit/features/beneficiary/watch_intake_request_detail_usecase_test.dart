@@ -73,6 +73,14 @@ class _FakeIntakeRepository implements IntakeRepository {
     required int pageSize,
     Object? cursor,
   }) => throw UnimplementedError();
+
+  @override
+  Future<void> confirmReceipt({
+    required String batchId,
+    required String beneficiaryId,
+    int? rating,
+    String? feedback,
+  }) => throw UnimplementedError();
 }
 
 void main() {

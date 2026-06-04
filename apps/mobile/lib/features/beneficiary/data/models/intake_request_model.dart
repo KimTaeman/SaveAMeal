@@ -10,11 +10,11 @@ part 'intake_request_model.g.dart';
 /// Package-accessible status mapper shared by both `toDomain()` and
 /// `batchModelToDetailDomain`.
 IntakeStatus mapIntakeStatus(String raw) => switch (raw) {
-  'open' => IntakeStatus.pending,
+  'open' => IntakeStatus.open,
   'claimed' => IntakeStatus.dispatched,
   'pickedUp' => IntakeStatus.dispatched,
-  'delivered' => IntakeStatus.collected,
-  'closed' => IntakeStatus.collected,
+  'delivered' => IntakeStatus.delivered,
+  'closed' => IntakeStatus.closed,
   'cancelled' => IntakeStatus.cancelled,
   _ => IntakeStatus.pending,
 };

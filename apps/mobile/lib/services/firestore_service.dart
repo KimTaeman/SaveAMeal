@@ -502,5 +502,23 @@ class FirestoreService {
       .collection(FirestoreConstants.beneficiaries)
       .doc(beneficiaryId)
       .set(data, SetOptions(merge: true));
+
+  Future<void> confirmReceipt({
+    required String batchId,
+    int? rating,
+    String? feedback,
+  }) async {
+    final update = <String, dynamic>{
+      'status': 'closed',
+      'updatedAt': FieldValue.serverTimestamp(),
+      'rating': ?rating,
+      if (feedback != null && feedback.isNotEmpty) 'feedback': feedback,
+    };
+    await _db
+        .collection(FirestoreConstants.batches)
+        .doc(batchId)
+        .update(update);
+  }
+
   FirebaseFirestore get db => _db;
 }
