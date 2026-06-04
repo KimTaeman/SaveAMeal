@@ -86,7 +86,7 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
             if (detail.status == IntakeStatus.cancelled)
               _CancellationBanner(detail: detail),
             if (detail.status == IntakeStatus.delivered)
-              _ConfirmReceiptButton(batchId: widget.batchId, detail: detail),
+              _ConfirmReceiptButton(batchId: widget.batchId),
             if (detail.status == IntakeStatus.closed)
               const _ConfirmationBanner(),
             Padding(
@@ -183,10 +183,9 @@ class _CancellationBanner extends StatelessWidget {
 }
 
 class _ConfirmReceiptButton extends StatelessWidget {
-  const _ConfirmReceiptButton({required this.batchId, required this.detail});
+  const _ConfirmReceiptButton({required this.batchId});
 
   final String batchId;
-  final IntakeRequestDetail detail;
 
   @override
   Widget build(BuildContext context) {
@@ -201,10 +200,8 @@ class _ConfirmReceiptButton extends StatelessWidget {
         child: FilledButton.icon(
           icon: const Icon(Icons.check_circle_outline),
           label: const Text('Confirm Receipt'),
-          onPressed: () => context.push(
-            '/beneficiary/delivery/$batchId/confirm',
-            extra: detail,
-          ),
+          onPressed: () =>
+              context.push('/beneficiary/delivery/$batchId/confirm'),
           style: FilledButton.styleFrom(
             backgroundColor: ac.success,
             foregroundColor: ac.onSuccess,
@@ -236,7 +233,7 @@ class _ConfirmationBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.check_circle, color: ac.success),
+          ExcludeSemantics(child: Icon(Icons.check_circle, color: ac.success)),
           const SizedBox(width: Spacing.sm),
           Text(
             'Receipt confirmed',

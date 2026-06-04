@@ -361,7 +361,30 @@ void main() {
       expect(fakeRepo.capturedRating, isNull);
     });
 
-    // (11) empty feedback passes feedback: null to use case
+    // (11) submit sets error "Not authenticated" when uid is null
+    test('submit sets error when auth user is null', () async {
+      final fakeRepo = _FakeRepo();
+      final container = _makeContainer(fakeRepo, user: null);
+      addTearDown(container.dispose);
+
+      final authSub = await _waitForAuth(container);
+      addTearDown(authSub.close);
+
+      final notifierSub = container.listen(
+        confirmReceiptProvider(_kBatchId),
+        (prev, next) {},
+      );
+      addTearDown(notifierSub.close);
+
+      await container.read(confirmReceiptProvider(_kBatchId).notifier).submit();
+
+      final state = container.read(confirmReceiptProvider(_kBatchId));
+      expect(state.error, 'Not authenticated');
+      expect(state.isSubmitting, false);
+      expect(fakeRepo.callCount, 0);
+    });
+
+    // (12) empty feedback passes feedback: null to use case
     test('empty feedback passes feedback: null to use case', () async {
       final fakeRepo = _FakeRepo();
       final container = _makeContainer(fakeRepo);

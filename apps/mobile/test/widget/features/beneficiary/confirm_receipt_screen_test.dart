@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/confirm_receipt_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/rate_delivery_screen.dart';
 import 'package:saveameal/shared/theme/app_theme.dart';
@@ -29,10 +30,13 @@ Widget _buildScreen(ConfirmReceiptState stateOverride) {
       confirmReceiptProvider(
         _kBatchId,
       ).overrideWith(() => _FakeNotifier(stateOverride)),
+      intakeRequestDetailProvider(
+        _kBatchId,
+      ).overrideWith((_) => Stream.value(_fakeDetail)),
     ],
     child: MaterialApp(
       theme: AppTheme.light(),
-      home: ConfirmReceiptScreen(batchId: _kBatchId, detail: _fakeDetail),
+      home: ConfirmReceiptScreen(batchId: _kBatchId),
     ),
   );
 }
@@ -172,10 +176,8 @@ void main() {
             routes: [
               GoRoute(
                 path: 'confirm',
-                builder: (context, state) => ConfirmReceiptScreen(
-                  batchId: _kBatchId,
-                  detail: _fakeDetail,
-                ),
+                builder: (context, state) =>
+                    ConfirmReceiptScreen(batchId: _kBatchId),
               ),
             ],
           ),
@@ -189,6 +191,9 @@ void main() {
             confirmReceiptProvider(
               _kBatchId,
             ).overrideWith(() => _SubmittingNotifier()),
+            intakeRequestDetailProvider(
+              _kBatchId,
+            ).overrideWith((_) => Stream.value(_fakeDetail)),
           ],
           child: MaterialApp.router(
             theme: AppTheme.light(),
@@ -227,15 +232,13 @@ void main() {
             confirmReceiptProvider(
               _kBatchId,
             ).overrideWith(() => _ErrorNotifier()),
+            intakeRequestDetailProvider(
+              _kBatchId,
+            ).overrideWith((_) => Stream.value(_fakeDetail)),
           ],
           child: MaterialApp(
             theme: AppTheme.light(),
-            home: Scaffold(
-              body: ConfirmReceiptScreen(
-                batchId: _kBatchId,
-                detail: _fakeDetail,
-              ),
-            ),
+            home: Scaffold(body: ConfirmReceiptScreen(batchId: _kBatchId)),
           ),
         ),
       );

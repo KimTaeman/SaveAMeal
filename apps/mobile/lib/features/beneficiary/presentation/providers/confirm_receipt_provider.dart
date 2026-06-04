@@ -4,6 +4,9 @@ import 'package:saveameal/features/beneficiary/presentation/providers/beneficiar
 
 part 'confirm_receipt_provider.g.dart';
 
+// Sentinel to distinguish "not supplied" from explicit null in copyWith.
+const _absent = Object();
+
 class ConfirmReceiptState {
   const ConfirmReceiptState({
     this.rating = 0,
@@ -23,13 +26,13 @@ class ConfirmReceiptState {
     int? rating,
     String? feedback,
     bool? isSubmitting,
-    String? error,
+    Object? error = _absent,
     bool? submitted,
   }) => ConfirmReceiptState(
     rating: rating ?? this.rating,
     feedback: feedback ?? this.feedback,
     isSubmitting: isSubmitting ?? this.isSubmitting,
-    error: error,
+    error: identical(error, _absent) ? this.error : error as String?,
     submitted: submitted ?? this.submitted,
   );
 }
