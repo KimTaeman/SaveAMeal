@@ -200,9 +200,17 @@ void main() {
             activeBatchesProvider(
               'test-donor-uid',
             ).overrideWith((ref) => Stream.value(<Batch>[])),
-            donorMetricsProvider(
-              'test-donor-uid',
-            ).overrideWith((ref) => Stream.value(DonorMetrics.empty)),
+            donorMetricsProvider('test-donor-uid').overrideWith(
+              (ref) => Stream.value(
+                const DonorMetrics(
+                  donorId: 'test-donor-uid',
+                  totalKg: 0.0,
+                  totalMeals: 0,
+                  totalCO2e: 0.0,
+                  totalDeliveries: 0,
+                ),
+              ),
+            ),
           ],
           child: MaterialApp.router(
             theme: AppTheme.light(),
@@ -215,7 +223,7 @@ void main() {
 
       // All 6 fixed categories should render
       expect(find.text('Bakery'), findsOneWidget);
-      expect(find.text('Produce'), findsOneWidget);
+      expect(find.text('Fruits & Veggies'), findsOneWidget);
       expect(find.text('Dairy'), findsOneWidget);
       expect(find.text('Meat'), findsOneWidget);
       expect(find.text('Beverages'), findsOneWidget);

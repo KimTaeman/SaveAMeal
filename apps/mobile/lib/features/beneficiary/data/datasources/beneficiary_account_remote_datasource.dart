@@ -93,6 +93,8 @@ class BeneficiaryAccountRemoteDatasourceImpl
     if (update.missionStatement != null) {
       data['missionStatement'] = update.missionStatement;
     }
+    if (update.latitude != null) data['lat'] = update.latitude;
+    if (update.longitude != null) data['lng'] = update.longitude;
     return _firestoreService.updateBeneficiary(uid, data);
   }
 

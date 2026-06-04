@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/impact_category_row.dart';
-import 'package:saveameal/features/donor/domain/entities/food_category.dart';
+import 'package:saveameal/shared/domain/entities/food_category.dart';
 import 'package:saveameal/shared/theme/app_theme.dart';
 
 Widget _buildRow({
@@ -30,7 +30,7 @@ void main() {
         _buildRow(category: FoodCategory.produce, kg: 200.0, totalKg: 400.0),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Produce'), findsOneWidget);
+      expect(find.text('Fruits & Veggies'), findsOneWidget);
     });
 
     testWidgets('renders correct display name for dairy', (tester) async {
