@@ -165,6 +165,8 @@ void main() {
       await tester.pumpAndSettle();
 
       final switchWidget = find.byType(Switch);
+      await tester.ensureVisible(switchWidget);
+      await tester.pumpAndSettle();
       final switchBefore = tester.widget<Switch>(switchWidget).value;
 
       await tester.tap(switchWidget);
