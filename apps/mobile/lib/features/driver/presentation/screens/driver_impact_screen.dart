@@ -111,40 +111,56 @@ class _RankCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Spacing.xs),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                '#${impact.rank}',
-                style: textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+          if (impact.rank == 0 || impact.totalDrivers == 0) ...[
+            Text(
+              'Not yet ranked',
+              style: textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(width: Spacing.xs),
-              Text(
-                'of ${impact.totalDrivers} Drivers',
-                style: textTheme.titleMedium?.copyWith(color: Colors.white70),
-              ),
-            ],
-          ),
-          const SizedBox(height: Spacing.md),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: impact.rankProgress.clamp(0.0, 1.0),
-              backgroundColor: Colors.white.withValues(alpha: 0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-              minHeight: 8,
             ),
-          ),
-          const SizedBox(height: Spacing.xs),
-          Text(
-            '${impact.rankProgressCurrent} / ${impact.rankProgressTarget} Meals to ${impact.nextRankName} Rank',
-            style: textTheme.labelSmall?.copyWith(color: Colors.white70),
-          ),
+            const SizedBox(height: Spacing.xs),
+            Text(
+              'Complete your first delivery to earn a rank',
+              style: textTheme.labelSmall?.copyWith(color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  '#${impact.rank}',
+                  style: textTheme.displaySmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: Spacing.xs),
+                Text(
+                  'of ${impact.totalDrivers} Drivers',
+                  style: textTheme.titleMedium?.copyWith(color: Colors.white70),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.md),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: impact.rankProgress.clamp(0.0, 1.0),
+                backgroundColor: Colors.white.withValues(alpha: 0.3),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                minHeight: 8,
+              ),
+            ),
+            const SizedBox(height: Spacing.xs),
+            Text(
+              '${impact.rankProgressCurrent} / ${impact.rankProgressTarget} Meals to ${impact.nextRankName} Rank',
+              style: textTheme.labelSmall?.copyWith(color: Colors.white70),
+            ),
+          ],
         ],
       ),
     );
@@ -364,7 +380,7 @@ class _LeaderboardSection extends StatelessWidget {
         Center(
           child: TextButton(
             key: const Key('view_full_leaderboard'),
-            onPressed: () {},
+            onPressed: () => context.push('/driver/leaderboard'),
             child: Text(
               'View Full Leaderboard',
               style: TextStyle(color: ac.brand),

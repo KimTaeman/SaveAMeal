@@ -68,3 +68,27 @@ Outcome: Added latitude/longitude fields to BeneficiaryOrgProfileUpdate entity, 
 Decisions: Used 'lat'/'lng' as the Firestore field names (to match the existing BeneficiaryModel freezed fields) rather than 'latitude'/'longitude'. No changes were needed to the repository interface, repository impl, or use case — they all pass the entity through unchanged. The provider file required no changes either.
 Handoff: All layers compile cleanly. No new dependencies added (geolocator and url_launcher were already present). The domain layer remains Flutter-free. Ready for QA or architect review.
 Review: PENDING
+
+---
+Date: 2026-06-05 00:00
+Member: NichapaJongKmutt
+Agent: flutter-engineer
+Task: Fix beneficiary location — query beneficiaries collection, expand entity, add Haversine util, replace dropdown with card list
+Prompt: Implement the approved plan: fix getBeneficiaries() datasource query to use beneficiaries collection filtered by intakeStatus==accepting; expand Beneficiary entity with orgType/contactEmail/missionStatement/latitude/longitude; update _toBeneficiary() mapper; create haversineKm() util; create BeneficiaryDestinationCard widget; replace dropdown in LogSurplusFormScreen with card list using donor coords for distance; add unit and widget tests.
+
+Outcome: All 8 file actions completed. flutter analyze: no issues. dart format: 5 files reformatted. 17 new tests pass (6 unit + 11 widget).
+Decisions: FormField<Beneficiary> wraps the card list so form validation (Required message) integrates cleanly with _formKey without needing a manual validate() call. Used currentUserProvider (Future<DonorProfile?>) via asData?.value to avoid blocking the build on async user load — distance silently shows "Distance unavailable" when donor coords are null. Name resolution in getBeneficiaries() now prefers name > orgName > docId to match spec. _DistanceBadge uses withValues(alpha:) instead of deprecated withOpacity.
+Handoff: Branch fix/beneficiary-location is ready for PR. No new dependencies added. Firestore index requirement: beneficiaries collection now needs a single-field index on intakeStatus (equality) — this is automatically created by Firestore for single-field queries. All existing tests unaffected.
+Review: PENDING
+
+---
+Date: 2026-06-05 00:00
+Member: NichapaJongKmutt
+Agent: flutter-engineer
+Task: Fix Image.file crash on Flutter Web in log surplus form screen
+Prompt: Fix a crash in the log surplus screen on Flutter Web. The assertion !kIsWeb fires when the user inserts/previews a photo because Image.file is not supported on web. Fix by using Image.memory on web (via XFile.readAsBytes) and Image.file on native.
+
+Outcome: Added import 'package:flutter/foundation.dart' to log_surplus_form_screen.dart. Extracted image preview logic from _PhotoPicker into a new private _PhotoPreview widget. On kIsWeb it uses FutureBuilder + XFile.readAsBytes() + Image.memory; on native it keeps Image.file(File(path)). Shows CircularProgressIndicator while bytes load and a broken_image icon on error. flutter analyze: no issues. dart format: 0 changes.
+Decisions: Extracted a separate _PhotoPreview widget rather than inlining the FutureBuilder into _PhotoPicker to keep the code readable. FutureBuilder is the idiomatic Flutter pattern for async-dependent widgets. The XFile is already stored in state as _photo (type XFile?), so no state model changes were needed.
+Handoff: Single file changed. No new dependencies. No codegen required. Ready for review.
+Review: PENDING
