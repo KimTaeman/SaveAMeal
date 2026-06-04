@@ -219,3 +219,7 @@ Files:
 ~ apps/mobile/lib/features/beneficiary/presentation/widgets/how_pausing_works_section.dart
 ~ apps/mobile/lib/features/beneficiary/presentation/widgets/intake_status_toggle.dart
 Summary: 4 files changed, 371 insertions(+), 110 deletions(-)
+Files:
+  ~ apps/mobile/lib/features/beneficiary/data/datasources/beneficiary_impact_remote_datasource.dart
+Summary:  1 file changed, 35 insertions(+), 24 deletions(-)
+
