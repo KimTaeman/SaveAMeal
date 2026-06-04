@@ -149,16 +149,28 @@ const USERS = [
     uid: 'driver_001', name: 'Krit Chaiwong',
     email: 'krit.chaiwong@saveameal.th', role: 'driver',
     phone: '+66812345611', orgName: null, status: null, points: 340,
+    mealsSaved: 512, sproutPoints: 2048,
+    rank: 1, totalDrivers: 128,
+    rankProgressCurrent: 512, rankProgressTarget: 750,
+    currentRankName: 'Silver', nextRankName: 'Gold',
   },
   {
     uid: 'driver_002', name: 'Amporn Suwan',
     email: 'amporn.suwan@saveameal.th', role: 'driver',
     phone: '+66812345612', orgName: null, status: null, points: 280,
+    mealsSaved: 489, sproutPoints: 1956,
+    rank: 2, totalDrivers: 128,
+    rankProgressCurrent: 489, rankProgressTarget: 750,
+    currentRankName: 'Silver', nextRankName: 'Gold',
   },
   {
     uid: 'driver_003', name: 'Montri Phansiri',
     email: 'montri.phansiri@saveameal.th', role: 'driver',
     phone: '+66812345613', orgName: null, status: null, points: 150,
+    mealsSaved: 420, sproutPoints: 1680,
+    rank: 3, totalDrivers: 128,
+    rankProgressCurrent: 420, rankProgressTarget: 750,
+    currentRankName: 'Silver', nextRankName: 'Gold',
   },
 
   // ── Beneficiary ───────────────────────────────────────────────────────────
@@ -438,6 +450,19 @@ const IMPACT_METRICS = [
   { id: 'donor_006', totalKg: 5.75, totalMeals: 11, totalCO2e: 14.4, totalDeliveries: 1 },
 ];
 
+// Collection: leaderboard/{period}
+// Single document per period with an `entries` array.
+// The `uid` field must match a real users/{uid} for the (You) highlight to work.
+const LEADERBOARD = {
+  thisMonth: {
+    entries: [
+      { rank: 1, uid: 'driver_001', driverName: 'Krit C.',   zone: 'Central Hub',    score: 512, avatarUrl: '' },
+      { rank: 2, uid: 'driver_002', driverName: 'Amporn S.', zone: 'North District', score: 489, avatarUrl: '' },
+      { rank: 3, uid: 'driver_003', driverName: 'Montri P.', zone: 'East Side',      score: 420, avatarUrl: '' },
+    ],
+  },
+};
+
 // ── Demo setup ─────────────────────────────────────────────────────────────────
 //
 // Creates the three demo Firebase Auth accounts (donor / driver / beneficiary),
@@ -493,6 +518,13 @@ async function setupDemo() {
     const authUser = await getOrCreateAuthUser(acc);
     uids[acc.role] = authUser.uid;
 
+    const driverImpactFields = acc.role === 'driver' ? {
+      mealsSaved: 342, sproutPoints: 1250,
+      rank: 4, totalDrivers: 128,
+      rankProgressCurrent: 342, rankProgressTarget: 500,
+      currentRankName: 'Bronze', nextRankName: 'Silver',
+    } : {};
+
     await db.collection('users').doc(authUser.uid).set({
       uid:     authUser.uid,
       name:    acc.name,
@@ -502,6 +534,7 @@ async function setupDemo() {
       orgName: acc.orgName,
       status:  acc.role === 'beneficiary' ? 'accepting' : null,
       points:  0,
+      ...driverImpactFields,
     }, { merge: true });
     console.log(`  ✓  users/${authUser.uid}  (${acc.role}: ${acc.name})`);
   }
@@ -569,6 +602,17 @@ async function setupDemo() {
   });
   console.log(`  ✓  batches/${batchId}  (status: open)`);
 
+  // Leaderboard — demo driver appears at rank 4 with their real UID
+  await db.collection('leaderboard').doc('thisMonth').set({
+    entries: [
+      { rank: 1, uid: 'driver_001',   driverName: 'Sarah J.',   zone: 'Central Hub',    score: 512, avatarUrl: '' },
+      { rank: 2, uid: 'driver_002',   driverName: 'Marcus T.',  zone: 'North District', score: 489, avatarUrl: '' },
+      { rank: 3, uid: 'driver_003',   driverName: 'Elena R.',   zone: 'East Side',      score: 420, avatarUrl: '' },
+      { rank: 4, uid: uids.driver,    driverName: 'Nattapong',  zone: 'South Zone',     score: 342, avatarUrl: '' },
+    ],
+  });
+  console.log(`  ✓  leaderboard/thisMonth  (demo driver at rank 4)`);
+
   console.log('\n─────────────────────────────────────────────────────────');
   console.log('Demo ready! Login credentials:\n');
   console.log(`  Donor       demo.donor@saveameal.th        / qwer1234`);
@@ -605,6 +649,12 @@ async function clearCollection(collectionName) {
 // ── Main ───────────────────────────────────────────────────────────────────────
 
 async function registerUser(uid, role, name) {
+  const driverImpactFields = role === 'driver' ? {
+    mealsSaved: 0, sproutPoints: 0,
+    rank: 0, totalDrivers: 0,
+    rankProgressCurrent: 0, rankProgressTarget: 100,
+    currentRankName: 'Bronze', nextRankName: 'Silver',
+  } : {};
   await db.collection('users').doc(uid).set({
     uid,
     name,
@@ -614,6 +664,7 @@ async function registerUser(uid, role, name) {
     orgName: role === 'donor' ? `${name} Org` : null,
     status: role === 'beneficiary' ? 'accepting' : null,
     points: 0,
+    ...driverImpactFields,
   }, { merge: true });
   console.log(`  ✓  registered ${role}: ${uid} (${name})`);
 }
@@ -673,12 +724,15 @@ async function main() {
   await writeAll('users',         USERS,          'uid');
   await writeAll('batches',       BATCHES);
   await writeAll('impactMetrics', IMPACT_METRICS);
+  await db.collection('leaderboard').doc('thisMonth').set(LEADERBOARD.thisMonth);
+  console.log(`  ✓  leaderboard       1 document  (thisMonth)`);
 
   console.log('\nSummary:');
   console.log(`  beneficiaries  : ${BENEFICIARIES.length}`);
   console.log(`  users          : ${USERS.length}  (6 donors · 3 drivers · 1 beneficiary)`);
   console.log(`  batches        : ${BATCHES.length}  (5 open · 2 claimed · 1 pickedUp · 3 delivered · 1 cancelled)`);
   console.log(`  impactMetrics  : ${IMPACT_METRICS.length}`);
+  console.log(`  leaderboard    : 1  (thisMonth)`);
   console.log('\nDone.\n');
 }
 
