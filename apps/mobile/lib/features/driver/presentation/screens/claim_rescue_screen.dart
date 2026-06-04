@@ -24,6 +24,8 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
   LatLng? _currentPosition;
   GoogleMapController? _mapController;
   StreamSubscription<Position>? _positionSub;
+  bool _mapReady = false;
+  bool _locationDenied = false;
 
   @override
   void initState() {
@@ -34,24 +36,27 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
   @override
   void dispose() {
     _positionSub?.cancel();
-    _mapController?.dispose();
+    // Guard against the web "Maps cannot be retrieved before calling buildView"
+    // crash that happens if the widget is disposed before the map initialises.
+    if (_mapReady) {
+      _mapController?.dispose();
+    }
     super.dispose();
   }
 
-  void _startLocationTracking() {
-    _positionSub =
-        Geolocator.getPositionStream(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            distanceFilter: 10,
-          ),
-        ).listen((pos) {
-          if (!mounted) return;
-          setState(
-            () => _currentPosition = LatLng(pos.latitude, pos.longitude),
-          );
-        });
-    // Also get a one-shot initial position immediately
+  Future<void> _startLocationTracking() async {
+    // Request permission explicitly — required on web and some Android configs.
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      if (mounted) setState(() => _locationDenied = true);
+      return;
+    }
+
+    // One-shot fix for an immediate position.
     Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
             accuracy: LocationAccuracy.high,
@@ -64,6 +69,20 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
           );
         })
         .catchError((_) {});
+
+    // Live stream updates polyline every 10 m of movement.
+    _positionSub =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 10,
+          ),
+        ).listen((pos) {
+          if (!mounted) return;
+          setState(
+            () => _currentPosition = LatLng(pos.latitude, pos.longitude),
+          );
+        });
   }
 
   Future<void> _openNavigation(String address) async {
@@ -153,7 +172,10 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
             child: Stack(
               children: [
                 GoogleMap(
-                  onMapCreated: (c) => _mapController = c,
+                  onMapCreated: (c) {
+                    _mapController = c;
+                    if (mounted) setState(() => _mapReady = true);
+                  },
                   mapId: MapsConstants.mapId,
                   initialCameraPosition: CameraPosition(
                     target: destLatLng,
@@ -214,7 +236,9 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
                             ),
                             const SizedBox(width: Spacing.xs),
                             Text(
-                              _currentPosition != null
+                              _locationDenied
+                                  ? 'Location denied'
+                                  : _currentPosition != null
                                   ? 'Live route'
                                   : 'Locating…',
                               style: textTheme.labelSmall?.copyWith(
