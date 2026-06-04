@@ -220,6 +220,16 @@ class FirestoreService {
     'updatedAt': FieldValue.serverTimestamp(),
   });
 
+  /// Creates an initial beneficiaries/{uid} document for a newly registered
+  /// beneficiary so they appear in the donor map and intake toggle works
+  /// immediately without requiring a profile-setup step first.
+  Future<void> createBeneficiaryDoc(String uid, String orgName) =>
+      _db.collection(FirestoreConstants.beneficiaries).doc(uid).set({
+        'id': uid,
+        'name': orgName,
+        'intakeStatus': 'accepting',
+      }, SetOptions(merge: true));
+
   Future<void> setIntakeAvailability({
     required String beneficiaryId,
     required String intakeStatus,
