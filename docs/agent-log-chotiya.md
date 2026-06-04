@@ -872,3 +872,14 @@ Files:
   ? apps/mobile/test/widget/features/auth/ (untracked)
 Summary:  2 files changed, 63 insertions(+), 3 deletions(-)
 
+
+---
+Date: 2026-06-04 00:00
+Member: chotiya
+Agent: flutter-engineer
+Task: Fix 4 failing widget tests
+Prompt: Fix 4 failing widget tests: impact_category_row_test (Produce display name), beneficiary_impact_screen_test (Produce display name), donor_impact_screen_test (Produce display name), notifications_screen_test (TODAY (3) not found)
+Outcome: All 4 tests fixed. 456/456 pass. flutter analyze clean.
+Decisions: Failures 1-3 were straightforward display name updates (Produce -> Fruits & Veggies). Failure 4 was more subtle: the original diagnosis about Stream.empty() vs Stream.value(null) was partially correct, but the real root cause was that _seedNotifications() used yesterday.add(Duration(hours: 1)) which crosses midnight when tests run late at night (e.g., 23:xx), placing item 5 in "today" and producing TODAY (4)/YESTERDAY (1) instead of TODAY (3)/YESTERDAY (2). Fixed by computing yesterdayNoon = DateTime(now.year, now.month, now.day - 1, 12) so both yesterday items are reliably on the previous calendar day regardless of test execution time.
+Handoff: No production code changed. Only test files modified.
+Review: PENDING
