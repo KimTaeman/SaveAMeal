@@ -204,12 +204,12 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
         currentIndex: 0,
         onDestinationSelected: (index) {
           switch (index) {
-            case 0 || 1 || 2:
+            case 0 || 1:
               context.go('/beneficiary');
-            case 3:
-              context.go('/beneficiary/account');
             case 2:
               context.go('/beneficiary/impact');
+            case 3:
+              context.go('/beneficiary/account');
           }
         },
       ),
