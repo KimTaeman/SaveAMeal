@@ -57,10 +57,13 @@ service cloud.firestore {
         (isDriver() && resource.data.driverId == uid()
           && resource.data.status in ['claimed', 'pickedUp']) ||
 
-        // Beneficiary can add rating/feedback and close their own batch
+        // Beneficiary can add rating/feedback and close their own batch.
+        // diff().affectedKeys() checks only the fields being changed, not
+        // all keys in the resulting document (which would always fail because
+        // the batch document contains many more fields than the four allowed).
         (isBeneficiary() && resource.data.beneficiaryId == uid()
           && resource.data.status in ['delivered', 'closed']
-          && request.resource.data.keys().hasOnly(
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
                ['status', 'rating', 'feedback', 'updatedAt']))
       );
 
