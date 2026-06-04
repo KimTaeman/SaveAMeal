@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:saveameal/core/models/user_model.dart';
 import 'package:saveameal/services/auth_service.dart';
 import 'package:saveameal/services/fcm_service.dart';
@@ -75,6 +76,11 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   @override
   Future<void> signOut() async {
     await _fcmService.unsubscribeFromTopic('new_batch_available');
+    // Clear per-user Hive caches so stale PII does not persist after logout.
+    // Guard with isBoxOpen: the box may not be open in unit-test environments.
+    if (Hive.isBoxOpen('delivery_history_cache')) {
+      await Hive.box<String>('delivery_history_cache').clear();
+    }
     await _authService.signOut();
   }
 

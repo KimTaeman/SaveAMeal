@@ -1,7 +1,5 @@
 // Pure Dart entity — no Flutter or backend imports.
-// TODO(engineer): FoodCategory lives in the donor domain. Consider moving it to
-// shared/ once multiple features depend on it.
-import 'package:saveameal/features/donor/domain/entities/food_category.dart';
+import 'package:saveameal/shared/domain/entities/food_category.dart';
 
 class BeneficiaryImpact {
   const BeneficiaryImpact({

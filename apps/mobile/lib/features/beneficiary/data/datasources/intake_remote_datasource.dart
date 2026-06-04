@@ -27,6 +27,19 @@ abstract class IntakeRemoteDatasource {
   });
 
   Stream<String> watchIntakeAvailability(String beneficiaryId);
+
+  Stream<List<BatchModel>> watchRecentDeliveriesForBeneficiary(
+    String beneficiaryId,
+  );
+
+  /// Returns (items, lastDocumentSnapshot?) for cursor advancement.
+  /// The raw DocumentSnapshot is returned as Object? to avoid exposing
+  /// cloud_firestore types outside the datasource layer.
+  Future<(List<BatchModel>, Object? nextCursor)> fetchDeliveryHistoryPage({
+    required String beneficiaryId,
+    required int pageSize,
+    Object? cursor,
+  });
 }
 
 class IntakeRemoteDatasourceImpl implements IntakeRemoteDatasource {
@@ -76,4 +89,20 @@ class IntakeRemoteDatasourceImpl implements IntakeRemoteDatasource {
   @override
   Stream<String> watchIntakeAvailability(String beneficiaryId) =>
       _firestoreService.watchIntakeAvailability(beneficiaryId);
+
+  @override
+  Stream<List<BatchModel>> watchRecentDeliveriesForBeneficiary(
+    String beneficiaryId,
+  ) => _firestoreService.watchRecentDeliveriesForBeneficiary(beneficiaryId);
+
+  @override
+  Future<(List<BatchModel>, Object? nextCursor)> fetchDeliveryHistoryPage({
+    required String beneficiaryId,
+    required int pageSize,
+    Object? cursor,
+  }) => _firestoreService.fetchDeliveryHistoryPage(
+    beneficiaryId: beneficiaryId,
+    pageSize: pageSize,
+    cursor: cursor,
+  );
 }

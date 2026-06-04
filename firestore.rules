@@ -29,9 +29,16 @@ service cloud.firestore {
     }
 
     // ── batches ────────────────────────────────────────────────────────────────
-    // Donors create; all signed-in users read; updates are role-gated.
+    // Open/claimed/pickedUp batches are readable by all signed-in users (map view,
+    // volunteer queue). Delivered/closed batches are personal history — readable
+    // only by the owning beneficiary, the donor, or the driver on that batch.
     match /batches/{batchId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && (
+        resource.data.status in ['open', 'claimed', 'pickedUp'] ||
+        resource.data.beneficiaryId == uid() ||
+        resource.data.donorId       == uid() ||
+        resource.data.driverId      == uid()
+      );
 
       allow create: if isSignedIn() && isDonor()
                     && request.resource.data.donorId == uid()

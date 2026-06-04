@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -19,8 +21,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        }
+    }
+
+    val localProps = Properties().also { props: Properties ->
+        rootProject.file("local.properties").takeIf { it.exists() }
+            ?.inputStream()?.use { props.load(it) }
     }
 
     defaultConfig {
@@ -32,6 +41,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Google Maps key — read from local.properties (dev) or MAPS_API_KEY env var (CI).
+        manifestPlaceholders["MAPS_API_KEY"] =
+            (localProps.getProperty("MAPS_API_KEY") ?: System.getenv("MAPS_API_KEY") ?: "")
     }
 
     buildTypes {
