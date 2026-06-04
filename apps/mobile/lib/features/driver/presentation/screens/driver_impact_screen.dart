@@ -380,7 +380,7 @@ class _LeaderboardSection extends StatelessWidget {
         Center(
           child: TextButton(
             key: const Key('view_full_leaderboard'),
-            onPressed: () {},
+            onPressed: () => context.push('/driver/leaderboard'),
             child: Text(
               'View Full Leaderboard',
               style: TextStyle(color: ac.brand),
