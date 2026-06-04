@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/auth/presentation/screens/beneficiary_onboarding_screen.dart';
+import 'package:saveameal/features/auth/presentation/screens/driver_onboarding_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/login_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/register_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/role_router_screen.dart';
@@ -70,6 +72,26 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/role-router',
         builder: (context, state) => const RoleRouterScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding/driver',
+        redirect: (context, state) {
+          final user = ref.read(authStateProvider).asData?.value;
+          if (user == null) return '/welcome';
+          if (user.role != UserRole.driver) return '/role-router';
+          return null;
+        },
+        builder: (context, state) => const DriverOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding/beneficiary',
+        redirect: (context, state) {
+          final user = ref.read(authStateProvider).asData?.value;
+          if (user == null) return '/welcome';
+          if (user.role != UserRole.beneficiary) return '/role-router';
+          return null;
+        },
+        builder: (context, state) => const BeneficiaryOnboardingScreen(),
       ),
       GoRoute(
         path: '/donor',

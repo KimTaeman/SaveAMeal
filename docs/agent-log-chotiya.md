@@ -823,3 +823,52 @@ Files:
   ~ apps/mobile/lib/shared/theme/app_colors.dart
 Summary:  2 files changed, 28 insertions(+), 11 deletions(-)
 
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/features/auth/presentation/screens/role_router_screen.dart
+  ? apps/mobile/lib/features/auth/presentation/screens/beneficiary_onboarding_screen.dart (untracked)
+  ? apps/mobile/lib/features/auth/presentation/screens/driver_onboarding_screen.dart (untracked)
+  ? apps/mobile/lib/shared/widgets/onboarding_step_indicator.dart (untracked)
+  ? apps/mobile/test/widget/features/auth/ (untracked)
+Summary:  2 files changed, 29 insertions(+), 3 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/features/auth/presentation/screens/role_router_screen.dart
+  ? apps/mobile/lib/features/auth/presentation/screens/beneficiary_onboarding_screen.dart (untracked)
+  ? apps/mobile/lib/features/auth/presentation/screens/driver_onboarding_screen.dart (untracked)
+  ? apps/mobile/lib/shared/widgets/onboarding_step_indicator.dart (untracked)
+  ? apps/mobile/test/widget/features/auth/ (untracked)
+Summary:  2 files changed, 37 insertions(+), 3 deletions(-)
+
+
+---
+Date: 2026-06-04 00:00
+Member: chotiya
+Agent: qa-engineer
+Task: Second-pass QA review of feature/onboarding-setup after v1 fixes
+Prompt: Review the onboarding-setup branch after all v1 findings were addressed. Audit test coverage completeness, convention violations, accessibility, performance, and the _saving-not-reset-in-finally concern on the beneficiary screen.
+Outcome: Verdict CHANGES REQUESTED. 7 of 8 v1 findings confirmed resolved. 2 new MEDIUM findings raised: (1) missing finally block in BeneficiaryOnboardingScreen._handleSave creates latent permanent-spinner bug; (2) dart format not run before submission — 5 files reformatted, CI gate would have failed. 3 LOW gaps in test coverage (incomplete validation assertions, weak dot-count assertion). Full report at docs/agent-runs/2026-06-04-qa-onboarding-setup-v2.md.
+Decisions: Confirmed UncontrolledProviderScope + container.listen pattern is sound for async-submit tests. Confirmed FormFieldState.didChange() is correct for dropdown widget tests. _saving abandonment on success classified MEDIUM (not LOW) because the bug is latent but real if the router ever revisits the screen.
+Handoff: Flutter engineer must: (1) add finally block to _handleSave in beneficiary_onboarding_screen.dart; (2) run dart format . before re-submitting; (3) address LOW test gaps at discretion. Re-submit for QA v3 after fixes.
+Review: PENDING
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/features/auth/presentation/screens/role_router_screen.dart
+  ? apps/mobile/lib/features/auth/presentation/screens/beneficiary_onboarding_screen.dart (untracked)
+  ? apps/mobile/lib/features/auth/presentation/screens/driver_onboarding_screen.dart (untracked)
+  ? apps/mobile/lib/shared/widgets/onboarding_step_indicator.dart (untracked)
+  ? apps/mobile/test/debug_driver_test.dart (untracked)
+  ? apps/mobile/test/widget/features/auth/ (untracked)
+Summary:  2 files changed, 55 insertions(+), 3 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/features/auth/presentation/screens/role_router_screen.dart
+  ? apps/mobile/lib/features/auth/presentation/screens/beneficiary_onboarding_screen.dart (untracked)
+  ? apps/mobile/lib/features/auth/presentation/screens/driver_onboarding_screen.dart (untracked)
+  ? apps/mobile/lib/shared/widgets/onboarding_step_indicator.dart (untracked)
+  ? apps/mobile/test/debug_driver_test.dart (untracked)
+  ? apps/mobile/test/widget/features/auth/ (untracked)
+Summary:  2 files changed, 63 insertions(+), 3 deletions(-)
+
