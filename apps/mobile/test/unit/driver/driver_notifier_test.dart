@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +15,7 @@ class _FakeRepo implements DriverRepository {
   bool claimShouldThrow = false;
   String? lastConfirmedPickup;
   String? lastConfirmedDelivery;
+  Stream<BatchSummary?> Function(String driverId)? activeBatchStreamFactory;
 
   @override
   Future<void> claimBatch(String batchId, String driverId) async {
@@ -33,7 +36,8 @@ class _FakeRepo implements DriverRepository {
   Stream<List<BatchSummary>> getOpenBatches() => const Stream.empty();
 
   @override
-  Stream<BatchSummary?> getActiveBatch(String driverId) => const Stream.empty();
+  Stream<BatchSummary?> getActiveBatch(String driverId) =>
+      activeBatchStreamFactory?.call(driverId) ?? const Stream.empty();
 
   @override
   Future<void> upsertLocation(String driverId, double lat, double lng) async {}
@@ -44,6 +48,9 @@ class _FakeRepo implements DriverRepository {
   Future<void> deleteLocation(String driverId) async {
     lastDeletedLocationDriverId = driverId;
   }
+
+  @override
+  Future<void> updateBatchEta(String batchId, int eta) async {}
 
   @override
   Stream<int> watchPoints(String uid) => const Stream.empty();
@@ -74,6 +81,9 @@ class _FakeDatasource implements DriverRemoteDatasource {
 
   @override
   Future<void> deleteLocation(String driverId) async {}
+
+  @override
+  Future<void> updateBatchEta(String batchId, int eta) async {}
 
   @override
   Stream<int> watchPoints(String uid) => const Stream.empty();
@@ -126,4 +136,93 @@ void main() {
     await notifier.confirmDelivery('b1', null);
     expect(container.read(driverProvider).step, DriverStep.delivered);
   });
+
+  test(
+    'confirmPickup keeps pickup coords and completes without error when beneficiary coords unavailable',
+    () async {
+      const pickupLat = 13.75, pickupLng = 100.50;
+      final batch = BatchSummary(
+        id: 'b1',
+        donorName: 'Donor',
+        pickupAddress: '123 Test St',
+        beneficiaryAddress: '456 Ben St',
+        beneficiaryName: 'Beneficiary',
+        totalPortions: 1,
+        lat: pickupLat,
+        lng: pickupLng,
+        foodCategory: 'grain',
+      );
+
+      final repo =
+          _FakeRepo(); // activeBatchStreamFactory is null → Stream.empty()
+      final container = _makeContainer(repo);
+      addTearDown(container.dispose);
+      // Keep the provider alive across async gaps to prevent auto-dispose.
+      container.listen(driverProvider, (prev, next) {});
+      final notifier = container.read(driverProvider.notifier);
+
+      notifier.selectBatch(batch);
+      await notifier.claimBatch('b1', 'd1');
+      await Future<void>.delayed(Duration.zero);
+
+      // No batch emitted → _beneficiaryLat/Lng remain null.
+      await notifier.confirmPickup('b1', XFile('/fake/photo.jpg'));
+
+      // ETA destination remains at pickup coords.
+      expect(notifier.etaDestinationForTest, (pickupLat, pickupLng));
+      // State transition still happens correctly.
+      expect(
+        container.read(driverProvider).rescuePhase,
+        ClaimRescuePhase.enRouteBeneficiary,
+      );
+    },
+  );
+
+  test(
+    'confirmPickup switches ETA destination to beneficiary coords when available',
+    () async {
+      const pickupLat = 13.75, pickupLng = 100.50;
+      const benLat = 13.80, benLng = 100.55;
+      final batch = BatchSummary(
+        id: 'b1',
+        donorName: 'Donor',
+        pickupAddress: '123 Test St',
+        beneficiaryAddress: '456 Ben St',
+        beneficiaryName: 'Beneficiary',
+        totalPortions: 1,
+        lat: pickupLat,
+        lng: pickupLng,
+        beneficiaryLat: benLat,
+        beneficiaryLng: benLng,
+        foodCategory: 'grain',
+      );
+
+      final controller = StreamController<BatchSummary?>.broadcast();
+      addTearDown(controller.close);
+
+      final repo = _FakeRepo()
+        ..activeBatchStreamFactory = (_) => controller.stream;
+      final container = _makeContainer(repo);
+      addTearDown(container.dispose);
+      // Keep the provider alive across async gaps to prevent auto-dispose.
+      container.listen(driverProvider, (prev, next) {});
+      final notifier = container.read(driverProvider.notifier);
+
+      notifier.selectBatch(batch);
+      await notifier.claimBatch('b1', 'd1');
+
+      // Simulate Firestore emitting the updated batch with beneficiary coords.
+      controller.add(batch);
+      await Future<void>.delayed(Duration.zero);
+
+      await notifier.confirmPickup('b1', XFile('/fake/photo.jpg'));
+
+      // ETA destination should now point to beneficiary.
+      expect(notifier.etaDestinationForTest, (benLat, benLng));
+      expect(
+        container.read(driverProvider).rescuePhase,
+        ClaimRescuePhase.enRouteBeneficiary,
+      );
+    },
+  );
 }

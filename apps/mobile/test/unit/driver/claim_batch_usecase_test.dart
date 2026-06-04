@@ -34,6 +34,9 @@ class _FakeDriverRepository implements DriverRepository {
   Future<void> deleteLocation(String driverId) async {}
 
   @override
+  Future<void> updateBatchEta(String batchId, int eta) async {}
+
+  @override
   Stream<int> watchPoints(String uid) => const Stream.empty();
 }
 

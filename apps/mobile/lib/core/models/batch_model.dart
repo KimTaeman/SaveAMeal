@@ -16,6 +16,7 @@ sealed class BatchModel with _$BatchModel {
     required BatchStatus status,
     String? driverId,
     String? volunteerName,
+    int? estimatedArrivalMinutes,
     String? beneficiaryId,
     // Denormalised beneficiary info (written at batch creation time)
     String? beneficiaryName,
@@ -38,6 +39,9 @@ sealed class BatchModel with _$BatchModel {
     // Pickup coordinates (set at batch creation from donor profile)
     @Default(0.0) double pickupLat,
     @Default(0.0) double pickupLng,
+    // Delivery coordinates (denormalised from beneficiary doc at claim time)
+    double? beneficiaryLat,
+    double? beneficiaryLng,
     // Delivery outcome
     String? deliveryNotes,
     int? rating,
