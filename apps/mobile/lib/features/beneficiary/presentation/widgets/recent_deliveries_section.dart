@@ -104,7 +104,8 @@ class _DeliveryRow extends StatelessWidget {
           trailing: ExcludeSemantics(
             child: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
           ),
-          onTap: () {},
+          onTap: () =>
+              context.push('/beneficiary/delivery/${delivery.batchId}'),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: Spacing.md,
             vertical: Spacing.xs,
