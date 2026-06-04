@@ -71,7 +71,10 @@ class _DeliveryRow extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Spacing.md,
+        vertical: Spacing.xs,
+      ),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -103,7 +106,7 @@ class _DeliveryRow extends StatelessWidget {
           onTap: () {},
           contentPadding: const EdgeInsets.symmetric(
             horizontal: Spacing.md,
-            vertical: 4,
+            vertical: Spacing.xs,
           ),
         ),
       ),
