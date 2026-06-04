@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,6 +33,7 @@ class _BeneficiaryPersonalInformationScreenState
   bool _initialized = false;
   bool _saving = false;
   bool _uploadingPhoto = false;
+  bool _fetchingLocation = false;
   String? _photoUrl;
 
   @override
@@ -41,6 +43,84 @@ class _BeneficiaryPersonalInformationScreenState
     _phoneController.dispose();
     _locationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    if (!mounted) return;
+    setState(() => _fetchingLocation = true);
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location permission denied. Please enter your location manually.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location services are disabled. Please enable them in device settings.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      if (mounted) {
+        setState(() {
+          _locationController.text =
+              '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+        });
+      }
+    } on PermissionDeniedException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location permission denied. Please enter your location manually.',
+            ),
+          ),
+        );
+      }
+    } on LocationServiceDisabledException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location services are disabled. Please enable them in device settings.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not get location. Please try again.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _fetchingLocation = false);
+    }
   }
 
   InputDecoration _baseDecoration(ColorScheme cs, AppColors ac) =>
@@ -382,19 +462,19 @@ class _BeneficiaryPersonalInformationScreenState
                             : null,
                         decoration: _baseDecoration(cs, ac).copyWith(
                           hintText: 'City, Neighborhood, or Zip',
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              Icons.my_location,
-                              color: cs.primary,
-                              size: 20,
-                            ),
-                            onPressed: () =>
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Getting location...'),
+                          suffixIcon: _fetchingLocation
+                              ? Padding(
+                                  padding: EdgeInsets.all(Spacing.sm),
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: cs.primary),
                                   ),
+                                )
+                              : IconButton(
+                                  icon: Icon(Icons.my_location, color: cs.primary, size: 20),
+                                  onPressed: _getCurrentLocation,
                                 ),
-                          ),
                         ),
                       ),
                     ],
