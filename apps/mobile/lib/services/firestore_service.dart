@@ -449,6 +449,43 @@ class FirestoreService {
     return BeneficiaryModel.fromJson({...doc.data()!, 'id': doc.id});
   }
 
+  /// Fetches a single page of delivered/closed batches for [beneficiaryId].
+  /// Uses cursor-based pagination via startAfterDocument. Results are sorted
+  /// by deliveredAt descending client-side (in FirestoreIntakeRepository) to
+  /// avoid requiring a composite Firestore index on (beneficiaryId, status,
+  /// deliveredAt) — the same no-orderBy pattern used by
+  /// watchRecentDeliveriesForBeneficiary.
+  Future<(List<BatchModel>, Object? nextCursor)> fetchDeliveryHistoryPage({
+    required String beneficiaryId,
+    required int pageSize,
+    Object? cursor,
+  }) async {
+    Query<Map<String, dynamic>> query = _db
+        .collection(FirestoreConstants.batches)
+        .where('beneficiaryId', isEqualTo: beneficiaryId)
+        .where('status', whereIn: ['delivered', 'closed'])
+        .limit(pageSize);
+
+    if (cursor != null) {
+      if (cursor is! DocumentSnapshot) {
+        throw ArgumentError(
+          'cursor must be a DocumentSnapshot, got ${cursor.runtimeType}',
+        );
+      }
+      query = query.startAfterDocument(cursor);
+    }
+
+    final snapshot = await query.get();
+    final nextCursor = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+    final models = snapshot.docs
+        .map(
+          (doc) =>
+              BatchModel.fromJson(_normalise({...doc.data(), 'id': doc.id})),
+        )
+        .toList();
+    return (models, nextCursor);
+  }
+
   Future<Map<String, dynamic>?> getBeneficiaryMap(String beneficiaryId) async {
     final doc = await _db
         .collection(FirestoreConstants.beneficiaries)

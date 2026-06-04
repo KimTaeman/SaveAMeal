@@ -14,6 +14,7 @@ import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_personal_information_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/delivery_detail_screen.dart';
+import 'package:saveameal/features/beneficiary/presentation/screens/delivery_history_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/screens/tracking_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_detail_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
@@ -166,12 +167,26 @@ GoRouter router(Ref ref) {
       ),
       GoRoute(
         path: '/beneficiary',
+        redirect: (context, state) {
+          final user = ref.read(authStateProvider).asData?.value;
+          if (user == null) return '/login';
+          if (user.role != UserRole.beneficiary) return '/role-router';
+          return null;
+        },
         builder: (context, state) => const BeneficiaryHomeScreen(),
         routes: [
           GoRoute(
             path: 'delivery/:batchId',
             builder: (context, state) =>
                 DeliveryDetailScreen(batchId: state.pathParameters['batchId']!),
+          ),
+          GoRoute(
+            path: 'history',
+            builder: (context, state) {
+              final currentUser = ref.read(authStateProvider).asData?.value;
+              if (currentUser == null) return const BeneficiaryHomeScreen();
+              return DeliveryHistoryScreen(beneficiaryId: currentUser.uid);
+            },
           ),
           GoRoute(
             path: 'impact',

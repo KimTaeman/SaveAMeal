@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/delivery_history_page.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_item.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
@@ -65,6 +66,13 @@ class _FakeIntakeRepository implements IntakeRepository {
   @override
   Stream<List<RecentDelivery>> watchRecentDeliveries(String beneficiaryId) =>
       throw UnimplementedError();
+
+  @override
+  Future<DeliveryHistoryPage> fetchDeliveryHistoryPage({
+    required String beneficiaryId,
+    required int pageSize,
+    Object? cursor,
+  }) => throw UnimplementedError();
 }
 
 void main() {

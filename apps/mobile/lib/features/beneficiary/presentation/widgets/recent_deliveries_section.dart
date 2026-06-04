@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
@@ -38,10 +39,8 @@ class RecentDeliveriesSection extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  // TODO: navigate to full delivery history screen
                   TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                    onPressed: () => context.push('/beneficiary/history'),
                     child: Text(
                       'View All',
                       style: textTheme.labelMedium?.copyWith(color: cs.primary),
