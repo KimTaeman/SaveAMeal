@@ -405,23 +405,33 @@ class FirestoreService {
     }
   }
 
-  // Queries users with role=beneficiary for full profile data. The beneficiaries
-  // collection only stores intakeStatus — name/address live in users.
+  // Queries the beneficiaries collection directly, filtered to those currently
+  // accepting food. All profile fields (name, address, lat/lng, etc.) are read
+  // from the beneficiaries doc. Falls back to orgName, then document ID if
+  // the name field is absent.
   Stream<List<BeneficiaryModel>> getBeneficiaries() => _db
-      .collection(FirestoreConstants.users)
-      .where('role', isEqualTo: 'beneficiary')
+      .collection(FirestoreConstants.beneficiaries)
+      .where('intakeStatus', isEqualTo: 'accepting')
       .snapshots()
       .map(
         (qs) => qs.docs.map((d) {
           final data = d.data();
-          final orgName = data['orgName'] as String?;
           final name = data['name'] as String?;
+          final orgName = data['orgName'] as String?;
+          final resolvedName = (name != null && name.isNotEmpty)
+              ? name
+              : (orgName != null && orgName.isNotEmpty)
+              ? orgName
+              : d.id;
           return BeneficiaryModel(
             id: d.id,
-            name: (orgName != null && orgName.isNotEmpty)
-                ? orgName
-                : (name ?? 'Unknown'),
+            name: resolvedName,
             address: data['address'] as String?,
+            lat: (data['lat'] as num?)?.toDouble(),
+            lng: (data['lng'] as num?)?.toDouble(),
+            orgType: data['orgType'] as String?,
+            contactEmail: data['contactEmail'] as String?,
+            missionStatement: data['missionStatement'] as String?,
           );
         }).toList(),
       );
