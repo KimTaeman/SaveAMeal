@@ -441,6 +441,8 @@ class _BeneficiaryPersonalInformationScreenState
         currentIndex: 3,
         onDestinationSelected: (i) {
           if (i == 0) context.go('/beneficiary');
+          if (i == 1) context.go('/beneficiary/history');
+          if (i == 2) context.go('/beneficiary/impact');
           if (i == 3) context.go('/beneficiary/account');
         },
       ),
