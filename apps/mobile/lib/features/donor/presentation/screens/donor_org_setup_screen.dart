@@ -213,11 +213,20 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
+      appBar: AppBar(
+        backgroundColor: cs.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back to profile',
+          onPressed: () => context.push('/donor/account/personal'),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
             horizontal: Spacing.lg,
-            vertical: Spacing.xl,
+            vertical: Spacing.md,
           ),
           child: Form(
             key: _formKey,
