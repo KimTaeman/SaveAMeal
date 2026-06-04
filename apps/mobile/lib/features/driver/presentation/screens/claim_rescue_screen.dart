@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -36,27 +37,33 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
   @override
   void dispose() {
     _positionSub?.cancel();
-    // Guard against the web "Maps cannot be retrieved before calling buildView"
-    // crash that happens if the widget is disposed before the map initialises.
-    if (_mapReady) {
-      _mapController?.dispose();
+    // google_maps_flutter_web 0.6.2+1 crashes if dispose() is called before
+    // onMapCreated fires. Wrap in try/catch and skip on web when not ready.
+    if (!kIsWeb || _mapReady) {
+      try {
+        _mapController?.dispose();
+      } catch (_) {}
     }
     super.dispose();
   }
 
   Future<void> _startLocationTracking() async {
-    // Request permission explicitly — required on web and some Android configs.
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      if (mounted) setState(() => _locationDenied = true);
-      return;
+    // On web, navigator.permissions reports 'denied' for localhost even when
+    // Chrome site settings say 'allow'. Skip the gate on web and let the
+    // browser handle permission natively via getCurrentPosition.
+    if (!kIsWeb) {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (mounted) setState(() => _locationDenied = true);
+        return;
+      }
     }
 
-    // One-shot fix for an immediate position.
+    // One-shot for an immediate first position.
     Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
             accuracy: LocationAccuracy.high,
@@ -68,9 +75,11 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
             () => _currentPosition = LatLng(pos.latitude, pos.longitude),
           );
         })
-        .catchError((_) {});
+        .catchError((_) {
+          if (mounted) setState(() => _locationDenied = true);
+        });
 
-    // Live stream updates polyline every 10 m of movement.
+    // Live stream — updates polyline every 10 m of movement on mobile.
     _positionSub =
         Geolocator.getPositionStream(
           locationSettings: const LocationSettings(
@@ -82,7 +91,7 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
           setState(
             () => _currentPosition = LatLng(pos.latitude, pos.longitude),
           );
-        });
+        }, onError: (_) {});
   }
 
   Future<void> _openNavigation(String address) async {
