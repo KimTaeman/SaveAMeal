@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
@@ -57,6 +58,65 @@ class _ThrowingDonorAccountRepository implements DonorAccountRepository {
   );
 }
 
+class _FakeGeolocatorPlatform extends GeolocatorPlatform {
+  final bool permissionDenied;
+  _FakeGeolocatorPlatform({this.permissionDenied = false});
+
+  @override
+  Future<Position> getCurrentPosition({
+    LocationSettings? locationSettings,
+  }) async {
+    if (permissionDenied) throw const PermissionDeniedException('denied');
+    return Position(
+      latitude: 13.7563,
+      longitude: 100.5018,
+      timestamp: DateTime(2026, 6, 4),
+      accuracy: 5.0,
+      altitude: 0.0,
+      heading: 0.0,
+      speed: 0.0,
+      speedAccuracy: 0.0,
+      altitudeAccuracy: 0.0,
+      headingAccuracy: 0.0,
+    );
+  }
+}
+
+class _CapturingDonorAccountRepository implements DonorAccountRepository {
+  UserProfileUpdate? lastUpdate;
+
+  @override
+  Future<void> updateUser(String uid, UserProfileUpdate update) async {
+    lastUpdate = update;
+  }
+
+  @override
+  Future<DonorProfile?> getUser(String uid) async => DonorProfile(
+    uid: uid,
+    name: 'FreshMart Supermarket',
+    email: 'freshmart@test.com',
+    role: 'donor',
+    streetAddress: '123 Test Street, Bangkok',
+  );
+}
+
+class _ProfileWithCoordsDonorAccountRepository
+    implements DonorAccountRepository {
+  @override
+  Future<void> updateUser(String uid, UserProfileUpdate update) async {}
+
+  @override
+  Future<DonorProfile?> getUser(String uid) async => DonorProfile(
+    uid: uid,
+    name: 'FreshMart Supermarket',
+    email: 'freshmart@test.com',
+    role: 'donor',
+    streetAddress: '123 Test Street, Bangkok',
+    latitude: 13.7563,
+    longitude: 100.5018,
+  );
+}
+
 // ── Router ────────────────────────────────────────────────────────────────────
 
 GoRouter _buildRouter() => GoRouter(
@@ -109,6 +169,14 @@ Widget _buildApp({DonorAccountRepository? repo}) {
 
 void main() {
   group('OrganizationProfileScreen', () {
+    setUp(() {
+      GeolocatorPlatform.instance = _FakeGeolocatorPlatform();
+    });
+
+    tearDown(() {
+      GeolocatorPlatform.instance = _FakeGeolocatorPlatform();
+    });
+
     testWidgets('renders AppBar with Organization Profile title', (
       tester,
     ) async {
@@ -317,5 +385,132 @@ void main() {
       // Verify view mode: 'Day' TextField gone
       expect(find.widgetWithText(TextFormField, 'Day'), findsNothing);
     });
+
+    testWidgets(
+      'map button disabled when profile has no address and no coords',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+              currentUserProvider.overrideWith(
+                (ref) async => const DonorProfile(
+                  uid: 'abcdef1234567890',
+                  name: 'FreshMart Supermarket',
+                  email: 'freshmart@test.com',
+                  role: 'donor',
+                ),
+              ),
+              updateUserUsecaseProvider.overrideWithValue(
+                UpdateUserUsecase(_FakeDonorAccountRepository()),
+              ),
+            ],
+            child: MaterialApp.router(
+              theme: AppTheme.light(),
+              routerConfig: _buildRouter(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final mapIcon = find.byIcon(Icons.map_outlined);
+        await tester.ensureVisible(mapIcon);
+        await tester.pumpAndSettle();
+        final mapBtn = find.ancestor(
+          of: mapIcon,
+          matching: find.byType(IconButton),
+        );
+        expect(tester.widget<IconButton>(mapBtn).onPressed, isNull);
+      },
+    );
+
+    testWidgets('map button enabled when profile has stored coordinates', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildApp(repo: _ProfileWithCoordsDonorAccountRepository()),
+      );
+      await tester.pumpAndSettle();
+
+      final mapIcon = find.byIcon(Icons.map_outlined);
+      await tester.ensureVisible(mapIcon);
+      await tester.pumpAndSettle();
+      final mapBtn = find.ancestor(
+        of: mapIcon,
+        matching: find.byType(IconButton),
+      );
+      expect(tester.widget<IconButton>(mapBtn).onPressed, isNotNull);
+    });
+
+    testWidgets('location button shows snackbar on permission denied', (
+      tester,
+    ) async {
+      GeolocatorPlatform.instance = _FakeGeolocatorPlatform(
+        permissionDenied: true,
+      );
+
+      await tester.pumpWidget(_buildApp());
+      await tester.pumpAndSettle();
+
+      final locationIcon = find.byIcon(Icons.my_location);
+      await tester.ensureVisible(locationIcon);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.ancestor(of: locationIcon, matching: find.byType(IconButton)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(
+        find.text(
+          'Location permission denied. Please enter your address manually.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Save Changes sends lat/lng in UserProfileUpdate', (
+      tester,
+    ) async {
+      final capturingRepo = _CapturingDonorAccountRepository();
+      await tester.pumpWidget(_buildApp(repo: capturingRepo));
+      await tester.pumpAndSettle();
+
+      final locationIcon = find.byIcon(Icons.my_location);
+      await tester.ensureVisible(locationIcon);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.ancestor(of: locationIcon, matching: find.byType(IconButton)),
+      );
+      await tester.pumpAndSettle();
+
+      final saveBtn = find.widgetWithText(FilledButton, 'Save Changes');
+      await tester.ensureVisible(saveBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(saveBtn);
+      await tester.pumpAndSettle();
+
+      expect(capturingRepo.lastUpdate?.latitude, closeTo(13.7563, 0.0001));
+      expect(capturingRepo.lastUpdate?.longitude, closeTo(100.5018, 0.0001));
+    });
+
+    testWidgets(
+      'pre-fills lat/lng from existing profile — map button enabled',
+      (tester) async {
+        await tester.pumpWidget(
+          _buildApp(repo: _ProfileWithCoordsDonorAccountRepository()),
+        );
+        await tester.pumpAndSettle();
+
+        final mapIcon = find.byIcon(Icons.map_outlined);
+        await tester.ensureVisible(mapIcon);
+        await tester.pumpAndSettle();
+        final mapBtn = find.ancestor(
+          of: mapIcon,
+          matching: find.byType(IconButton),
+        );
+        expect(tester.widget<IconButton>(mapBtn).onPressed, isNotNull);
+      },
+    );
   });
 }
