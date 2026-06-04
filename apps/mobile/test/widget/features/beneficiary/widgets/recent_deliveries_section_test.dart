@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/recent_deliveries_section.dart';
@@ -30,6 +31,45 @@ Widget _buildSection({
   );
 }
 
+// Builds with a GoRouter so navigation calls can be verified.
+Widget _buildSectionWithRouter({
+  required String beneficiaryId,
+  required AsyncValue<List<RecentDelivery>> value,
+}) {
+  final router = GoRouter(
+    initialLocation: '/section',
+    routes: [
+      GoRoute(
+        path: '/section',
+        builder: (ctx, state) => Scaffold(
+          body: RecentDeliveriesSection(beneficiaryId: beneficiaryId),
+        ),
+      ),
+      GoRoute(
+        path: '/beneficiary/delivery/:id',
+        builder: (ctx, state) =>
+            Scaffold(body: Text('Delivery ${state.pathParameters['id']}')),
+      ),
+      GoRoute(
+        path: '/beneficiary/history',
+        builder: (ctx, state) => const Scaffold(body: Text('History Screen')),
+      ),
+    ],
+  );
+  return ProviderScope(
+    overrides: [
+      recentDeliveriesProvider(beneficiaryId).overrideWith(
+        (_) => value.when(
+          data: Stream.value,
+          loading: () => const Stream.empty(),
+          error: (e, st) => Stream.error(e, st),
+        ),
+      ),
+    ],
+    child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
+  );
+}
+
 // Reusable deliveries fixture.
 final _deliveries = [
   RecentDelivery(
@@ -53,7 +93,7 @@ final _deliveries = [
 
 void main() {
   group('RecentDeliveriesSection', () {
-    testWidgets('renders SizedBox.shrink while loading', (tester) async {
+    testWidgets('shows header and spinner while loading', (tester) async {
       await tester.pumpWidget(
         _buildSection(
           beneficiaryId: 'ben_001',
@@ -62,9 +102,10 @@ void main() {
       );
       await tester.pump();
 
-      // Section header and rows must not appear.
-      expect(find.text('Recent Deliveries'), findsNothing);
-      expect(find.text('View All'), findsNothing);
+      // Header stays visible during load; spinner replaces delivery rows.
+      expect(find.text('Recent Deliveries'), findsOneWidget);
+      expect(find.text('View All'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('renders SizedBox.shrink on error', (tester) async {
@@ -74,7 +115,8 @@ void main() {
           value: AsyncValue.error(Exception('fail'), StackTrace.empty),
         ),
       );
-      await tester.pump();
+      // pumpAndSettle so the stream error is delivered before asserting.
+      await tester.pumpAndSettle();
 
       expect(find.text('Recent Deliveries'), findsNothing);
     });
@@ -181,6 +223,40 @@ void main() {
         ),
         findsNWidgets(3),
       );
+    });
+
+    testWidgets('tapping a delivery card navigates to its detail screen', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildSectionWithRouter(
+          beneficiaryId: 'ben_001',
+          value: AsyncValue.data([_deliveries.first]),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(Card).first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delivery b_001'), findsOneWidget);
+    });
+
+    testWidgets('tapping View All navigates to order history screen', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildSectionWithRouter(
+          beneficiaryId: 'ben_001',
+          value: AsyncValue.data(_deliveries),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('View All'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('History Screen'), findsOneWidget);
     });
   });
 
