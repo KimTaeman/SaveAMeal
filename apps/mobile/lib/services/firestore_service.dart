@@ -346,7 +346,65 @@ class FirestoreService {
         'points': FieldValue.increment(meals),
         'rankProgressCurrent': FieldValue.increment(meals),
       });
+      await _rebuildLeaderboard(driverId, meals);
     }
+  }
+
+  /// Upserts the driver's entry in leaderboard/thisMonth, re-sorts by score,
+  /// assigns sequential ranks, and writes the updated list back. Also updates
+  /// the driver's rank and totalDrivers fields in their user document.
+  Future<void> _rebuildLeaderboard(String driverId, int deliveredMeals) async {
+    // Read the driver's updated profile for display fields.
+    final driverSnap = await _db
+        .collection(FirestoreConstants.users)
+        .doc(driverId)
+        .get();
+    final driverData = driverSnap.data() ?? {};
+    final driverName = driverData['name'] as String? ?? 'Driver';
+    final zone = driverData['primaryLocation'] as String? ?? 'Bangkok';
+    final avatarUrl = driverData['photoUrl'] as String? ?? '';
+    final newMealsSaved = (driverData['mealsSaved'] as int?) ?? deliveredMeals;
+
+    final leaderboardRef = _db
+        .collection(FirestoreConstants.leaderboard)
+        .doc('thisMonth');
+
+    await _db.runTransaction((tx) async {
+      final lSnap = await tx.get(leaderboardRef);
+      final entries = List<Map<String, dynamic>>.from(
+        ((lSnap.data()?['entries'] as List<dynamic>?) ?? []).map(
+          (e) => Map<String, dynamic>.from(e as Map),
+        ),
+      );
+
+      // Remove any stale entry for this driver and insert the updated one.
+      entries.removeWhere((e) => e['uid'] == driverId);
+      entries.add({
+        'uid': driverId,
+        'driverName': driverName,
+        'zone': zone,
+        'score': newMealsSaved,
+        'avatarUrl': avatarUrl,
+      });
+
+      // Sort descending by score and assign ranks.
+      entries.sort(
+        (a, b) =>
+            ((b['score'] as int?) ?? 0).compareTo((a['score'] as int?) ?? 0),
+      );
+      for (var i = 0; i < entries.length; i++) {
+        entries[i]['rank'] = i + 1;
+      }
+
+      tx.set(leaderboardRef, {'entries': entries});
+
+      // Update the driver's rank and totalDrivers in their user document.
+      final driverRank = entries.indexWhere((e) => e['uid'] == driverId) + 1;
+      tx.update(_db.collection(FirestoreConstants.users).doc(driverId), {
+        'rank': driverRank,
+        'totalDrivers': entries.length,
+      });
+    });
   }
 
   Future<void> upsertDriverLocation(DriverLocationModel loc) => _db

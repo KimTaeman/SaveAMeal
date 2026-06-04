@@ -102,10 +102,12 @@ service cloud.firestore {
     }
 
     // ── leaderboard ────────────────────────────────────────────────────────────
-    // Written by Cloud Functions / seed script; all signed-in drivers may read.
+    // Updated client-side by drivers after each delivery (confirmDelivery
+    // transaction). Any signed-in driver may read and write so the ranking
+    // is rebuilt in real time without a Cloud Function.
     match /leaderboard/{period} {
       allow read:  if isSignedIn() && isDriver();
-      allow write: if false;
+      allow write: if isSignedIn() && isDriver();
     }
   }
 }
