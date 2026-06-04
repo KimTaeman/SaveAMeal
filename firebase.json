@@ -10,6 +10,7 @@
     {
       "source": "functions",
       "codebase": "default",
+      "location": "asia-southeast1",
       "ignore": [
         "node_modules",
         ".git",
