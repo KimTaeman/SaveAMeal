@@ -40,6 +40,8 @@ const addDonorIdx       = args.indexOf('--add-donor');
 const addDonorUid       = addDonorIdx >= 0 ? args[addDonorIdx + 1] : null;
 const addBeneficiaryIdx = args.indexOf('--add-beneficiary');
 const addBeneficiaryUid = addBeneficiaryIdx >= 0 ? args[addBeneficiaryIdx + 1] : null;
+const seedLeaderboardIdx = args.indexOf('--seed-leaderboard');
+const seedLeaderboardUid = seedLeaderboardIdx >= 0 ? args[seedLeaderboardIdx + 1] : null;
 
 // ── Initialise Firebase ────────────────────────────────────────────────────────
 
@@ -677,6 +679,21 @@ async function main() {
   // ── Demo mode: create Auth accounts + seed demo batch in one shot ─────────
   if (demoMode) {
     await setupDemo();
+    return;
+  }
+
+  // ── Write leaderboard/thisMonth with your UID at rank 4 ──────────────────
+  if (seedLeaderboardUid) {
+    await db.collection('leaderboard').doc('thisMonth').set({
+      entries: [
+        { rank: 1, uid: 'fake-uid-1', driverName: 'Sarah J.',   zone: 'Central Hub',    score: 512, avatarUrl: '' },
+        { rank: 2, uid: 'fake-uid-2', driverName: 'Marcus T.',  zone: 'North District', score: 489, avatarUrl: '' },
+        { rank: 3, uid: 'fake-uid-3', driverName: 'Elena R.',   zone: 'East Side',      score: 420, avatarUrl: '' },
+        { rank: 4, uid: seedLeaderboardUid, driverName: 'Nattapong', zone: 'South Zone', score: 342, avatarUrl: '' },
+      ],
+    });
+    console.log(`\n  ✓  leaderboard/thisMonth written`);
+    console.log(`     Your UID (${seedLeaderboardUid}) is at rank 4 — you will see the (You) highlight.\n`);
     return;
   }
 

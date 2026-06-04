@@ -100,5 +100,12 @@ service cloud.firestore {
                    && (docId == 'global' || docId == uid());
       allow write: if false;
     }
+
+    // ── leaderboard ────────────────────────────────────────────────────────────
+    // Written by Cloud Functions / seed script; all signed-in drivers may read.
+    match /leaderboard/{period} {
+      allow read:  if isSignedIn() && isDriver();
+      allow write: if false;
+    }
   }
 }
