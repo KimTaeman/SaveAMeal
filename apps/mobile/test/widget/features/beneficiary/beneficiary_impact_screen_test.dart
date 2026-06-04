@@ -25,8 +25,8 @@ const _testUser = AppUser(
 
 const _loadedImpact = BeneficiaryImpact(
   totalMeals: 4200,
-  totalKg: 1680.0,
-  totalCo2e: 1680.0,
+  totalKg: 1500.0,
+  totalCo2e: 1500.0,
   totalDeliveries: 21,
   byCategory: {
     FoodCategory.bakery: 500.0,
@@ -48,6 +48,16 @@ GoRouter _buildRouter() => GoRouter(
         GoRoute(
           path: 'impact',
           builder: (context, state) => const BeneficiaryImpactScreen(),
+        ),
+        GoRoute(
+          path: 'history',
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('History'))),
+        ),
+        GoRoute(
+          path: 'account',
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('Account'))),
         ),
       ],
     ),

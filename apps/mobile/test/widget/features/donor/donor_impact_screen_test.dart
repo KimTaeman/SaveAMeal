@@ -202,7 +202,17 @@ void main() {
             ).overrideWith((ref) => Stream.value(<Batch>[])),
             donorMetricsProvider(
               'test-donor-uid',
-            ).overrideWith((ref) => Stream.value(DonorMetrics.empty)),
+            ).overrideWith(
+              (ref) => Stream.value(
+                const DonorMetrics(
+                  donorId: 'test-donor-uid',
+                  totalKg: 0.0,
+                  totalMeals: 0,
+                  totalCO2e: 0.0,
+                  totalDeliveries: 0,
+                ),
+              ),
+            ),
           ],
           child: MaterialApp.router(
             theme: AppTheme.light(),
