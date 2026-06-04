@@ -109,6 +109,8 @@ class DonorRepositoryImpl implements DonorRepository {
     driverId: b.driverId,
     volunteerName: b.volunteerName,
     beneficiaryId: b.beneficiaryId,
+    pickupLat: b.pickupLat,
+    pickupLng: b.pickupLng,
     photoUrl: b.photoUrl,
     qrCode: b.qrCode,
     rating: b.rating,

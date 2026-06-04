@@ -30,7 +30,7 @@ void main() {
         _buildRow(category: FoodCategory.produce, kg: 200.0, totalKg: 400.0),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Produce'), findsOneWidget);
+      expect(find.text('Fruits & Veggies'), findsOneWidget);
     });
 
     testWidgets('renders correct display name for dairy', (tester) async {

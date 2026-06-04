@@ -44,7 +44,9 @@ class _FakeNotificationsRepository implements NotificationsRepository {
 
 List<AppNotification> _seedNotifications() {
   final now = DateTime.now();
-  final yesterday = now.subtract(const Duration(days: 1));
+  // Build a "noon yesterday" timestamp so it is always on the previous
+  // calendar day regardless of what time-of-day the test runs.
+  final yesterdayNoon = DateTime(now.year, now.month, now.day - 1, 12);
   return [
     AppNotification(
       id: '1',
@@ -75,7 +77,7 @@ List<AppNotification> _seedNotifications() {
       type: NotificationType.deliverySuccessful,
       title: 'View Receipt',
       body: 'Goods dropped off.',
-      timestamp: yesterday,
+      timestamp: yesterdayNoon,
       isRead: true,
       actionLabel: 'View Receipt',
       actionBatchId: '8832',
@@ -85,7 +87,7 @@ List<AppNotification> _seedNotifications() {
       type: NotificationType.batchCompleted,
       title: 'Batch Completed',
       body: 'Batch #8411 completed.',
-      timestamp: yesterday.add(const Duration(hours: 1)),
+      timestamp: yesterdayNoon.add(const Duration(hours: 1)),
       isRead: true,
     ),
   ];
@@ -99,7 +101,7 @@ Widget _buildTestApp(List<AppNotification> items) {
     overrides: [
       notificationsRepositoryProvider.overrideWith((ref) => repo),
       // No auth → role is null → no role-based filtering, all items shown.
-      authStateProvider.overrideWith((_) => const Stream.empty()),
+      authStateProvider.overrideWith((_) => Stream.value(null)),
       notificationReadStoreProvider.overrideWith((_) => _InMemoryReadStore()),
     ],
     child: MaterialApp.router(
@@ -124,7 +126,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(_buildTestApp(_seedNotifications()));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     // Section headers
     expect(find.text('TODAY (3)'), findsOneWidget);
@@ -142,7 +144,7 @@ void main() {
 
   testWidgets('Mark all read removes all unread dots', (tester) async {
     await tester.pumpWidget(_buildTestApp(_seedNotifications()));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     // Confirm dots are initially present
     expect(find.byKey(const ValueKey('unread_dot_1')), findsOneWidget);

@@ -1,0 +1,270 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:saveameal/core/logging/app_logger.dart';
+import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/beneficiary_org_profile_update.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_account_provider.dart';
+import 'package:saveameal/shared/theme/app_colors.dart';
+import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/widgets/onboarding_step_indicator.dart';
+import 'package:saveameal/shared/widgets/save_a_meal_logo.dart';
+
+const List<String> _orgTypes = [
+  'Shelter',
+  'Food Bank',
+  'Community Kitchen',
+  'School',
+  'Hospital',
+  'Other',
+];
+
+/// Onboarding screen shown to new beneficiaries to set up their organization.
+///
+/// Shown at `/onboarding/beneficiary` — requires auth, no AppBar, no bottom nav.
+class BeneficiaryOnboardingScreen extends ConsumerStatefulWidget {
+  const BeneficiaryOnboardingScreen({super.key});
+
+  @override
+  ConsumerState<BeneficiaryOnboardingScreen> createState() =>
+      _BeneficiaryOnboardingScreenState();
+}
+
+class _BeneficiaryOnboardingScreenState
+    extends ConsumerState<BeneficiaryOnboardingScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  final _nameController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _missionController = TextEditingController();
+
+  String? _selectedType;
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _addressController.dispose();
+    _emailController.dispose();
+    _missionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSave() async {
+    if (!_formKey.currentState!.validate()) return;
+    final uid = ref.read(authStateProvider).asData?.value?.uid ?? '';
+    if (uid.isEmpty) return;
+    setState(() => _saving = true);
+    try {
+      await ref
+          .read(updateOrgProfileUseCaseProvider)
+          .call(
+            uid,
+            BeneficiaryOrgProfileUpdate(
+              orgName: _nameController.text.trim(),
+              address: _addressController.text.trim(),
+              orgType: _selectedType,
+              contactEmail: _emailController.text.trim(),
+              missionStatement: _missionController.text.trim(),
+            ),
+          );
+      if (mounted) {
+        context.go('/beneficiary');
+      }
+    } catch (e, st) {
+      AppLogger.error(
+        'BeneficiaryOnboarding: updateOrgProfile failed',
+        error: e,
+        stack: st,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save. Please try again.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final ac = Theme.of(context).extension<AppColors>()!;
+    final tt = Theme.of(context).textTheme;
+
+    InputDecoration fieldDecoration({String? labelText, Widget? prefixIcon}) =>
+        InputDecoration(
+          labelText: labelText,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: cs.outline),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: cs.outline),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: cs.primary, width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: ac.danger),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: ac.danger, width: 1.5),
+          ),
+          filled: true,
+          fillColor: cs.surface,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: Spacing.sm + Spacing.xs,
+            vertical: Spacing.sm + Spacing.xs,
+          ),
+          prefixIcon: prefixIcon,
+        );
+
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.lg,
+              vertical: Spacing.xl,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Center(child: SaveAMealLogo(size: 48)),
+                const SizedBox(height: Spacing.md),
+                const OnboardingStepIndicator(totalSteps: 2, currentStep: 2),
+                const SizedBox(height: Spacing.lg),
+                Text(
+                  'Set Up Your Organization',
+                  style: tt.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: cs.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: Spacing.xs),
+                Text(
+                  'Tell us about your organization so donors can find you.',
+                  style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: Spacing.xl),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Organization Name
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: fieldDecoration(
+                          labelText: 'Organization Name',
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Organization name is required'
+                            : null,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      // Organization Type
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedType,
+                        decoration: fieldDecoration(
+                          labelText: 'Organization Type',
+                        ),
+                        hint: const Text('Select type'),
+                        items: _orgTypes
+                            .map(
+                              (t) => DropdownMenuItem(value: t, child: Text(t)),
+                            )
+                            .toList(),
+                        onChanged: (v) => setState(() => _selectedType = v),
+                        validator: (v) =>
+                            v == null ? 'Organization type is required' : null,
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      // Headquarters Address
+                      TextFormField(
+                        controller: _addressController,
+                        decoration: fieldDecoration(
+                          labelText: 'Headquarters Address',
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Address is required'
+                            : null,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      // Primary Contact Email
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: fieldDecoration(
+                          labelText: 'Primary Contact Email',
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Email is required';
+                          }
+                          if (!v.contains('@')) {
+                            return 'Enter a valid email address';
+                          }
+                          return null;
+                        },
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      // Mission Statement
+                      TextFormField(
+                        controller: _missionController,
+                        maxLines: 5,
+                        minLines: 4,
+                        decoration: fieldDecoration(
+                          labelText: 'Mission Statement / Bio (optional)',
+                        ),
+                        textInputAction: TextInputAction.done,
+                      ),
+                      const SizedBox(height: Spacing.xl),
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 52),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: _saving ? null : _handleSave,
+                        child: _saving
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: cs.onPrimary,
+                                ),
+                              )
+                            : const Text('Complete Setup'),
+                      ),
+                      const SizedBox(height: Spacing.sm),
+                      TextButton(
+                        onPressed: () => context.go('/beneficiary'),
+                        child: const Text('Skip for now'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

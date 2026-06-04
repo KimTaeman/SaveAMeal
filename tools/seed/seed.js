@@ -40,6 +40,8 @@ const addDonorIdx       = args.indexOf('--add-donor');
 const addDonorUid       = addDonorIdx >= 0 ? args[addDonorIdx + 1] : null;
 const addBeneficiaryIdx = args.indexOf('--add-beneficiary');
 const addBeneficiaryUid = addBeneficiaryIdx >= 0 ? args[addBeneficiaryIdx + 1] : null;
+const seedLeaderboardIdx = args.indexOf('--seed-leaderboard');
+const seedLeaderboardUid = seedLeaderboardIdx >= 0 ? args[seedLeaderboardIdx + 1] : null;
 
 // ── Initialise Firebase ────────────────────────────────────────────────────────
 
@@ -149,16 +151,28 @@ const USERS = [
     uid: 'driver_001', name: 'Krit Chaiwong',
     email: 'krit.chaiwong@saveameal.th', role: 'driver',
     phone: '+66812345611', orgName: null, status: null, points: 340,
+    mealsSaved: 512, sproutPoints: 2048,
+    rank: 1, totalDrivers: 128,
+    rankProgressCurrent: 512, rankProgressTarget: 750,
+    currentRankName: 'Silver', nextRankName: 'Gold',
   },
   {
     uid: 'driver_002', name: 'Amporn Suwan',
     email: 'amporn.suwan@saveameal.th', role: 'driver',
     phone: '+66812345612', orgName: null, status: null, points: 280,
+    mealsSaved: 489, sproutPoints: 1956,
+    rank: 2, totalDrivers: 128,
+    rankProgressCurrent: 489, rankProgressTarget: 750,
+    currentRankName: 'Silver', nextRankName: 'Gold',
   },
   {
     uid: 'driver_003', name: 'Montri Phansiri',
     email: 'montri.phansiri@saveameal.th', role: 'driver',
     phone: '+66812345613', orgName: null, status: null, points: 150,
+    mealsSaved: 420, sproutPoints: 1680,
+    rank: 3, totalDrivers: 128,
+    rankProgressCurrent: 420, rankProgressTarget: 750,
+    currentRankName: 'Silver', nextRankName: 'Gold',
   },
 
   // ── Beneficiary ───────────────────────────────────────────────────────────
@@ -181,6 +195,7 @@ const BATCHES = [
     id: 'batch_001', donorId: 'donor_001', donorName: 'Sri Silom Restaurant',
     donorContact: '+66812345601',
     pickupAddress: '28/4 Silom Rd, Bang Rak, Bangkok 10500',
+    pickupLat: 13.7247, pickupLng: 100.5199,
     beneficiaryId: 'ben_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
     beneficiaryAddress: '12 Lat Phrao Soi 15, Bangkok 10230',
     status: 'open', pickupWindowStart: '14:00', pickupWindowEnd: '16:00',
@@ -202,6 +217,7 @@ const BATCHES = [
     id: 'batch_002', donorId: 'donor_002', donorName: 'Central Embassy Food Court',
     donorContact: '+66812345602',
     pickupAddress: '1031 Ploenchit Rd, Lumphini, Pathumwan, Bangkok 10330',
+    pickupLat: 13.7432, pickupLng: 100.5494,
     beneficiaryId: 'ben_002', beneficiaryName: 'Klongtoey Community Center',
     beneficiaryAddress: '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
     status: 'open', pickupWindowStart: '21:00', pickupWindowEnd: '22:30',
@@ -222,6 +238,7 @@ const BATCHES = [
     id: 'batch_003', donorId: 'donor_001', donorName: 'Sri Silom Restaurant',
     donorContact: '+66812345601',
     pickupAddress: '28/4 Silom Rd, Bang Rak, Bangkok 10500',
+    pickupLat: 13.7247, pickupLng: 100.5199,
     beneficiaryId: 'ben_002', beneficiaryName: 'Klongtoey Community Center',
     beneficiaryAddress: '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
     status: 'open', pickupWindowStart: '19:00', pickupWindowEnd: '20:30',
@@ -282,6 +299,7 @@ const BATCHES = [
     id: 'batch_006', donorId: 'donor_003', donorName: 'Mövenpick Hotel Bangkok',
     donorContact: '+66812345603',
     pickupAddress: '672 Wireless Rd, Lumphini, Pathumwan, Bangkok 10330',
+    pickupLat: 13.7399, pickupLng: 100.5549,
     beneficiaryId: 'ben_003', beneficiaryName: 'Prateep Foundation Elderly Care',
     beneficiaryAddress: '152/88 Sukhumvit Soi 26, Bangkok 10110',
     status: 'open', pickupWindowStart: '22:00', pickupWindowEnd: '23:00',
@@ -304,6 +322,7 @@ const BATCHES = [
     id: 'batch_007', donorId: 'donor_004', donorName: 'Anchana Bakery & Café',
     donorContact: '+66812345604',
     pickupAddress: '55/3 Ramkhamhaeng Rd, Hua Mak, Bang Kapi, Bangkok 10240',
+    pickupLat: 13.7575, pickupLng: 100.6239,
     beneficiaryId: 'ben_004', beneficiaryName: 'Bangkapi Community Kitchen',
     beneficiaryAddress: '45 Ladprao Rd, Wang Thonglang, Bangkok 10310',
     status: 'open', pickupWindowStart: '18:30', pickupWindowEnd: '19:30',
@@ -438,6 +457,19 @@ const IMPACT_METRICS = [
   { id: 'donor_006', totalKg: 5.75, totalMeals: 11, totalCO2e: 14.4, totalDeliveries: 1 },
 ];
 
+// Collection: leaderboard/{period}
+// Single document per period with an `entries` array.
+// The `uid` field must match a real users/{uid} for the (You) highlight to work.
+const LEADERBOARD = {
+  thisMonth: {
+    entries: [
+      { rank: 1, uid: 'driver_001', driverName: 'Krit C.',   zone: 'Central Hub',    score: 512, avatarUrl: '' },
+      { rank: 2, uid: 'driver_002', driverName: 'Amporn S.', zone: 'North District', score: 489, avatarUrl: '' },
+      { rank: 3, uid: 'driver_003', driverName: 'Montri P.', zone: 'East Side',      score: 420, avatarUrl: '' },
+    ],
+  },
+};
+
 // ── Demo setup ─────────────────────────────────────────────────────────────────
 //
 // Creates the three demo Firebase Auth accounts (donor / driver / beneficiary),
@@ -493,6 +525,13 @@ async function setupDemo() {
     const authUser = await getOrCreateAuthUser(acc);
     uids[acc.role] = authUser.uid;
 
+    const driverImpactFields = acc.role === 'driver' ? {
+      mealsSaved: 342, sproutPoints: 1250,
+      rank: 4, totalDrivers: 128,
+      rankProgressCurrent: 342, rankProgressTarget: 500,
+      currentRankName: 'Bronze', nextRankName: 'Silver',
+    } : {};
+
     await db.collection('users').doc(authUser.uid).set({
       uid:     authUser.uid,
       name:    acc.name,
@@ -502,6 +541,7 @@ async function setupDemo() {
       orgName: acc.orgName,
       status:  acc.role === 'beneficiary' ? 'accepting' : null,
       points:  0,
+      ...driverImpactFields,
     }, { merge: true });
     console.log(`  ✓  users/${authUser.uid}  (${acc.role}: ${acc.name})`);
   }
@@ -538,6 +578,8 @@ async function setupDemo() {
     donorName:           'FreshMart Supermarket',
     donorContact:        null,
     pickupAddress:       '1031 Ploenchit Rd, Lumphini, Pathumwan, Bangkok 10330',
+    pickupLat:           13.7432,
+    pickupLng:           100.5494,
     beneficiaryId:       uids.beneficiary,
     beneficiaryName:     'Sister Maria Shelter',
     beneficiaryAddress:  '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
@@ -568,6 +610,17 @@ async function setupDemo() {
     updatedAt:       batchNow.toISOString(),
   });
   console.log(`  ✓  batches/${batchId}  (status: open)`);
+
+  // Leaderboard — demo driver appears at rank 4 with their real UID
+  await db.collection('leaderboard').doc('thisMonth').set({
+    entries: [
+      { rank: 1, uid: 'driver_001',   driverName: 'Sarah J.',   zone: 'Central Hub',    score: 512, avatarUrl: '' },
+      { rank: 2, uid: 'driver_002',   driverName: 'Marcus T.',  zone: 'North District', score: 489, avatarUrl: '' },
+      { rank: 3, uid: 'driver_003',   driverName: 'Elena R.',   zone: 'East Side',      score: 420, avatarUrl: '' },
+      { rank: 4, uid: uids.driver,    driverName: 'Nattapong',  zone: 'South Zone',     score: 342, avatarUrl: '' },
+    ],
+  });
+  console.log(`  ✓  leaderboard/thisMonth  (demo driver at rank 4)`);
 
   console.log('\n─────────────────────────────────────────────────────────');
   console.log('Demo ready! Login credentials:\n');
@@ -605,6 +658,12 @@ async function clearCollection(collectionName) {
 // ── Main ───────────────────────────────────────────────────────────────────────
 
 async function registerUser(uid, role, name) {
+  const driverImpactFields = role === 'driver' ? {
+    mealsSaved: 0, sproutPoints: 0,
+    rank: 0, totalDrivers: 0,
+    rankProgressCurrent: 0, rankProgressTarget: 100,
+    currentRankName: 'Bronze', nextRankName: 'Silver',
+  } : {};
   await db.collection('users').doc(uid).set({
     uid,
     name,
@@ -614,6 +673,7 @@ async function registerUser(uid, role, name) {
     orgName: role === 'donor' ? `${name} Org` : null,
     status: role === 'beneficiary' ? 'accepting' : null,
     points: 0,
+    ...driverImpactFields,
   }, { merge: true });
   console.log(`  ✓  registered ${role}: ${uid} (${name})`);
 }
@@ -626,6 +686,21 @@ async function main() {
   // ── Demo mode: create Auth accounts + seed demo batch in one shot ─────────
   if (demoMode) {
     await setupDemo();
+    return;
+  }
+
+  // ── Write leaderboard/thisMonth with your UID at rank 4 ──────────────────
+  if (seedLeaderboardUid) {
+    await db.collection('leaderboard').doc('thisMonth').set({
+      entries: [
+        { rank: 1, uid: 'fake-uid-1', driverName: 'Sarah J.',   zone: 'Central Hub',    score: 512, avatarUrl: '' },
+        { rank: 2, uid: 'fake-uid-2', driverName: 'Marcus T.',  zone: 'North District', score: 489, avatarUrl: '' },
+        { rank: 3, uid: 'fake-uid-3', driverName: 'Elena R.',   zone: 'East Side',      score: 420, avatarUrl: '' },
+        { rank: 4, uid: seedLeaderboardUid, driverName: 'Nattapong', zone: 'South Zone', score: 342, avatarUrl: '' },
+      ],
+    });
+    console.log(`\n  ✓  leaderboard/thisMonth written`);
+    console.log(`     Your UID (${seedLeaderboardUid}) is at rank 4 — you will see the (You) highlight.\n`);
     return;
   }
 
@@ -673,12 +748,15 @@ async function main() {
   await writeAll('users',         USERS,          'uid');
   await writeAll('batches',       BATCHES);
   await writeAll('impactMetrics', IMPACT_METRICS);
+  await db.collection('leaderboard').doc('thisMonth').set(LEADERBOARD.thisMonth);
+  console.log(`  ✓  leaderboard       1 document  (thisMonth)`);
 
   console.log('\nSummary:');
   console.log(`  beneficiaries  : ${BENEFICIARIES.length}`);
   console.log(`  users          : ${USERS.length}  (6 donors · 3 drivers · 1 beneficiary)`);
   console.log(`  batches        : ${BATCHES.length}  (5 open · 2 claimed · 1 pickedUp · 3 delivered · 1 cancelled)`);
   console.log(`  impactMetrics  : ${IMPACT_METRICS.length}`);
+  console.log(`  leaderboard    : 1  (thisMonth)`);
   console.log('\nDone.\n');
 }
 

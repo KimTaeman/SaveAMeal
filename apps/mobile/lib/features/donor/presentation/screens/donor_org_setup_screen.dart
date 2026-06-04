@@ -213,11 +213,20 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
+      appBar: AppBar(
+        backgroundColor: cs.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back to profile',
+          onPressed: () => context.push('/donor/account/personal'),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
             horizontal: Spacing.lg,
-            vertical: Spacing.xl,
+            vertical: Spacing.md,
           ),
           child: Form(
             key: _formKey,
@@ -285,6 +294,14 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
                   decoration: _inputDecoration(context, 'Phone Number'),
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return null;
+                    final digits = v.replaceAll(RegExp(r'\D'), '');
+                    if (digits.length < 9 || digits.length > 15) {
+                      return 'Enter a valid phone number (9–15 digits)';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: Spacing.md),
 

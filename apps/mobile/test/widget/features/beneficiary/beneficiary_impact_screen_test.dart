@@ -11,6 +11,8 @@ import 'package:saveameal/features/beneficiary/presentation/providers/beneficiar
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/impact_hero_card.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/impact_metric_tile.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/donor/domain/entities/food_category.dart';
 import 'package:saveameal/shared/theme/app_theme.dart';
 
@@ -103,6 +105,9 @@ void main() {
           ProviderScope(
             overrides: [
               authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+              activeDeliveriesProvider(
+                'test-ben-uid',
+              ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
               beneficiaryImpactProvider(
                 'test-ben-uid',
               ).overrideWith((ref) => impactController.stream),
@@ -195,7 +200,7 @@ void main() {
 
       // bakery (500) and produce (1000) are non-zero; dairy (0) must not render
       expect(find.text('Bakery'), findsOneWidget);
-      expect(find.text('Produce'), findsOneWidget);
+      expect(find.text('Fruits & Veggies'), findsOneWidget);
       expect(find.text('Dairy'), findsNothing);
     });
 
@@ -242,7 +247,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Bakery'), findsNothing);
-      expect(find.text('Produce'), findsNothing);
+      expect(find.text('Fruits & Veggies'), findsNothing);
     });
 
     // 8. Error state — offline banner shown with correct copy
@@ -253,6 +258,9 @@ void main() {
           ProviderScope(
             overrides: [
               authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+              activeDeliveriesProvider(
+                'test-ben-uid',
+              ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
               beneficiaryImpactProvider(
                 'test-ben-uid',
               ).overrideWith((ref) => Stream.error(Exception('network error'))),
@@ -280,6 +288,9 @@ void main() {
           ProviderScope(
             overrides: [
               authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+              activeDeliveriesProvider(
+                'test-ben-uid',
+              ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
               beneficiaryImpactProvider(
                 'test-ben-uid',
               ).overrideWith((ref) => Stream.error(Exception('network error'))),

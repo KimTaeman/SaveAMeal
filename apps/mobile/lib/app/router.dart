@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/auth/presentation/screens/beneficiary_onboarding_screen.dart';
+import 'package:saveameal/features/auth/presentation/screens/driver_onboarding_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/login_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/register_screen.dart';
 import 'package:saveameal/features/auth/presentation/screens/role_router_screen.dart';
@@ -21,6 +23,7 @@ import 'package:saveameal/features/donor/presentation/screens/batch_detail_scree
 import 'package:saveameal/features/donor/presentation/screens/batch_qr_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/batch_summary_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_dashboard_screen.dart';
+import 'package:saveameal/features/donor/presentation/screens/donor_org_setup_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_history_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/log_surplus_form_screen.dart';
 import 'package:saveameal/features/donor/presentation/screens/donor_account_screen.dart';
@@ -38,6 +41,8 @@ import 'package:saveameal/features/driver/presentation/screens/driver_map_screen
 import 'package:saveameal/features/driver/presentation/screens/job_detail_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/pickup_verification_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/safety_verification_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/driver_impact_screen.dart';
+import 'package:saveameal/features/driver/presentation/screens/driver_leaderboard_screen.dart';
 import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
 import 'package:saveameal/features/notifications/presentation/screens/notifications_screen.dart';
 
@@ -70,6 +75,26 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/role-router',
         builder: (context, state) => const RoleRouterScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding/driver',
+        redirect: (context, state) {
+          final user = ref.read(authStateProvider).asData?.value;
+          if (user == null) return '/welcome';
+          if (user.role != UserRole.driver) return '/role-router';
+          return null;
+        },
+        builder: (context, state) => const DriverOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding/beneficiary',
+        redirect: (context, state) {
+          final user = ref.read(authStateProvider).asData?.value;
+          if (user == null) return '/welcome';
+          if (user.role != UserRole.beneficiary) return '/role-router';
+          return null;
+        },
+        builder: (context, state) => const BeneficiaryOnboardingScreen(),
       ),
       GoRoute(
         path: '/donor',
@@ -115,6 +140,10 @@ GoRouter router(Ref ref) {
             ],
           ),
           GoRoute(
+            path: 'setup',
+            builder: (context, state) => const DonorOrgSetupScreen(),
+          ),
+          GoRoute(
             path: 'impact',
             builder: (context, state) => const DonorImpactScreen(),
           ),
@@ -146,6 +175,14 @@ GoRouter router(Ref ref) {
             path: 'job/:batchId',
             builder: (context, state) =>
                 JobDetailScreen(batch: state.extra! as BatchSummary),
+          ),
+          GoRoute(
+            path: 'impact',
+            builder: (context, state) => const DriverImpactScreen(),
+          ),
+          GoRoute(
+            path: 'leaderboard',
+            builder: (context, state) => const DriverLeaderboardScreen(),
           ),
           GoRoute(
             path: 'rescue',

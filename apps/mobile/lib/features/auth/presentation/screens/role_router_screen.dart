@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:saveameal/core/logging/app_logger.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_account_provider.dart';
+import 'package:saveameal/features/driver/presentation/providers/driver_profile_provider.dart';
+import 'package:saveameal/features/donor/domain/entities/donor_profile.dart';
+import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
 class RoleRouterScreen extends ConsumerStatefulWidget {
@@ -58,6 +63,14 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
     ref.listen<AsyncValue<AppUser?>>(authStateProvider, (_, next) {
       if (!mounted) return;
       next.whenData(_routeByRole);
+    });
+    // When donor profile resolves, complete donor destination check.
+    ref.listen<AsyncValue<DonorProfile?>>(currentUserProvider, (_, next) {
+      if (!mounted) return;
+      final user = ref.read(authStateProvider).asData?.value;
+      if (user?.role == UserRole.donor) {
+        next.whenData(_goToDonorDestination);
+      }
     });
 
     return Scaffold(
@@ -170,7 +183,7 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
     );
   }
 
-  void _routeByRole(AppUser? user) {
+  Future<void> _routeByRole(AppUser? user) async {
     if (!mounted) return;
     if (user == null) {
       context.go('/login');
@@ -178,11 +191,55 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
     }
     switch (user.role) {
       case UserRole.donor:
-        context.go('/donor');
+        // Check profile to decide if org setup is needed.
+        // If profile already loaded, route immediately; otherwise the
+        // currentUserProvider listener in build() will handle it.
+        ref.read(currentUserProvider).whenData(_goToDonorDestination);
       case UserRole.driver:
-        context.go('/driver');
+        try {
+          final profile = await ref.read(driverProfileProvider.future);
+          if (!mounted) return;
+          if (profile == null || (profile.vehicleType ?? '').isEmpty) {
+            context.go('/onboarding/driver');
+          } else {
+            context.go('/driver');
+          }
+        } on StateError {
+          if (mounted) context.go('/onboarding/driver');
+        }
       case UserRole.beneficiary:
-        context.go('/beneficiary');
+        try {
+          final profile = await ref.read(
+            currentBeneficiaryProfileProvider.future,
+          );
+          if (!mounted) return;
+          if (profile == null || (profile.orgName ?? '').isEmpty) {
+            context.go('/onboarding/beneficiary');
+          } else {
+            context.go('/beneficiary');
+          }
+        } catch (e, st) {
+          AppLogger.error(
+            'role_router_screen: failed to load beneficiary profile',
+            error: e,
+            stack: st,
+          );
+          if (!mounted) return;
+          final msg = e.toString();
+          if (msg.contains('PERMISSION_DENIED') ||
+              msg.contains('permission-denied') ||
+              msg.contains('unauthenticated')) {
+            context.go('/login');
+          } else {
+            context.go('/onboarding/beneficiary');
+          }
+        }
     }
+  }
+
+  void _goToDonorDestination(DonorProfile? profile) {
+    if (!mounted) return;
+    final hasOrg = profile?.orgName != null && profile!.orgName!.isNotEmpty;
+    context.go(hasOrg ? '/donor' : '/donor/setup');
   }
 }

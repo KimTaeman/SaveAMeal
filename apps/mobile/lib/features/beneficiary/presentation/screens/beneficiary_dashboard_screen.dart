@@ -12,7 +12,7 @@ import 'package:saveameal/features/beneficiary/presentation/widgets/intake_statu
 import 'package:saveameal/features/beneficiary/presentation/widgets/visibility_inactive_card.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
-import 'package:saveameal/shared/widgets/logout_button.dart';
+// import 'package:saveameal/shared/widgets/logout_button.dart';
 
 class BeneficiaryHomeScreen extends ConsumerStatefulWidget {
   const BeneficiaryHomeScreen({super.key});
@@ -99,7 +99,7 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () => context.push('/notifications'),
           ),
-          const LogoutButton(),
+          // const LogoutButton(),
         ],
       ),
       body: SingleChildScrollView(
@@ -200,21 +200,7 @@ class _BeneficiaryHomeScreenState extends ConsumerState<BeneficiaryHomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BeneficiaryBottomNav(
-        currentIndex: 0,
-        onDestinationSelected: (index) {
-          switch (index) {
-            case 0:
-              context.go('/beneficiary');
-            case 1:
-              context.go('/beneficiary/history');
-            case 2:
-              context.go('/beneficiary/impact');
-            case 3:
-              context.go('/beneficiary/account');
-          }
-        },
-      ),
+      bottomNavigationBar: BeneficiaryBottomNav(currentIndex: 0),
     );
   }
 }

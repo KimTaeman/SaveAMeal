@@ -300,7 +300,7 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
 
   String _categoryLabel(FoodCategory c) => switch (c) {
     FoodCategory.bakery => 'Bakery',
-    FoodCategory.produce => 'Produce',
+    FoodCategory.produce => 'Fruits & Veggies',
     FoodCategory.dairy => 'Dairy',
     FoodCategory.meat => 'Meat',
     FoodCategory.beverages => 'Beverages',

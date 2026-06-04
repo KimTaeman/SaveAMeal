@@ -37,10 +37,33 @@ class FirestoreService {
     });
   }
 
-  Future<void> createUser(UserModel user) => _db
-      .collection(FirestoreConstants.users)
-      .doc(user.uid)
-      .set({...user.toJson(), 'createdAt': FieldValue.serverTimestamp()});
+  Future<void> createUser(UserModel user) async {
+    Map<String, dynamic> extra = {};
+    if (user.role == UserRole.driver) {
+      // Count existing drivers so the new driver gets a real totalDrivers value.
+      final snap = await _db
+          .collection(FirestoreConstants.users)
+          .where('role', isEqualTo: 'driver')
+          .count()
+          .get();
+      final driverCount = (snap.count ?? 0) + 1;
+      extra = {
+        'mealsSaved': 0,
+        'sproutPoints': 0,
+        'rank': driverCount,
+        'totalDrivers': driverCount,
+        'rankProgressCurrent': 0,
+        'rankProgressTarget': 100,
+        'currentRankName': 'Bronze',
+        'nextRankName': 'Silver',
+      };
+    }
+    await _db.collection(FirestoreConstants.users).doc(user.uid).set({
+      ...user.toJson(),
+      'createdAt': FieldValue.serverTimestamp(),
+      ...extra,
+    });
+  }
 
   Future<void> updateUser(String uid, Map<String, dynamic> fields) => _db
       .collection(FirestoreConstants.users)
@@ -106,7 +129,9 @@ class FirestoreService {
       .snapshots()
       .map(
         (qs) => qs.docs
-            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .map(
+              (d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})),
+            )
             .toList(),
       );
 
@@ -158,7 +183,11 @@ class FirestoreService {
             .snapshots()
             .listen((qs) {
               pendingBatches = qs.docs
-                  .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+                  .map(
+                    (d) => BatchModel.fromJson(
+                      _normalise({...d.data(), 'id': d.id}),
+                    ),
+                  )
                   .toList();
               emit();
             });
@@ -170,7 +199,11 @@ class FirestoreService {
             .snapshots()
             .listen((qs) {
               myBatches = qs.docs
-                  .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+                  .map(
+                    (d) => BatchModel.fromJson(
+                      _normalise({...d.data(), 'id': d.id}),
+                    ),
+                  )
                   .toList();
               emit();
             });
@@ -302,8 +335,14 @@ class FirestoreService {
 
     final driverId = snap.data()!['driverId'] as String?;
     if (driverId != null && driverId.isNotEmpty) {
+      final items = (snap.data()!['items'] as List?) ?? [];
+      final meals = items.isEmpty ? 10 : items.length * 10;
       await _db.collection(FirestoreConstants.users).doc(driverId).update({
         'totalPickups': FieldValue.increment(1),
+        'mealsSaved': FieldValue.increment(meals),
+        'sproutPoints': FieldValue.increment(meals),
+        'points': FieldValue.increment(meals),
+        'rankProgressCurrent': FieldValue.increment(meals),
       });
     }
   }
