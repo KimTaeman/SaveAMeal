@@ -316,17 +316,7 @@ class _BeneficiaryAccountScreenState
           ],
         ),
       ),
-      bottomNavigationBar: BeneficiaryBottomNav(
-        currentIndex: 3,
-        onDestinationSelected: (index) {
-          switch (index) {
-            case 0:
-              context.go('/beneficiary');
-            case 3:
-              context.go('/beneficiary/account');
-          }
-        },
-      ),
+      bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 3),
     );
   }
 
