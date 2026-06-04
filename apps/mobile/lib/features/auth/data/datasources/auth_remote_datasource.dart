@@ -70,6 +70,9 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       phone: phone,
     );
     await _firestoreService.createUser(model);
+    if (role == UserRole.beneficiary) {
+      await _firestoreService.createBeneficiaryDoc(uid, name);
+    }
     await registerFcmForUser(model);
     return model;
   }

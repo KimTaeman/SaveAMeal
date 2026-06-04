@@ -111,7 +111,7 @@ class _RankCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Spacing.xs),
-          if (impact.rank == 0 || impact.totalDrivers == 0) ...[
+          if (impact.mealsSaved == 0) ...[
             Text(
               'Not yet ranked',
               style: textTheme.headlineSmall?.copyWith(
