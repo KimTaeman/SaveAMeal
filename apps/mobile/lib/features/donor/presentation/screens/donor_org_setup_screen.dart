@@ -218,8 +218,8 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back to profile',
-          onPressed: () => context.push('/donor/account/personal'),
+          tooltip: 'Back to registration',
+          onPressed: () => _confirmBack(context),
         ),
       ),
       body: SafeArea(
@@ -373,21 +373,39 @@ class _DonorOrgSetupScreenState extends ConsumerState<DonorOrgSetupScreen> {
                           style: tt.titleMedium?.copyWith(color: cs.onPrimary),
                         ),
                 ),
-                const SizedBox(height: Spacing.sm),
-
-                TextButton(
-                  onPressed: _saving ? null : () => context.go('/donor'),
-                  child: Text(
-                    'Skip for now',
-                    style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-                  ),
-                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _confirmBack(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Go back to registration?'),
+        content: const Text(
+          'You will be signed out and returned to the registration page.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Go Back'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ref.read(signOutUsecaseProvider).call();
+      if (!context.mounted) return;
+      context.go('/register');
+    }
   }
 }
 
