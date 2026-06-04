@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/donor/domain/entities/donor_profile.dart';
+import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
 class RoleRouterScreen extends ConsumerStatefulWidget {
@@ -58,6 +60,14 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
     ref.listen<AsyncValue<AppUser?>>(authStateProvider, (_, next) {
       if (!mounted) return;
       next.whenData(_routeByRole);
+    });
+    // When donor profile resolves, complete donor destination check.
+    ref.listen<AsyncValue<DonorProfile?>>(currentUserProvider, (_, next) {
+      if (!mounted) return;
+      final user = ref.read(authStateProvider).asData?.value;
+      if (user?.role == UserRole.donor) {
+        next.whenData(_goToDonorDestination);
+      }
     });
 
     return Scaffold(
@@ -178,11 +188,20 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
     }
     switch (user.role) {
       case UserRole.donor:
-        context.go('/donor');
+        // Check profile to decide if org setup is needed.
+        // If profile already loaded, route immediately; otherwise the
+        // currentUserProvider listener in build() will handle it.
+        ref.read(currentUserProvider).whenData(_goToDonorDestination);
       case UserRole.driver:
         context.go('/driver');
       case UserRole.beneficiary:
         context.go('/beneficiary');
     }
+  }
+
+  void _goToDonorDestination(DonorProfile? profile) {
+    if (!mounted) return;
+    final hasOrg = profile?.orgName != null && profile!.orgName!.isNotEmpty;
+    context.go(hasOrg ? '/donor' : '/donor/setup');
   }
 }
