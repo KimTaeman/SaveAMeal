@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:saveameal/features/donor/domain/entities/food_category.dart';
+import 'package:saveameal/shared/domain/entities/food_category.dart';
 
 class ImpactCategoryRow extends StatelessWidget {
   const ImpactCategoryRow({

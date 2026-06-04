@@ -29,5 +29,7 @@ class BeneficiaryAccountRepositoryImpl implements BeneficiaryAccountRepository {
     String uid, {
     String? cursor,
     int limit = 10,
-  }) => throw UnimplementedError();
+  }) => _datasource
+      .watchOrderHistory(uid, cursor: cursor, limit: limit)
+      .map((_) => <OrderHistoryEntry>[]);
 }

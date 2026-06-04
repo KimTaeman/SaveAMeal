@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
+import 'package:saveameal/shared/theme/spacing.dart';
 
 class IntakeStatusToggle extends StatelessWidget {
   const IntakeStatusToggle({
@@ -19,7 +20,7 @@ class IntakeStatusToggle extends StatelessWidget {
         color: cs.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(30),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(Spacing.xs),
       child: Row(
         children: [
           _ToggleSegment(
@@ -59,10 +60,12 @@ class _ToggleSegment extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
+            // Colors.transparent is intentional here: inactive segments have no
+            // fill on top of the container background (cs.surfaceContainerHigh).
             color: isActive ? cs.inverseSurface : Colors.transparent,
             borderRadius: BorderRadius.circular(26),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
           child: Center(
             child: Text(
               label,

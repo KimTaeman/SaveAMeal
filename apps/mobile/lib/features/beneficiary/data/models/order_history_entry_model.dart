@@ -23,5 +23,17 @@ class OrderHistoryEntryModel {
   final DateTime? date;
   final String? foodCategory;
 
-  OrderHistoryEntry toDomain() => throw UnimplementedError();
+  OrderHistoryEntry toDomain() => OrderHistoryEntry(
+    id: id,
+    displayId: displayId,
+    status: OrderHistoryEntryStatus.values.firstWhere(
+      (s) => s.name == status,
+      orElse: () => OrderHistoryEntryStatus.closed,
+    ),
+    itemDescription: itemDescription,
+    donorName: donorName,
+    totalWeightKg: totalWeightKg,
+    date: date,
+    foodCategory: foodCategory,
+  );
 }

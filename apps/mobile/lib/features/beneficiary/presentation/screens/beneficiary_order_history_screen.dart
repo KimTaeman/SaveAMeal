@@ -102,7 +102,7 @@ class BeneficiaryOrderHistoryScreen extends ConsumerWidget {
                                 color: cs.primary,
                                 size: 16,
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: Spacing.xs),
                               Text(
                                 'Total Meals',
                                 style: textTheme.bodySmall?.copyWith(
@@ -135,7 +135,7 @@ class BeneficiaryOrderHistoryScreen extends ConsumerWidget {
                                 color: cs.primary,
                                 size: 16,
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: Spacing.xs),
                               Text(
                                 'Deliveries',
                                 style: textTheme.bodySmall?.copyWith(

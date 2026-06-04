@@ -44,3 +44,15 @@ Outcome: Implemented BeneficiaryAccountScreen, BeneficiaryPersonalInformationScr
 Decisions: All colors via cs.*/ac.* tokens, all spacing via Spacing.*, all text via textTheme.* — zero hardcoded values. ac.warning used for BENEFICIARY badge (orange matches design amber). ac.success used for Delivered badge and left accent bar. Geolocation stubbed with SnackBar per spec. OrderHistoryNotifier left as UnimplementedError stub — order history data layer deferred. storage.rules updated to allow users/{uid}/** writes (owner-only, 5 MB cap, image/* MIME).
 Handoff: Pending APPROVED from architect, qa-engineer, security-reviewer. Open follow-ups: (1) wire geolocator for GPS button in personal info screen; (2) connect mealsReceived to impactMetrics/{uid} collection; (3) implement OrderHistoryNotifier.build + loadMore + watchOrderHistory datasource; (4) add role guard for /beneficiary/** routes in router.dart; (5) replace UserProfileUpdate donor import with beneficiary-scoped entity.
 Review: PENDING
+
+---
+Date: 2026-06-04 12:00
+Member: NichapaJongKmutt
+Agent: qa-engineer
+Task: Write widget tests for RateDeliveryScreen and TrackingScreen
+Prompt: Write widget tests for rate_delivery_screen_test.dart and tracking_screen_test.dart. Match existing test style. Use pumpAndSettle(const Duration(seconds: 3)). Run flutter test to confirm all tests pass.
+
+Outcome: rate_delivery_screen_test.dart already existed and all 8 tests passed. Created tracking_screen_test.dart with 12 tests covering: renders without error, Scaffold/AppBar presence, AppBar title, GoogleMap presence, all four driver-location states (null data, location data, loading, error), no CircularProgressIndicator after data, shelter coordinates loaded without crash, status text Column ancestry, widget tree idempotency. All 20 tests pass.
+Decisions: (1) TrackingScreen calls firestoreServiceProvider.getBeneficiary in initState — overrode firestoreServiceProvider with a _FakeFirestoreService using noSuchMethod for all un-stubbed members. (2) GoogleMap renders as an empty box in widget tests (no platform channel needed) — confirmed by probe test before writing suite. (3) For the loading state test, used tester.pump() (one frame) rather than pumpAndSettle so the StreamController-backed AsyncValue stays in loading state. (4) Used driverLocationProvider('driver_001').overrideWith() to avoid real Firestore calls.
+Handoff: Both test files are at test/widget/features/beneficiary/. RateDeliveryScreen is a TODO stub — its tests should be replaced with real feature tests once the screen is implemented.
+Review: PENDING

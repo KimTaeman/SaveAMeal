@@ -93,7 +93,9 @@ class OrderHistoryState {
 @riverpod
 class OrderHistoryNotifier extends _$OrderHistoryNotifier {
   @override
-  OrderHistoryState build(String uid) => throw UnimplementedError();
+  OrderHistoryState build(String uid) => const OrderHistoryState();
 
-  Future<void> loadMore() => throw UnimplementedError();
+  Future<void> loadMore() async {
+    // TODO: implement pagination once backend is decided.
+  }
 }

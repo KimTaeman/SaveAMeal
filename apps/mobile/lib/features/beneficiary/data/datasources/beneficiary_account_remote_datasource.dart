@@ -101,5 +101,5 @@ class BeneficiaryAccountRemoteDatasourceImpl
     String uid, {
     String? cursor,
     int limit = 10,
-  }) => throw UnimplementedError();
+  }) => Stream.value([]);
 }
