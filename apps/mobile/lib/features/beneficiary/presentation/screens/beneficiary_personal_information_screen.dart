@@ -82,7 +82,9 @@ class _BeneficiaryPersonalInformationScreenState
       }
 
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
       if (mounted) {
         setState(() {
@@ -468,11 +470,18 @@ class _BeneficiaryPersonalInformationScreenState
                                   child: SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: cs.primary),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: cs.primary,
+                                    ),
                                   ),
                                 )
                               : IconButton(
-                                  icon: Icon(Icons.my_location, color: cs.primary, size: 20),
+                                  icon: Icon(
+                                    Icons.my_location,
+                                    color: cs.primary,
+                                    size: 20,
+                                  ),
                                   onPressed: _getCurrentLocation,
                                 ),
                         ),
