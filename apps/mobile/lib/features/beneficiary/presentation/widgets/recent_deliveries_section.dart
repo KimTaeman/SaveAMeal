@@ -14,46 +14,48 @@ class RecentDeliveriesSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(recentDeliveriesProvider(beneficiaryId));
+    final textTheme = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
 
-    return async.when(
-      loading: () => const SizedBox.shrink(),
-      // ignore: avoid_types_on_closure_parameters
-      error: (Object err, StackTrace st) => const SizedBox.shrink(),
-      data: (deliveries) {
-        if (deliveries.isEmpty) return const SizedBox.shrink();
+    // Collapse the entire section when there is no data worth showing.
+    final deliveries = async.asData?.value;
+    if (!async.isLoading && (deliveries == null || deliveries.isEmpty)) {
+      return const SizedBox.shrink();
+    }
 
-        final textTheme = Theme.of(context).textTheme;
-        final cs = Theme.of(context).colorScheme;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Deliveries',
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => context.push('/beneficiary/history'),
-                    child: Text(
-                      'View All',
-                      style: textTheme.labelMedium?.copyWith(color: cs.primary),
-                    ),
-                  ),
-                ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent Deliveries',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: Spacing.sm),
-            ...deliveries.map((d) => _DeliveryRow(delivery: d)),
-          ],
-        );
-      },
+              TextButton(
+                onPressed: () => context.go('/beneficiary/history'),
+                child: Text(
+                  'View All',
+                  style: textTheme.labelMedium?.copyWith(color: cs.primary),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Spacing.sm),
+        if (async.isLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: Spacing.sm),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          )
+        else
+          ...deliveries!.map((d) => _DeliveryRow(delivery: d)),
+      ],
     );
   }
 }
