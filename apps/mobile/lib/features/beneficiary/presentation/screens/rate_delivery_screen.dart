@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/confirm_receipt_provider.dart';
+import 'package:saveameal/features/beneficiary/presentation/widgets/beneficiary_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
@@ -46,6 +47,7 @@ class _ConfirmReceiptScreenState extends ConsumerState<ConfirmReceiptScreen> {
     });
 
     return Scaffold(
+      bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 1),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(Spacing.md),

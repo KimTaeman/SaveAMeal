@@ -5,6 +5,7 @@ import 'package:saveameal/features/beneficiary/domain/entities/intake_request.da
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/batch_items_card.dart';
+import 'package:saveameal/features/beneficiary/presentation/widgets/beneficiary_bottom_nav.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/driver_info_card.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/recent_deliveries_section.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
@@ -28,7 +29,10 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
 
     // Loading state — no AppBar
     if (async.isLoading && !async.hasValue) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+        bottomNavigationBar: BeneficiaryBottomNav(currentIndex: 1),
+      );
     }
 
     final detail = async.asData?.value;
@@ -73,12 +77,14 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
             ],
           ),
         ),
+        bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 1),
       );
     }
 
     // Data state — full layout
     return Scaffold(
       appBar: appBar,
+      bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 1),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
