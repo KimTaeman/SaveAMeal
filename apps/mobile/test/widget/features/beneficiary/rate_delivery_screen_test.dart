@@ -5,10 +5,8 @@ import 'package:saveameal/shared/theme/app_theme.dart';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-Widget _buildScreen() => MaterialApp(
-  theme: AppTheme.light(),
-  home: const RateDeliveryScreen(),
-);
+Widget _buildScreen() =>
+    MaterialApp(theme: AppTheme.light(), home: const RateDeliveryScreen());
 
 // ── Tests ──────────────────────────────────────────────────────────────────────
 

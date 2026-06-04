@@ -14,6 +14,7 @@ abstract class BeneficiaryImpactModel with _$BeneficiaryImpactModel {
     required double totalKg,
     required double totalCo2e,
     required int totalDeliveries,
+
     /// Raw string-keyed category map from Firestore/JSON.
     @Default({}) Map<String, double> byCategory,
   }) = _BeneficiaryImpactModel;

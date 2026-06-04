@@ -99,16 +99,13 @@ void main() {
     });
 
     // 5. Status bar shows 'Waiting for driver location…' when data is null
-    testWidgets(
-      'shows waiting status text when driver location data is null',
-      (tester) async {
-        await tester.pumpWidget(
-          _buildScreen(locationStream: Stream.value(null)),
-        );
-        await tester.pumpAndSettle(const Duration(seconds: 3));
-        expect(find.text('Waiting for driver location…'), findsOneWidget);
-      },
-    );
+    testWidgets('shows waiting status text when driver location data is null', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildScreen(locationStream: Stream.value(null)));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+      expect(find.text('Waiting for driver location…'), findsOneWidget);
+    });
 
     // 6. Status bar shows 'Driver is on the way' when location is available
     testWidgets(
@@ -123,20 +120,17 @@ void main() {
     );
 
     // 7. Status bar shows 'Loading…' while the stream has not yet emitted
-    testWidgets(
-      'shows loading status text while location stream is pending',
-      (tester) async {
-        final controller = StreamController<DriverLocationModel?>();
-        addTearDown(controller.close);
+    testWidgets('shows loading status text while location stream is pending', (
+      tester,
+    ) async {
+      final controller = StreamController<DriverLocationModel?>();
+      addTearDown(controller.close);
 
-        await tester.pumpWidget(
-          _buildScreen(locationStream: controller.stream),
-        );
-        // Only pump one frame — do not settle — so the AsyncValue stays loading.
-        await tester.pump();
-        expect(find.text('Loading…'), findsOneWidget);
-      },
-    );
+      await tester.pumpWidget(_buildScreen(locationStream: controller.stream));
+      // Only pump one frame — do not settle — so the AsyncValue stays loading.
+      await tester.pump();
+      expect(find.text('Loading…'), findsOneWidget);
+    });
 
     // 8. Status bar shows error text when stream emits an error
     testWidgets(
@@ -188,9 +182,7 @@ void main() {
 
     // 11. Status text widget is inside the layout Column (not floating)
     testWidgets('status text is a descendant of Column', (tester) async {
-      await tester.pumpWidget(
-        _buildScreen(locationStream: Stream.value(null)),
-      );
+      await tester.pumpWidget(_buildScreen(locationStream: Stream.value(null)));
       await tester.pumpAndSettle(const Duration(seconds: 3));
       expect(
         find.ancestor(
@@ -203,15 +195,11 @@ void main() {
 
     // 12. Screen rebuilds identically on second pump (idempotency)
     testWidgets('widget tree is stable across two pumps', (tester) async {
-      await tester.pumpWidget(
-        _buildScreen(locationStream: Stream.value(null)),
-      );
+      await tester.pumpWidget(_buildScreen(locationStream: Stream.value(null)));
       await tester.pumpAndSettle(const Duration(seconds: 3));
       final firstTextCount = find.byType(Text).evaluate().length;
 
-      await tester.pumpWidget(
-        _buildScreen(locationStream: Stream.value(null)),
-      );
+      await tester.pumpWidget(_buildScreen(locationStream: Stream.value(null)));
       await tester.pumpAndSettle(const Duration(seconds: 3));
       final secondTextCount = find.byType(Text).evaluate().length;
 
