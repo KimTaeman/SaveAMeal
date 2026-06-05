@@ -80,6 +80,9 @@ dev_dependencies:
   # ── App icon generation ───────────────────────────────────────────────────────
   flutter_launcher_icons: ^0.14.3
 
+  # ── Testing ───────────────────────────────────────────────────────────────────
+  fake_cloud_firestore: ^3.0.0
+
 flutter:
   uses-material-design: true
 

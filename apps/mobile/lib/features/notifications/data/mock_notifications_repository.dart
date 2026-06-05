@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:saveameal/features/notifications/domain/entities/app_notification.dart';
 import 'package:saveameal/features/notifications/domain/repositories/notifications_repository.dart';
 
@@ -8,9 +10,9 @@ class MockNotificationsRepository implements NotificationsRepository {
     _items = [
       AppNotification(
         id: '1',
-        type: NotificationType.driverAssigned,
-        title: 'Driver On the Way',
-        body: 'Nattapong has been assigned and is heading to your location.',
+        type: NotificationType.deliveryArriving,
+        title: 'Driver Arriving Soon',
+        body: 'Nattapong is 5 minutes away with your delivery.',
         timestamp: now.subtract(const Duration(minutes: 15)),
         isRead: false,
       ),
@@ -21,8 +23,6 @@ class MockNotificationsRepository implements NotificationsRepository {
         body: 'Driver on the way.',
         timestamp: now.subtract(const Duration(minutes: 5)),
         isRead: false,
-        actionLabel: 'View QR',
-        actionBatchId: '8492',
       ),
       AppNotification(
         id: '3',
@@ -51,19 +51,29 @@ class MockNotificationsRepository implements NotificationsRepository {
         isRead: true,
       ),
     ];
+    _controller.add(List.unmodifiable(_items));
   }
 
   late List<AppNotification> _items;
+  final _controller = StreamController<List<AppNotification>>.broadcast();
 
   @override
-  List<AppNotification> getAll() => List.unmodifiable(_items);
+  Stream<List<AppNotification>> watchAll(String uid) async* {
+    yield List.unmodifiable(_items);
+    yield* _controller.stream;
+  }
 
   @override
-  void markRead(String id) => _items = _items
-      .map((n) => n.id == id ? n.copyWith(isRead: true) : n)
-      .toList();
+  Future<void> markRead(String uid, String id) async {
+    _items = _items
+        .map((n) => n.id == id ? n.copyWith(isRead: true) : n)
+        .toList();
+    _controller.add(List.unmodifiable(_items));
+  }
 
   @override
-  void markAllRead() =>
-      _items = _items.map((n) => n.copyWith(isRead: true)).toList();
+  Future<void> markAllRead(String uid) async {
+    _items = _items.map((n) => n.copyWith(isRead: true)).toList();
+    _controller.add(List.unmodifiable(_items));
+  }
 }

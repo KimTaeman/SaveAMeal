@@ -1,14 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
-import 'package:saveameal/features/notifications/data/mock_notifications_repository.dart';
 import 'package:saveameal/features/notifications/data/notification_prefs_store.dart';
+import 'package:saveameal/features/notifications/data/repositories/firestore_notifications_repository.dart';
 import 'package:saveameal/features/notifications/domain/entities/app_notification.dart';
 import 'package:saveameal/features/notifications/domain/repositories/notifications_repository.dart';
 
 part 'notifications_provider.g.dart';
 
-// Types the donor sees in their notification centre.
 const _kDonorTypes = {
   NotificationType.matchConfirmed,
   NotificationType.driverAssigned,
@@ -18,11 +18,18 @@ const _kDonorTypes = {
 
 @riverpod
 NotificationsRepository notificationsRepository(Ref ref) =>
-    MockNotificationsRepository();
+    FirestoreNotificationsRepository(FirebaseFirestore.instance);
 
 @riverpod
 NotificationReadStore notificationReadStore(Ref ref) =>
     HiveNotificationReadStore();
+
+@riverpod
+Stream<List<AppNotification>> notificationsStream(Ref ref) {
+  final uid = ref.watch(authStateProvider).asData?.value?.uid;
+  if (uid == null) return Stream.value([]);
+  return ref.watch(notificationsRepositoryProvider).watchAll(uid);
+}
 
 @riverpod
 class NotificationsNotifier extends _$NotificationsNotifier {
@@ -31,7 +38,7 @@ class NotificationsNotifier extends _$NotificationsNotifier {
     final role = ref.watch(authStateProvider).asData?.value?.role;
     final readStore = ref.watch(notificationReadStoreProvider);
     final readIds = readStore.loadReadIds();
-    final all = ref.watch(notificationsRepositoryProvider).getAll();
+    final all = ref.watch(notificationsStreamProvider).asData?.value ?? [];
 
     final filtered = role == UserRole.donor
         ? all.where((n) => _kDonorTypes.contains(n.type)).toList()
@@ -42,17 +49,23 @@ class NotificationsNotifier extends _$NotificationsNotifier {
         .toList();
   }
 
-  void markRead(String id) {
+  Future<void> markRead(String id) async {
+    final uid = ref.read(authStateProvider).asData?.value?.uid;
+    if (uid == null) return;
     final store = ref.read(notificationReadStoreProvider);
     store.saveReadIds({...store.loadReadIds(), id});
     state = state
         .map((n) => n.id == id ? n.copyWith(isRead: true) : n)
         .toList();
+    await ref.read(notificationsRepositoryProvider).markRead(uid, id);
   }
 
-  void markAllRead() {
+  Future<void> markAllRead() async {
+    final uid = ref.read(authStateProvider).asData?.value?.uid;
+    if (uid == null) return;
     final store = ref.read(notificationReadStoreProvider);
     store.saveReadIds(state.map((n) => n.id).toSet());
     state = state.map((n) => n.copyWith(isRead: true)).toList();
+    await ref.read(notificationsRepositoryProvider).markAllRead(uid);
   }
 }

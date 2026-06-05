@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/notifications/data/notification_prefs_store.dart';
 import 'package:saveameal/features/notifications/domain/entities/app_notification.dart';
@@ -9,6 +10,8 @@ import 'package:saveameal/features/notifications/domain/repositories/notificatio
 import 'package:saveameal/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:saveameal/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
+
+// ── Fakes ─────────────────────────────────────────────────────────────────────
 
 class _InMemoryReadStore implements NotificationReadStore {
   Set<String> _ids = {};
@@ -20,32 +23,28 @@ class _InMemoryReadStore implements NotificationReadStore {
   void saveReadIds(Set<String> ids) => _ids = Set.from(ids);
 }
 
-// ── Fake repository ───────────────────────────────────────────────────────────
-
 class _FakeNotificationsRepository implements NotificationsRepository {
-  _FakeNotificationsRepository(List<AppNotification> items)
-    : _items = List.of(items);
-  List<AppNotification> _items;
+  @override
+  Stream<List<AppNotification>> watchAll(String uid) => Stream.value([]);
 
   @override
-  List<AppNotification> getAll() => List.unmodifiable(_items);
+  Future<void> markRead(String uid, String id) async {}
 
   @override
-  void markRead(String id) => _items = _items
-      .map((n) => n.id == id ? n.copyWith(isRead: true) : n)
-      .toList();
-
-  @override
-  void markAllRead() =>
-      _items = _items.map((n) => n.copyWith(isRead: true)).toList();
+  Future<void> markAllRead(String uid) async {}
 }
+
+const _fakeUser = AppUser(
+  uid: 'test-uid',
+  name: 'Test User',
+  email: 'test@test.com',
+  role: UserRole.driver,
+);
 
 // ── Seed data ─────────────────────────────────────────────────────────────────
 
 List<AppNotification> _seedNotifications() {
   final now = DateTime.now();
-  // Build a "noon yesterday" timestamp so it is always on the previous
-  // calendar day regardless of what time-of-day the test runs.
   final yesterdayNoon = DateTime(now.year, now.month, now.day - 1, 12);
   return [
     AppNotification(
@@ -93,15 +92,18 @@ List<AppNotification> _seedNotifications() {
   ];
 }
 
-// ── Test helpers ──────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 Widget _buildTestApp(List<AppNotification> items) {
-  final repo = _FakeNotificationsRepository(items);
   return ProviderScope(
     overrides: [
-      notificationsRepositoryProvider.overrideWith((ref) => repo),
-      // No auth → role is null → no role-based filtering, all items shown.
-      authStateProvider.overrideWith((_) => Stream.value(null)),
+      // Provide the stream directly — bypasses Firestore entirely.
+      notificationsStreamProvider.overrideWith((ref) => Stream.value(items)),
+      // Also override the repository so markRead/markAllRead don't hit Firestore.
+      notificationsRepositoryProvider.overrideWith(
+        (_) => _FakeNotificationsRepository(),
+      ),
+      authStateProvider.overrideWith((_) => Stream.value(_fakeUser)),
       notificationReadStoreProvider.overrideWith((_) => _InMemoryReadStore()),
     ],
     child: MaterialApp.router(
@@ -128,15 +130,12 @@ void main() {
     await tester.pumpWidget(_buildTestApp(_seedNotifications()));
     await tester.pumpAndSettle();
 
-    // Section headers
     expect(find.text('TODAY (3)'), findsOneWidget);
     expect(find.text('YESTERDAY (2)'), findsOneWidget);
 
-    // Unread dots visible for isRead: false items
     expect(find.byKey(const ValueKey('unread_dot_1')), findsOneWidget);
     expect(find.byKey(const ValueKey('unread_dot_2')), findsOneWidget);
 
-    // No unread dots for isRead: true items
     expect(find.byKey(const ValueKey('unread_dot_3')), findsNothing);
     expect(find.byKey(const ValueKey('unread_dot_4')), findsNothing);
     expect(find.byKey(const ValueKey('unread_dot_5')), findsNothing);
@@ -146,12 +145,11 @@ void main() {
     await tester.pumpWidget(_buildTestApp(_seedNotifications()));
     await tester.pumpAndSettle();
 
-    // Confirm dots are initially present
     expect(find.byKey(const ValueKey('unread_dot_1')), findsOneWidget);
     expect(find.byKey(const ValueKey('unread_dot_2')), findsOneWidget);
 
     await tester.tap(find.text('Mark all read'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('unread_dot_1')), findsNothing);
     expect(find.byKey(const ValueKey('unread_dot_2')), findsNothing);

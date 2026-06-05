@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:saveameal/features/donor/domain/entities/user_profile_update.dart';
+import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/features/driver/domain/entities/driver_profile.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_profile_provider.dart';
 import 'package:saveameal/features/driver/presentation/widgets/driver_avatar_widget.dart';
+import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 
 /// Personal Information screen — `/driver/account/personal-info`.
@@ -24,6 +27,9 @@ class _DriverEditProfileScreenState
   late final TextEditingController _locationController;
 
   bool _initialised = false;
+  bool _gettingLocation = false;
+  double? _latitude;
+  double? _longitude;
 
   void _initialiseControllers(DriverProfile profile) {
     if (_initialised) return;
@@ -45,6 +51,27 @@ class _DriverEditProfileScreenState
     super.dispose();
   }
 
+  Future<void> _getLocation() async {
+    setState(() => _gettingLocation = true);
+    try {
+      final position = await ref
+          .read(locationServiceProvider)
+          .getCurrentPosition();
+      _latitude = position.latitude;
+      _longitude = position.longitude;
+      _locationController.text =
+          '${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Could not get location')));
+      }
+    } finally {
+      if (mounted) setState(() => _gettingLocation = false);
+    }
+  }
+
   Future<void> _submit(DriverProfile current) async {
     if (!_formKey.currentState!.validate()) return;
     final updated = current.copyWith(
@@ -57,6 +84,14 @@ class _DriverEditProfileScreenState
           : _locationController.text.trim(),
     );
     await ref.read(driverProfileProvider.notifier).updateProfile(updated);
+    if (_latitude != null && _longitude != null) {
+      await ref
+          .read(updateUserUsecaseProvider)
+          .call(
+            current.uid,
+            UserProfileUpdate(latitude: _latitude, longitude: _longitude),
+          );
+    }
     if (!mounted) return;
     final profileState = ref.read(driverProfileProvider);
     if (profileState is AsyncError) {
@@ -66,7 +101,7 @@ class _DriverEditProfileScreenState
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
-    } else {
+    } else if (context.canPop()) {
       context.pop();
     }
   }
@@ -283,9 +318,21 @@ class _DriverEditProfileScreenState
                                 hintText: 'City, Neighborhood, or Zip',
                                 filled: true,
                                 fillColor: cs.surfaceContainerLowest,
-                                suffixIcon: const Icon(
-                                  Icons.location_on_outlined,
-                                ),
+                                suffixIcon: _gettingLocation
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(Spacing.sm),
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      )
+                                    : IconButton(
+                                        icon: const Icon(Icons.my_location),
+                                        onPressed: _getLocation,
+                                      ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(30),
                                   borderSide: BorderSide(color: cs.primary),
