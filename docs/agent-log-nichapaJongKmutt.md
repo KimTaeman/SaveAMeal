@@ -105,3 +105,27 @@ Outcome: Added import 'package:flutter/foundation.dart' to log_surplus_form_scre
 Decisions: Extracted a separate _PhotoPreview widget rather than inlining the FutureBuilder into _PhotoPicker to keep the code readable. FutureBuilder is the idiomatic Flutter pattern for async-dependent widgets. The XFile is already stored in state as _photo (type XFile?), so no state model changes were needed.
 Handoff: Single file changed. No new dependencies. No codegen required. Ready for review.
 Review: PENDING
+
+---
+Date: 2026-06-05 00:00
+Member: NichapaJongKmutt
+Agent: flutter-engineer
+Task: Add coordinate paste → reverse-geocode to all 4 address fields
+Prompt: When a user pastes a coordinate string like `13.653000829307098, 100.48942580500693` into any address field, auto-detect it, reverse-geocode to human-readable English address, and replace field text while storing coordinates. Add `geocoding: ^3.0.0` to pubspec.yaml, then apply `_reverseGeocode`, updated `_onAddressChanged`, and `_tryParseCoordinates` (where missing) to: beneficiary_onboarding_screen.dart, donor_org_setup_screen.dart, beneficiary_org_profile_screen.dart, organization_profile_screen.dart.
+
+Outcome: Added `geocoding: ^3.0.0` to pubspec.yaml and ran `flutter pub get`. Applied `import 'package:geocoding/geocoding.dart'`, `_reverseGeocode`, updated `_onAddressChanged`, and `_tryParseCoordinates` (where absent) to all 4 screens. `flutter analyze`: no issues. `dart format`: 1 file reformatted.
+Decisions: geocoding ^3.0.0 does not accept a `localeIdentifier` parameter on `placemarkFromCoordinates` (that API was removed in v3). Locale is instead set via the separate top-level `setLocaleIdentifier('en_US')` call before each lookup. beneficiary_onboarding_screen.dart already had `_tryParseCoordinates` from a previous fix — not duplicated there.
+Handoff: All 4 screens now auto-detect pasted coordinate pairs in `_onAddressChanged`, call `_reverseGeocode` which sets locale to en_US and resolves to a readable address. The listener is temporarily removed during the `setState` update to prevent re-entrant clears. No architectural or domain-layer changes. Ready for QA or architect review.
+Review: PENDING
+
+---
+Date: 2026-06-05 00:00
+Member: NichapaJongKmutt
+Agent: flutter-engineer
+Task: Fix geocoding web crash, missing mounted guard before setState, and false beneficiary onboarding redirect on restart
+Prompt: Three bugs: (1) geocoding crashes on web — add kIsWeb guard in _reverseGeocode in all 4 screens (beneficiary_onboarding_screen, donor_org_setup_screen, beneficiary_org_profile_screen, organization_profile_screen). (2) Missing mounted check before setState in _reverseGeocode in all 4 screens. (3) Beneficiary redirected to org setup on app restart — role_router_screen.dart reads currentBeneficiaryProfileProvider and redirects when null, but the stream is still loading so profile appears null falsely.
+
+Outcome: Bug 1+2: Added `import 'package:flutter/foundation.dart'` to all 4 screens. Each `_reverseGeocode` now has a `kIsWeb` early-return at the top (stores lat/lng, keeps raw text, skips geocoding entirely on web). Added `if (!mounted) return;` immediately before the `setState(...)` call in the non-web path of each screen. Bug 3: Replaced the `await currentBeneficiaryProfileProvider.future` pattern in `_routeByRole` — which eagerly redirected to `/onboarding/beneficiary` when the stream hadn't emitted yet — with a synchronous read (`ref.read`) that only routes if data is already available. Added a `ref.listen` for `currentBeneficiaryProfileProvider` in `build()` that calls the new `_goToBeneficiaryDestination()` helper once the stream emits a definitive data value. Auth errors still redirect to `/login`; transient non-auth errors no longer redirect to onboarding. Added explicit `import 'package:saveameal/features/beneficiary/domain/entities/beneficiary_profile.dart'` to role_router_screen.dart. flutter analyze: no issues. dart format: 0 changes to edited files.
+Decisions: Used the same listener pattern as the existing donor flow (`currentUserProvider` + `_goToDonorDestination`) for consistency. The `_goToBeneficiaryDestination` helper is synchronous and checks `mounted` first, matching `_goToDonorDestination`. Kept auth-error → `/login` redirect in the error branch; removed the blanket non-auth error → `/onboarding/beneficiary` redirect to avoid false redirects on transient Firestore errors at startup.
+Handoff: 5 files changed. No new dependencies. No codegen required. Beneficiary stream listener now mirrors the donor listener pattern — architect should verify this is acceptable for the routing strategy.
+Review: PENDING
