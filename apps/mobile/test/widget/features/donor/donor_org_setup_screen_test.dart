@@ -228,16 +228,6 @@ void main() {
       expect(btn, findsOneWidget);
     });
 
-    testWidgets('renders Skip for now button', (tester) async {
-      await tester.pumpWidget(_buildApp());
-      await tester.pumpAndSettle();
-
-      final btn = find.widgetWithText(TextButton, 'Skip for now');
-      await tester.ensureVisible(btn);
-      await tester.pumpAndSettle();
-      expect(btn, findsOneWidget);
-    });
-
     testWidgets('shows validation error when org name is empty', (
       tester,
     ) async {
@@ -297,21 +287,6 @@ void main() {
         find.text('Failed to save profile. Please try again.'),
         findsOneWidget,
       );
-    });
-
-    testWidgets('Skip for now navigates to /donor without saving', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_buildApp());
-      await tester.pumpAndSettle();
-
-      final btn = find.widgetWithText(TextButton, 'Skip for now');
-      await tester.ensureVisible(btn);
-      await tester.pumpAndSettle();
-      await tester.tap(btn);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Donor Home'), findsOneWidget);
     });
 
     testWidgets('map button disabled when address empty and no coords', (

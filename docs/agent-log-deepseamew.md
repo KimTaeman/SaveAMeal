@@ -133,3 +133,13 @@ Files:
   ~ apps/mobile/lib/features/driver/presentation/screens/driver_vehicle_details_screen.dart
 Summary:  3 files changed, 320 insertions(+), 155 deletions(-)
 
+---
+Date: 2026-06-05 00:00
+Member: DeepseaMew
+Agent: flutter-engineer
+Task: Fix batch status label inconsistency across all screens
+Prompt: Create BatchStatusX extension on BatchStatus with label/isActive/isDone getters, then replace every hardcoded status string across donor and beneficiary screens with the extension. Fix cancelled being incorrectly grouped with DONE in donor history.
+Outcome: Created lib/shared/utils/batch_status_x.dart with BatchStatusX extension (label, isActive, isDone). Updated donor_history_screen.dart (_StatusBadge now shows Cancelled for cancelled status instead of DONE). Updated batch_detail_screen.dart (_statusLabel replaced with s.label call). Updated donor_dashboard_screen.dart (_statusLabel replaced with status.label call). Driver screens had no BatchStatus switch blocks. Beneficiary widgets (order_history_card.dart, delivery_history_row.dart) use their own entity enums without BatchStatus so left unchanged. Added 20 unit tests in batch_status_x_test.dart. flutter analyze clean, all new tests pass.
+Decisions: Kept DONE/ACTIVE as the two-value badge label in donor history (matches existing visual design) but gave cancelled its own third state (Cancelled label, danger color, cancel icon) rather than incorrectly grouping it with DONE. Did not replace heading text in batch_detail_screen per spec instructions. Did not touch beneficiary widgets because their entities use OrderHistoryEntryStatus/RecentDelivery (no BatchStatus field available).
+Handoff: PR ready for review. Follow-up: if beneficiary entity models gain a BatchStatus field in future, order_history_card.dart and delivery_history_row.dart can adopt BatchStatusX at that point.
+Review: PENDING

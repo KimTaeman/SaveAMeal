@@ -8,6 +8,7 @@ import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.d
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 import 'package:saveameal/shared/utils/batch_id_formatter.dart';
+import 'package:saveameal/shared/utils/batch_status_x.dart';
 
 enum _HistoryFilter { all, completed, inProgress }
 
@@ -465,11 +466,23 @@ class _StatusBadge extends StatelessWidget {
     final ac = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
 
-    final isDone =
-        status == BatchStatus.delivered || status == BatchStatus.closed;
-    final color = isDone ? cs.primary : ac.warning;
-    final icon = isDone ? Icons.check_circle : Icons.sync;
-    final label = isDone ? 'DONE' : 'ACTIVE';
+    final Color color;
+    final IconData icon;
+    final String label;
+
+    if (status.isDone) {
+      color = cs.primary;
+      icon = Icons.check_circle;
+      label = 'DONE';
+    } else if (status == BatchStatus.cancelled) {
+      color = ac.danger;
+      icon = Icons.cancel;
+      label = status.label;
+    } else {
+      color = ac.warning;
+      icon = Icons.sync;
+      label = 'ACTIVE';
+    }
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,

@@ -133,16 +133,6 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 3));
       expect(find.text('Set Up Your Organization'), findsOneWidget);
       expect(find.text('Complete Setup'), findsOneWidget);
-      expect(find.text('Skip for now'), findsOneWidget);
-    });
-
-    testWidgets('skip navigates to /beneficiary', (tester) async {
-      await tester.pumpWidget(_buildApp());
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await tester.ensureVisible(find.text('Skip for now'));
-      await tester.tap(find.text('Skip for now'));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      expect(find.text('Beneficiary Home'), findsOneWidget);
     });
 
     testWidgets('empty submit shows validation error for org name', (

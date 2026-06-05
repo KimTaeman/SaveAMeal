@@ -7,6 +7,7 @@ import 'package:saveameal/features/donor/domain/entities/food_category.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 import 'package:saveameal/shared/utils/batch_id_formatter.dart';
+import 'package:saveameal/shared/utils/batch_status_x.dart';
 
 class BatchDetailScreen extends ConsumerWidget {
   const BatchDetailScreen({super.key, required this.batchId});
@@ -75,14 +76,7 @@ class _BatchDetailBody extends StatelessWidget {
     BatchStatus.cancelled => 'Cancelled',
   };
 
-  String _statusLabel(BatchStatus s) => switch (s) {
-    BatchStatus.open => 'Pending',
-    BatchStatus.claimed => 'Claimed',
-    BatchStatus.pickedUp => 'Collected',
-    BatchStatus.delivered => 'Delivered',
-    BatchStatus.closed => 'Closed',
-    BatchStatus.cancelled => 'Cancelled',
-  };
+  String _statusLabel(BatchStatus s) => s.label;
 
   String _formatDate(DateTime dt) {
     const months = [

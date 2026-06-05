@@ -9,6 +9,7 @@ import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.d
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 import 'package:saveameal/shared/utils/batch_id_formatter.dart';
+import 'package:saveameal/shared/utils/batch_status_x.dart';
 import 'package:saveameal/shared/widgets/donor_brand_title.dart';
 // import 'package:saveameal/shared/widgets/logout_button.dart';
 
@@ -360,14 +361,7 @@ class _BatchCard extends StatelessWidget {
     );
   }
 
-  String _statusLabel(BatchStatus status) => switch (status) {
-    BatchStatus.open => 'Pending',
-    BatchStatus.claimed => 'Claimed',
-    BatchStatus.pickedUp => 'Collected',
-    BatchStatus.delivered => 'Delivered',
-    BatchStatus.closed => 'Closed',
-    BatchStatus.cancelled => 'Cancelled',
-  };
+  String _statusLabel(BatchStatus status) => status.label;
 
   String _formatDate(DateTime? dt) {
     if (dt == null) return '';

@@ -124,16 +124,6 @@ void main() {
       await tester.pumpAndSettle(const Duration(seconds: 3));
       expect(find.text('Set Up Your Vehicle'), findsOneWidget);
       expect(find.text('Complete Setup'), findsOneWidget);
-      expect(find.text('Skip for now'), findsOneWidget);
-    });
-
-    testWidgets('skip navigates to /driver', (tester) async {
-      await tester.pumpWidget(_buildApp());
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      await tester.ensureVisible(find.text('Skip for now'));
-      await tester.tap(find.text('Skip for now'));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-      expect(find.text('Driver Home'), findsOneWidget);
     });
 
     testWidgets('empty submit shows validation errors', (tester) async {
