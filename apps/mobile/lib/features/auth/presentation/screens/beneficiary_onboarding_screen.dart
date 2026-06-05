@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saveameal/core/logging/app_logger.dart';
@@ -64,11 +66,59 @@ class _BeneficiaryOnboardingScreenState
   }
 
   void _onAddressChanged() {
-    if (_addressController.text.isEmpty) {
-      _latitude = null;
-      _longitude = null;
+    final text = _addressController.text.trim();
+    // Auto reverse-geocode if user pasted a coordinate pair
+    if (_latitude == null && _longitude == null) {
+      final coords = _tryParseCoordinates(text);
+      if (coords != null) {
+        _reverseGeocode(coords.$1, coords.$2);
+        return;
+      }
     }
-    setState(() {});
+    // existing clear logic below...
+    if (text.isEmpty) {
+      setState(() {
+        _latitude = null;
+        _longitude = null;
+      });
+    }
+  }
+
+  Future<void> _reverseGeocode(double lat, double lng) async {
+    if (kIsWeb) {
+      // geocoding package has no web implementation — store coordinates, keep raw text
+      if (!mounted) return;
+      setState(() {
+        _latitude = lat;
+        _longitude = lng;
+      });
+      return;
+    }
+    try {
+      await setLocaleIdentifier('en_US');
+      final placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isEmpty) return;
+      final p = placemarks.first;
+      final parts = [
+        p.street,
+        p.subLocality,
+        p.locality,
+        p.administrativeArea,
+        p.country,
+      ].where((s) => s != null && s.isNotEmpty).join(', ');
+      if (parts.isEmpty) return;
+      // Remove the listener temporarily to avoid _onAddressChanged clearing lat/lng
+      _addressController.removeListener(_onAddressChanged);
+      if (!mounted) return;
+      setState(() {
+        _addressController.text = parts;
+        _latitude = lat;
+        _longitude = lng;
+      });
+      _addressController.addListener(_onAddressChanged);
+    } catch (_) {
+      // Silently ignore — keep the raw coordinate text and coordinates
+    }
   }
 
   Future<void> _fetchLocation() async {
@@ -172,11 +222,35 @@ class _BeneficiaryOnboardingScreenState
     );
   }
 
+  // Parse "lat, lng" strings so pasted Google Maps coordinates store real lat/lng
+  (double, double)? _tryParseCoordinates(String text) {
+    final parts = text.split(',');
+    if (parts.length != 2) return null;
+    final lat = double.tryParse(parts[0].trim());
+    final lng = double.tryParse(parts[1].trim());
+    if (lat == null || lng == null) return null;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+    return (lat, lng);
+  }
+
   Future<void> _handleSave() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final uid = ref.read(authStateProvider).asData?.value?.uid ?? '';
     if (uid.isEmpty) return;
     setState(() => _saving = true);
+
+    // GPS-button coordinates take priority; fall back to parsing the address
+    // field in case the user pasted a raw "lat, lng" string from Google Maps.
+    double? effectiveLat = _latitude;
+    double? effectiveLng = _longitude;
+    if (effectiveLat == null || effectiveLng == null) {
+      final parsed = _tryParseCoordinates(_addressController.text);
+      if (parsed != null) {
+        effectiveLat = parsed.$1;
+        effectiveLng = parsed.$2;
+      }
+    }
+
     try {
       await ref
           .read(updateOrgProfileUseCaseProvider)
@@ -188,6 +262,8 @@ class _BeneficiaryOnboardingScreenState
               orgType: _selectedType,
               contactEmail: _emailController.text.trim(),
               missionStatement: _missionController.text.trim(),
+              latitude: effectiveLat,
+              longitude: effectiveLng,
             ),
           );
       ref.invalidate(currentBeneficiaryProfileProvider);
@@ -220,38 +296,37 @@ class _BeneficiaryOnboardingScreenState
       String? labelText,
       Widget? prefixIcon,
       Widget? suffixIcon,
-    }) =>
-        InputDecoration(
-          labelText: labelText,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: cs.outline),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: cs.outline),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: cs.primary, width: 1.5),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: ac.danger),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: ac.danger, width: 1.5),
-          ),
-          filled: true,
-          fillColor: cs.surface,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: Spacing.sm + Spacing.xs,
-            vertical: Spacing.sm + Spacing.xs,
-          ),
-          prefixIcon: prefixIcon,
-          suffixIcon: suffixIcon,
-        );
+    }) => InputDecoration(
+      labelText: labelText,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: cs.outline),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: cs.outline),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: cs.primary, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: ac.danger),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: ac.danger, width: 1.5),
+      ),
+      filled: true,
+      fillColor: cs.surface,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: Spacing.sm + Spacing.xs,
+        vertical: Spacing.sm + Spacing.xs,
+      ),
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+    );
 
     return Scaffold(
       body: SafeArea(

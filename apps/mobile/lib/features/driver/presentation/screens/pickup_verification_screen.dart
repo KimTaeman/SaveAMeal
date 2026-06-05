@@ -39,7 +39,9 @@ class _PickupVerificationScreenState
   static String _extractBatchId(String raw) {
     const prefix = 'saveameal://batch/';
     final trimmed = raw.trim();
-    return trimmed.startsWith(prefix) ? trimmed.substring(prefix.length) : trimmed;
+    return trimmed.startsWith(prefix)
+        ? trimmed.substring(prefix.length)
+        : trimmed;
   }
 
   Future<void> _validateAndNavigate(String scannedBatchId) async {

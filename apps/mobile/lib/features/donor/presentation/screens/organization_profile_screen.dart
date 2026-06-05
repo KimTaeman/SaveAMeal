@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -121,11 +123,69 @@ class _OrganizationProfileScreenState
   }
 
   void _onAddressChanged() {
-    if (_addressController.text.isEmpty) {
-      _latitude = null;
-      _longitude = null;
+    final text = _addressController.text.trim();
+    // Auto reverse-geocode if user pasted a coordinate pair
+    if (_latitude == null && _longitude == null) {
+      final coords = _tryParseCoordinates(text);
+      if (coords != null) {
+        _reverseGeocode(coords.$1, coords.$2);
+        return;
+      }
     }
-    setState(() {});
+    // existing clear logic below...
+    if (text.isEmpty) {
+      setState(() {
+        _latitude = null;
+        _longitude = null;
+      });
+    }
+  }
+
+  Future<void> _reverseGeocode(double lat, double lng) async {
+    if (kIsWeb) {
+      // geocoding package has no web implementation — store coordinates, keep raw text
+      if (!mounted) return;
+      setState(() {
+        _latitude = lat;
+        _longitude = lng;
+      });
+      return;
+    }
+    try {
+      await setLocaleIdentifier('en_US');
+      final placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isEmpty) return;
+      final p = placemarks.first;
+      final parts = [
+        p.street,
+        p.subLocality,
+        p.locality,
+        p.administrativeArea,
+        p.country,
+      ].where((s) => s != null && s.isNotEmpty).join(', ');
+      if (parts.isEmpty) return;
+      // Remove the listener temporarily to avoid _onAddressChanged clearing lat/lng
+      _addressController.removeListener(_onAddressChanged);
+      if (!mounted) return;
+      setState(() {
+        _addressController.text = parts;
+        _latitude = lat;
+        _longitude = lng;
+      });
+      _addressController.addListener(_onAddressChanged);
+    } catch (_) {
+      // Silently ignore — keep the raw coordinate text and coordinates
+    }
+  }
+
+  (double, double)? _tryParseCoordinates(String text) {
+    final parts = text.split(',');
+    if (parts.length != 2) return null;
+    final lat = double.tryParse(parts[0].trim());
+    final lng = double.tryParse(parts[1].trim());
+    if (lat == null || lng == null) return null;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+    return (lat, lng);
   }
 
   Future<void> _fetchLocation() async {

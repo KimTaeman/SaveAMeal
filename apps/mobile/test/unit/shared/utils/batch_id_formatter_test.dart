@@ -3,10 +3,13 @@ import 'package:saveameal/shared/utils/batch_id_formatter.dart';
 
 void main() {
   group('formatBatchId', () {
-    test('canonical UUID produces #XXXXXXXX (8 chars, no dashes, uppercase)', () {
-      const uuid = '3f2c1a7b-e5d4-4c8b-9f1a-2b3c4d5e6f7a';
-      expect(formatBatchId(uuid), '#3F2C1A7B');
-    });
+    test(
+      'canonical UUID produces #XXXXXXXX (8 chars, no dashes, uppercase)',
+      () {
+        const uuid = '3f2c1a7b-e5d4-4c8b-9f1a-2b3c4d5e6f7a';
+        expect(formatBatchId(uuid), '#3F2C1A7B');
+      },
+    );
 
     test('dashes are stripped before taking 8 chars', () {
       // Without stripping, 'abcd-efgh' first 8 chars would include the dash.

@@ -14,7 +14,10 @@ void main() {
 
     test('unknown string falls back to FoodCategory.other', () {
       expect(FoodCategory.fromString('unknown'), FoodCategory.other);
-      expect(FoodCategory.fromString('Bakery'), FoodCategory.other); // case-sensitive
+      expect(
+        FoodCategory.fromString('Bakery'),
+        FoodCategory.other,
+      ); // case-sensitive
       expect(FoodCategory.fromString('PRODUCE'), FoodCategory.other);
     });
 

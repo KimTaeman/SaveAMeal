@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:saveameal/core/logging/app_logger.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/beneficiary_profile.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_account_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_profile_provider.dart';
 import 'package:saveameal/features/donor/domain/entities/donor_profile.dart';
@@ -72,6 +73,17 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
         next.whenData(_goToDonorDestination);
       }
     });
+    // When beneficiary profile resolves, complete beneficiary destination check.
+    ref.listen<AsyncValue<BeneficiaryProfile?>>(
+      currentBeneficiaryProfileProvider,
+      (_, next) {
+        if (!mounted) return;
+        final user = ref.read(authStateProvider).asData?.value;
+        if (user?.role == UserRole.beneficiary) {
+          next.whenData(_goToBeneficiaryDestination);
+        }
+      },
+    );
 
     return Scaffold(
       body: Container(
@@ -208,21 +220,18 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
           if (mounted) context.go('/onboarding/driver');
         }
       case UserRole.beneficiary:
-        try {
-          final profile = await ref.read(
-            currentBeneficiaryProfileProvider.future,
-          );
-          if (!mounted) return;
-          if (profile == null || (profile.orgName ?? '').isEmpty) {
-            context.go('/onboarding/beneficiary');
-          } else {
-            context.go('/beneficiary');
-          }
-        } catch (e, st) {
+        // Check if the profile is already available synchronously (e.g. cached).
+        // If so, route immediately. Otherwise, the ref.listen in build() will
+        // call _goToBeneficiaryDestination once the stream emits its first value.
+        final profileAsync = ref.read(currentBeneficiaryProfileProvider);
+        profileAsync.whenData(_goToBeneficiaryDestination);
+        // If there was a hard auth error in the current value, handle it now.
+        if (profileAsync.hasError) {
+          final e = profileAsync.error!;
           AppLogger.error(
             'role_router_screen: failed to load beneficiary profile',
             error: e,
-            stack: st,
+            stack: profileAsync.stackTrace,
           );
           if (!mounted) return;
           final msg = e.toString();
@@ -230,9 +239,9 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
               msg.contains('permission-denied') ||
               msg.contains('unauthenticated')) {
             context.go('/login');
-          } else {
-            context.go('/onboarding/beneficiary');
           }
+          // Do NOT redirect to onboarding on a transient error — wait for the
+          // stream listener to deliver a confirmed data value.
         }
     }
   }
@@ -241,5 +250,11 @@ class _RoleRouterScreenState extends ConsumerState<RoleRouterScreen>
     if (!mounted) return;
     final hasOrg = profile?.orgName != null && profile!.orgName!.isNotEmpty;
     context.go(hasOrg ? '/donor' : '/donor/setup');
+  }
+
+  void _goToBeneficiaryDestination(BeneficiaryProfile? profile) {
+    if (!mounted) return;
+    final hasOrg = profile != null && (profile.orgName ?? '').isNotEmpty;
+    context.go(hasOrg ? '/beneficiary' : '/onboarding/beneficiary');
   }
 }
