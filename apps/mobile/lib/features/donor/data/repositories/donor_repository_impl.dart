@@ -167,6 +167,14 @@ class DonorRepositoryImpl implements DonorRepository {
     totalDeliveries: m.totalDeliveries,
   );
 
-  Beneficiary _toBeneficiary(BeneficiaryModel m) =>
-      Beneficiary(id: m.id, name: m.name, address: m.address);
+  Beneficiary _toBeneficiary(BeneficiaryModel m) => Beneficiary(
+    id: m.id,
+    name: m.name,
+    address: m.address,
+    orgType: m.orgType,
+    contactEmail: m.contactEmail,
+    missionStatement: m.missionStatement,
+    latitude: m.lat,
+    longitude: m.lng,
+  );
 }

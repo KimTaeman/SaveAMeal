@@ -16,10 +16,13 @@ part 'driver_profile_provider.g.dart';
 
 @riverpod
 class DriverProfileNotifier extends _$DriverProfileNotifier {
-  late final GetDriverProfileUseCase _getProfile;
-  late final UpdateDriverProfileUseCase _updateProfile;
-  late final UploadAvatarUseCase _uploadAvatar;
-  late final DriverProfileRepositoryImpl _repo;
+  // Declared as plain `late` (not `late final`) because Riverpod can re-run
+  // build() on the same notifier instance when a watched dep changes. Using
+  // `late final` would throw LateInitializationError on the second build().
+  late GetDriverProfileUseCase _getProfile;
+  late UpdateDriverProfileUseCase _updateProfile;
+  late UploadAvatarUseCase _uploadAvatar;
+  late DriverProfileRepositoryImpl _repo;
 
   @override
   Future<DriverProfile?> build() async {

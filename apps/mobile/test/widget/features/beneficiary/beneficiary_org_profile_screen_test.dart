@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/beneficiary_org_profile_update.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/beneficiary_profile.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/order_history_entry.dart';
 import 'package:saveameal/features/beneficiary/domain/repositories/beneficiary_account_repository.dart';
@@ -127,6 +129,9 @@ void main() {
         ProviderScope(
           overrides: [
             authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+            activeDeliveriesProvider(
+              'test-uid',
+            ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
             currentBeneficiaryProfileProvider.overrideWith(
               (ref) => Stream.value(_testProfile),
             ),
@@ -154,6 +159,9 @@ void main() {
         ProviderScope(
           overrides: [
             authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+            activeDeliveriesProvider(
+              'test-uid',
+            ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
             currentBeneficiaryProfileProvider.overrideWith(
               (ref) => controller.stream,
             ),
@@ -178,6 +186,9 @@ void main() {
         ProviderScope(
           overrides: [
             authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+            activeDeliveriesProvider(
+              'test-uid',
+            ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
             currentBeneficiaryProfileProvider.overrideWith(
               (ref) => Stream.value(_testProfile),
             ),
@@ -201,6 +212,9 @@ void main() {
         ProviderScope(
           overrides: [
             authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+            activeDeliveriesProvider(
+              'test-uid',
+            ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
             currentBeneficiaryProfileProvider.overrideWith(
               (ref) => Stream.value(_testProfile),
             ),
@@ -225,6 +239,9 @@ void main() {
         ProviderScope(
           overrides: [
             authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+            activeDeliveriesProvider(
+              'test-uid',
+            ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
             currentBeneficiaryProfileProvider.overrideWith(
               (ref) => Stream.value(_testProfile),
             ),

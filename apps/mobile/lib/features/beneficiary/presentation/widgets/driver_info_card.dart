@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:saveameal/core/models/driver_location_model.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request_detail.dart';
+import 'package:saveameal/core/constants/maps_constants.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
@@ -18,9 +19,16 @@ class DriverInfoCard extends ConsumerWidget {
     final ac = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
 
-    final DriverLocationModel? driverLoc = detail.volunteerId != null
-        ? ref.watch(driverLocationProvider(detail.volunteerId!)).asData?.value
+    // Watch the location stream only when a driver is assigned; short-circuit
+    // to null when there is no volunteerId so the provider is never subscribed.
+    final AsyncValue<DriverLocationModel?>? locationAsync =
+        detail.volunteerId != null
+        ? ref.watch(driverLocationProvider(detail.volunteerId!))
         : null;
+    final DriverLocationModel? driverLoc = locationAsync?.asData?.value;
+
+    // Bangkok city centre — fallback camera target before location loads.
+    const defaultTarget = LatLng(13.7563, 100.5018);
 
     final initials = (detail.volunteerName ?? 'V')
         .trim()
@@ -28,6 +36,7 @@ class DriverInfoCard extends ConsumerWidget {
         .take(2)
         .map((w) => w.isEmpty ? '' : w[0].toUpperCase())
         .join();
+    final eta = detail.estimatedArrivalMinutes?.clamp(1, 600);
 
     return Card(
       elevation: 0,
@@ -39,9 +48,11 @@ class DriverInfoCard extends ConsumerWidget {
           // Map section — labelled for screen readers; inner decorative widgets
           // are excluded so TalkBack/VoiceOver reads one coherent description.
           Semantics(
-            label: driverLoc != null
+            label: detail.volunteerId == null
+                ? 'Driver location unavailable — no driver assigned'
+                : driverLoc != null
                 ? 'Driver location map — driver is en route'
-                : 'Driver location unavailable',
+                : 'Driver location map — locating driver',
             excludeSemantics: true,
             child: ClipRRect(
               borderRadius: const BorderRadius.only(
@@ -51,23 +62,33 @@ class DriverInfoCard extends ConsumerWidget {
               child: SizedBox(
                 height: 200,
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    // Map or placeholder
-                    if (detail.volunteerId != null && driverLoc != null)
+                    // Live map whenever a driver is assigned; placeholder
+                    // otherwise (e.g. open/pending batches with no volunteer).
+                    if (detail.volunteerId != null)
                       GoogleMap(
+                        mapId: MapsConstants.mapId,
                         initialCameraPosition: CameraPosition(
-                          target: LatLng(driverLoc.lat, driverLoc.lng),
+                          target: driverLoc != null
+                              ? LatLng(driverLoc.lat, driverLoc.lng)
+                              : defaultTarget,
                           zoom: 14,
                         ),
-                        markers: {
-                          Marker(
-                            markerId: const MarkerId('driver'),
-                            position: LatLng(driverLoc.lat, driverLoc.lng),
-                            icon: BitmapDescriptor.defaultMarkerWithHue(
-                              BitmapDescriptor.hueAzure,
-                            ),
-                          ),
-                        },
+                        markers: driverLoc != null
+                            ? {
+                                Marker(
+                                  markerId: const MarkerId('driver'),
+                                  position: LatLng(
+                                    driverLoc.lat,
+                                    driverLoc.lng,
+                                  ),
+                                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                                    BitmapDescriptor.hueAzure,
+                                  ),
+                                ),
+                              }
+                            : const {},
                         liteModeEnabled: true,
                         zoomGesturesEnabled: false,
                         scrollGesturesEnabled: false,
@@ -87,8 +108,8 @@ class DriverInfoCard extends ConsumerWidget {
                           ),
                         ),
                       ),
-                    // "En route" chip
-                    if (driverLoc != null)
+                    // Status chip — always visible once a driver is assigned.
+                    if (detail.volunteerId != null)
                       Positioned(
                         bottom: 8,
                         left: 8,
@@ -102,7 +123,7 @@ class DriverInfoCard extends ConsumerWidget {
                             vertical: 4,
                           ),
                           child: Text(
-                            'En route',
+                            driverLoc != null ? 'En route' : 'Locating driver…',
                             style: textTheme.labelSmall?.copyWith(
                               color: cs.onPrimaryContainer,
                             ),
@@ -143,9 +164,9 @@ class DriverInfoCard extends ConsumerWidget {
                   ),
                 ),
                 // ETA — merge the two-line label into one screen-reader string.
-                if (detail.estimatedArrivalMinutes != null)
+                if (eta != null)
                   Semantics(
-                    label: 'ETA: ${detail.estimatedArrivalMinutes} minutes',
+                    label: 'ETA: $eta minutes',
                     excludeSemantics: true,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -157,7 +178,7 @@ class DriverInfoCard extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          '${detail.estimatedArrivalMinutes} min',
+                          '$eta min',
                           style: textTheme.titleMedium?.copyWith(
                             color: cs.primary,
                             fontWeight: FontWeight.bold,

@@ -1015,3 +1015,65 @@ Files:
   ? apps/mobile/test/unit/shared/ (untracked)
 Summary:  24 files changed, 110 insertions(+), 58 deletions(-)
 
+Files:
+  ~ apps/mobile/lib/app/router.dart
+  ~ apps/mobile/lib/core/constants/firestore_constants.dart
+  + apps/mobile/lib/core/constants/maps_constants.dart
+  ~ apps/mobile/lib/core/models/batch_model.dart
+  + apps/mobile/lib/core/utils/distance_utils.dart
+  ~ apps/mobile/lib/features/auth/data/datasources/auth_remote_datasource.dart
+  ~ apps/mobile/lib/features/auth/presentation/screens/beneficiary_onboarding_screen.dart
+  ? apps/mobile/lib/features/auth/presentation/screens/driver_onboarding_screen.dart (untracked)
+  ~ apps/mobile/lib/features/beneficiary/data/models/intake_request_model.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_account_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_dashboard_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_order_history_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_org_profile_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/beneficiary_personal_information_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/delivery_detail_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/delivery_history_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/rate_delivery_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/tracking_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/beneficiary_bottom_nav.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/driver_info_card.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/recent_deliveries_section.dart
+  ~ apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart
+  ~ apps/mobile/lib/features/donor/domain/entities/beneficiary.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_org_setup_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/log_surplus_form_screen.dart
+  + apps/mobile/lib/features/donor/presentation/widgets/beneficiary_destination_card.dart
+  ~ apps/mobile/lib/features/driver/data/datasources/driver_impact_datasource.dart
+  ~ apps/mobile/lib/features/driver/data/datasources/driver_remote_datasource.dart
+  ? apps/mobile/lib/features/driver/data/repositories/driver_repository_impl.dart (untracked)
+  ~ apps/mobile/lib/features/driver/domain/repositories/driver_repository.dart
+  + apps/mobile/lib/features/driver/domain/usecases/update_batch_eta_usecase.dart
+  ~ apps/mobile/lib/features/driver/presentation/providers/driver_notifier.dart
+  ~ apps/mobile/lib/features/driver/presentation/providers/driver_profile_provider.dart
+  ~ apps/mobile/lib/features/driver/presentation/providers/driver_provider.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/claim_rescue_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_impact_screen.dart
+  + apps/mobile/lib/features/driver/presentation/screens/driver_leaderboard_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/driver_map_screen.dart
+  ~ apps/mobile/lib/main.dart
+  ? apps/mobile/lib/services/firestore_service.dart (untracked)
+  + apps/mobile/test/unit/core/distance_utils_test.dart
+  ~ apps/mobile/test/unit/driver/claim_batch_usecase_test.dart
+  ~ apps/mobile/test/unit/driver/driver_notifier_location_test.dart
+  ~ apps/mobile/test/unit/driver/driver_notifier_test.dart
+  + apps/mobile/test/unit/driver/update_batch_eta_usecase_test.dart
+  ~ apps/mobile/test/unit/features/beneficiary/intake_request_detail_mapper_test.dart
+  + apps/mobile/test/widget/donor/beneficiary_destination_card_test.dart
+  ~ apps/mobile/test/widget/features/auth/beneficiary_onboarding_screen_test.dart
+  ~ apps/mobile/test/widget/features/auth/driver_onboarding_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_account_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_impact_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_order_history_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_org_profile_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_personal_information_screen_test.dart
+  + apps/mobile/test/widget/features/beneficiary/widgets/beneficiary_bottom_nav_test.dart
+  + apps/mobile/test/widget/features/beneficiary/widgets/driver_info_card_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/widgets/recent_deliveries_section_test.dart
+  ~ apps/mobile/test/widget/features/donor/donor_org_setup_screen_test.dart
+Summary:  59 files changed, 2549 insertions(+), 550 deletions(-)
+

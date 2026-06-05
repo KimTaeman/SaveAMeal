@@ -38,7 +38,7 @@ class FirestoreService {
     });
   }
 
-  Future<void> createUser(UserModel user) {
+  Future<void> createUser(UserModel user) async {
     final extra = user.role == UserRole.driver
         ? {
             'mealsSaved': 0,
@@ -51,7 +51,7 @@ class FirestoreService {
             'nextRankName': 'Silver',
           }
         : <String, dynamic>{};
-    return _db.collection(FirestoreConstants.users).doc(user.uid).set({
+    await _db.collection(FirestoreConstants.users).doc(user.uid).set({
       ...user.toJson(),
       'createdAt': FieldValue.serverTimestamp(),
       ...extra,
@@ -211,6 +211,16 @@ class FirestoreService {
     'updatedAt': FieldValue.serverTimestamp(),
   });
 
+  /// Creates an initial beneficiaries/{uid} document for a newly registered
+  /// beneficiary so they appear in the donor map and intake toggle works
+  /// immediately without requiring a profile-setup step first.
+  Future<void> createBeneficiaryDoc(String uid, String orgName) =>
+      _db.collection(FirestoreConstants.beneficiaries).doc(uid).set({
+        'id': uid,
+        'name': orgName,
+        'intakeStatus': 'accepting',
+      }, SetOptions(merge: true));
+
   Future<void> setIntakeAvailability({
     required String beneficiaryId,
     required String intakeStatus,
@@ -262,19 +272,45 @@ class FirestoreService {
         throw const BatchAlreadyClaimedException();
       }
 
+      final existingBeneficiaryId = snap.data()!['beneficiaryId'] as String?;
+      final resolvedBeneficiaryId =
+          (existingBeneficiaryId != null && existingBeneficiaryId.isNotEmpty)
+          ? existingBeneficiaryId
+          : autoId;
+
       final update = <String, dynamic>{
         'status': 'claimed',
         'driverId': driverId,
         'claimedAt': FieldValue.serverTimestamp(),
       };
 
-      if (snap.data()!['beneficiaryId'] == null && autoId != null) {
+      if (existingBeneficiaryId == null && autoId != null) {
         update['beneficiaryId'] = autoId;
+      }
+
+      // Denormalise beneficiary delivery coordinates so the driver app can
+      // calculate ETA to drop-off without a second collection query.
+      if (resolvedBeneficiaryId != null) {
+        final benRef = _db
+            .collection(FirestoreConstants.beneficiaries)
+            .doc(resolvedBeneficiaryId);
+        final benSnap = await tx.get(benRef);
+        if (benSnap.exists && benSnap.data() != null) {
+          final lat = (benSnap.data()!['lat'] as num?)?.toDouble();
+          final lng = (benSnap.data()!['lng'] as num?)?.toDouble();
+          if (lat != null) update['beneficiaryLat'] = lat;
+          if (lng != null) update['beneficiaryLng'] = lng;
+        }
       }
 
       tx.update(batchRef, update);
     });
   }
+
+  Future<void> updateBatchEta(String batchId, int eta) => _db
+      .collection(FirestoreConstants.batches)
+      .doc(batchId)
+      .update({'estimatedArrivalMinutes': eta});
 
   /// Returns the ID of the first beneficiary currently accepting food,
   /// or null if none are available.
@@ -327,7 +363,68 @@ class FirestoreService {
         'points': FieldValue.increment(meals),
         'rankProgressCurrent': FieldValue.increment(meals),
       });
+      await _rebuildLeaderboard(driverId, meals);
     }
+  }
+
+  /// Upserts the driver's entry in leaderboard/thisMonth, re-sorts by score,
+  /// assigns sequential ranks, and writes the updated list back. Also updates
+  /// Updates leaderboard/thisMonth and the driver's rank/totalDrivers field.
+  /// Uses two separate writes instead of a transaction to avoid the combined
+  /// commit being rejected by Firestore security rules when the two writes
+  /// span different permission scopes (leaderboard + users).
+  Future<void> _rebuildLeaderboard(String driverId, int deliveredMeals) async {
+    // Read driver profile for display fields.
+    final driverSnap = await _db
+        .collection(FirestoreConstants.users)
+        .doc(driverId)
+        .get();
+    final driverData = driverSnap.data() ?? {};
+    final driverName = driverData['name'] as String? ?? 'Driver';
+    final zone = driverData['primaryLocation'] as String? ?? 'Bangkok';
+    final avatarUrl = driverData['photoUrl'] as String? ?? '';
+    final newMealsSaved = (driverData['mealsSaved'] as int?) ?? deliveredMeals;
+
+    final leaderboardRef = _db
+        .collection(FirestoreConstants.leaderboard)
+        .doc('thisMonth');
+
+    // Read current leaderboard entries.
+    final lSnap = await leaderboardRef.get();
+    final entries = List<Map<String, dynamic>>.from(
+      ((lSnap.data()?['entries'] as List<dynamic>?) ?? []).map(
+        (e) => Map<String, dynamic>.from(e as Map),
+      ),
+    );
+
+    // Upsert this driver's entry.
+    entries.removeWhere((e) => e['uid'] == driverId);
+    entries.add({
+      'uid': driverId,
+      'driverName': driverName,
+      'zone': zone,
+      'score': newMealsSaved,
+      'avatarUrl': avatarUrl,
+    });
+
+    // Sort by score descending and assign sequential ranks.
+    entries.sort(
+      (a, b) =>
+          ((b['score'] as int?) ?? 0).compareTo((a['score'] as int?) ?? 0),
+    );
+    for (var i = 0; i < entries.length; i++) {
+      entries[i]['rank'] = i + 1;
+    }
+
+    // Write leaderboard (covered by leaderboard allow write: isDriver rule).
+    await leaderboardRef.set({'entries': entries});
+
+    // Write driver's new rank and fleet size (covered by users allow update rule).
+    final driverRank = entries.indexWhere((e) => e['uid'] == driverId) + 1;
+    await _db.collection(FirestoreConstants.users).doc(driverId).update({
+      'rank': driverRank,
+      'totalDrivers': entries.length,
+    });
   }
 
   Future<void> upsertDriverLocation(DriverLocationModel loc) => _db
@@ -388,23 +485,30 @@ class FirestoreService {
     }
   }
 
-  // Queries users with role=beneficiary for full profile data. The beneficiaries
-  // collection only stores intakeStatus — name/address live in users.
+  // Queries the beneficiaries collection directly, filtered to those currently
+  // accepting food. All profile fields (name, address, lat/lng, etc.) are read
+  // from the beneficiaries doc. Falls back to orgName, then document ID if
+  // the name field is absent.
   Stream<List<BeneficiaryModel>> getBeneficiaries() => _db
-      .collection(FirestoreConstants.users)
-      .where('role', isEqualTo: 'beneficiary')
+      .collection(FirestoreConstants.beneficiaries)
+      .where('intakeStatus', isEqualTo: 'accepting')
       .snapshots()
       .map(
         (qs) => qs.docs.map((d) {
           final data = d.data();
-          final orgName = data['orgName'] as String?;
           final name = data['name'] as String?;
+          final orgName = data['orgName'] as String?;
           return BeneficiaryModel(
             id: d.id,
             name: (orgName != null && orgName.isNotEmpty)
                 ? orgName
                 : (name ?? 'Unknown'),
-            address: data['streetAddress'] as String?,
+            address: data['address'] as String?,
+            lat: (data['lat'] as num?)?.toDouble(),
+            lng: (data['lng'] as num?)?.toDouble(),
+            orgType: data['orgType'] as String?,
+            contactEmail: data['contactEmail'] as String?,
+            missionStatement: data['missionStatement'] as String?,
           );
         }).toList(),
       );

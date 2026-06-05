@@ -228,14 +228,10 @@ void main() {
       expect(btn, findsOneWidget);
     });
 
-    testWidgets('renders Skip for now button', (tester) async {
+    testWidgets('renders back-to-registration button in AppBar', (tester) async {
       await tester.pumpWidget(_buildApp());
       await tester.pumpAndSettle();
-
-      final btn = find.widgetWithText(TextButton, 'Skip for now');
-      await tester.ensureVisible(btn);
-      await tester.pumpAndSettle();
-      expect(btn, findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
     });
 
     testWidgets('shows validation error when org name is empty', (
@@ -299,19 +295,14 @@ void main() {
       );
     });
 
-    testWidgets('Skip for now navigates to /donor without saving', (
-      tester,
-    ) async {
+    testWidgets('back button shows confirmation dialog', (tester) async {
       await tester.pumpWidget(_buildApp());
       await tester.pumpAndSettle();
 
-      final btn = find.widgetWithText(TextButton, 'Skip for now');
-      await tester.ensureVisible(btn);
-      await tester.pumpAndSettle();
-      await tester.tap(btn);
+      await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
 
-      expect(find.text('Donor Home'), findsOneWidget);
+      expect(find.text('Go back to registration?'), findsOneWidget);
     });
 
     testWidgets('map button disabled when address empty and no coords', (

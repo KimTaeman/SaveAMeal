@@ -4,6 +4,7 @@ import 'package:saveameal/features/driver/data/repositories/driver_repository_im
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/domain/usecases/get_active_batch_usecase.dart';
 import 'package:saveameal/features/driver/domain/usecases/get_open_batches_usecase.dart';
+import 'package:saveameal/features/driver/domain/usecases/update_batch_eta_usecase.dart';
 import 'package:saveameal/services/service_providers.dart';
 
 part 'driver_provider.g.dart';
@@ -34,3 +35,7 @@ Stream<List<BatchSummary>> openBatches(Ref ref) =>
 @riverpod
 Stream<BatchSummary?> activeBatchForDriver(Ref ref, String driverId) =>
     ref.watch(getActiveBatchUsecaseProvider).call(driverId);
+
+@riverpod
+UpdateBatchEtaUsecase updateBatchEtaUsecase(Ref ref) =>
+    UpdateBatchEtaUsecase(ref.watch(driverRepositoryProvider));

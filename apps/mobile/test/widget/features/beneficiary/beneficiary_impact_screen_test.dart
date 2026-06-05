@@ -11,6 +11,8 @@ import 'package:saveameal/features/beneficiary/presentation/providers/beneficiar
 import 'package:saveameal/features/beneficiary/presentation/screens/beneficiary_impact_screen.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/impact_hero_card.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/impact_metric_tile.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/donor/domain/entities/food_category.dart';
 import 'package:saveameal/shared/theme/app_theme.dart';
 
@@ -103,6 +105,9 @@ void main() {
           ProviderScope(
             overrides: [
               authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+              activeDeliveriesProvider(
+                'test-ben-uid',
+              ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
               beneficiaryImpactProvider(
                 'test-ben-uid',
               ).overrideWith((ref) => impactController.stream),
@@ -253,6 +258,9 @@ void main() {
           ProviderScope(
             overrides: [
               authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+              activeDeliveriesProvider(
+                'test-ben-uid',
+              ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
               beneficiaryImpactProvider(
                 'test-ben-uid',
               ).overrideWith((ref) => Stream.error(Exception('network error'))),
@@ -280,6 +288,9 @@ void main() {
           ProviderScope(
             overrides: [
               authStateProvider.overrideWith((ref) => Stream.value(_testUser)),
+              activeDeliveriesProvider(
+                'test-ben-uid',
+              ).overrideWith((ref) => Stream.value(const <IntakeRequest>[])),
               beneficiaryImpactProvider(
                 'test-ben-uid',
               ).overrideWith((ref) => Stream.error(Exception('network error'))),

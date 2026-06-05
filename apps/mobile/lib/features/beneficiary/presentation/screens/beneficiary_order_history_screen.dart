@@ -247,15 +247,7 @@ class BeneficiaryOrderHistoryScreen extends ConsumerWidget {
           const SliverToBoxAdapter(child: SizedBox(height: Spacing.md)),
         ],
       ),
-      bottomNavigationBar: BeneficiaryBottomNav(
-        currentIndex: 3,
-        onDestinationSelected: (i) {
-          if (i == 0) context.go('/beneficiary');
-          if (i == 1) context.go('/beneficiary/history');
-          if (i == 2) context.go('/beneficiary/impact');
-          if (i == 3) context.go('/beneficiary/account');
-        },
-      ),
+      bottomNavigationBar: const BeneficiaryBottomNav(currentIndex: 3),
     );
   }
 }
