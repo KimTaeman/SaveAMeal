@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:saveameal/core/models/user_model.dart';
 import 'package:saveameal/services/auth_service.dart';
@@ -69,6 +70,9 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
       phone: phone,
     );
     await _firestoreService.createUser(model);
+    if (role == UserRole.beneficiary) {
+      await _firestoreService.createBeneficiaryDoc(uid, name);
+    }
     await registerFcmForUser(model);
     return model;
   }
@@ -89,14 +93,20 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
   // Registers the device FCM token and subscribes drivers to the broadcast
   // topic. Exposed (not private) so test code can call it directly.
+  // subscribeToTopic is not supported on web — guard with kIsWeb.
+  // Entire method is wrapped in try/catch so FCM issues never block login.
   Future<void> registerFcmForUser(UserModel model) async {
-    await _fcmService.requestPermission();
-    final token = await _fcmService.getToken();
-    if (token != null) {
-      await _firestoreService.updateFcmToken(model.uid, token);
-    }
-    if (model.role == UserRole.driver) {
-      await _fcmService.subscribeToTopic('new_batch_available');
+    try {
+      await _fcmService.requestPermission();
+      final token = await _fcmService.getToken();
+      if (token != null) {
+        await _firestoreService.updateFcmToken(model.uid, token);
+      }
+      if (!kIsWeb && model.role == UserRole.driver) {
+        await _fcmService.subscribeToTopic('new_batch_available');
+      }
+    } catch (_) {
+      // FCM failures must not block login — notifications are non-critical.
     }
   }
 }

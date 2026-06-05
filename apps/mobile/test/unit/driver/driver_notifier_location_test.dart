@@ -36,6 +36,9 @@ class _FakeRepo implements DriverRepository {
   }
 
   @override
+  Future<void> updateBatchEta(String batchId, int eta) async {}
+
+  @override
   Stream<int> watchPoints(String uid) => const Stream.empty();
 }
 
@@ -64,6 +67,9 @@ class _FakeDatasource implements DriverRemoteDatasource {
 
   @override
   Future<void> deleteLocation(String driverId) async {}
+
+  @override
+  Future<void> updateBatchEta(String batchId, int eta) async {}
 
   @override
   Stream<int> watchPoints(String uid) => const Stream.empty();

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -24,6 +25,8 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
   LatLng? _currentPosition;
   GoogleMapController? _mapController;
   StreamSubscription<Position>? _positionSub;
+  bool _mapReady = false;
+  bool _locationDenied = false;
 
   @override
   void initState() {
@@ -34,24 +37,33 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
   @override
   void dispose() {
     _positionSub?.cancel();
-    _mapController?.dispose();
+    // google_maps_flutter_web 0.6.2+1 crashes if dispose() is called before
+    // onMapCreated fires. Wrap in try/catch and skip on web when not ready.
+    if (!kIsWeb || _mapReady) {
+      try {
+        _mapController?.dispose();
+      } catch (_) {}
+    }
     super.dispose();
   }
 
-  void _startLocationTracking() {
-    _positionSub =
-        Geolocator.getPositionStream(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            distanceFilter: 10,
-          ),
-        ).listen((pos) {
-          if (!mounted) return;
-          setState(
-            () => _currentPosition = LatLng(pos.latitude, pos.longitude),
-          );
-        });
-    // Also get a one-shot initial position immediately
+  Future<void> _startLocationTracking() async {
+    // On web, navigator.permissions reports 'denied' for localhost even when
+    // Chrome site settings say 'allow'. Skip the gate on web and let the
+    // browser handle permission natively via getCurrentPosition.
+    if (!kIsWeb) {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (mounted) setState(() => _locationDenied = true);
+        return;
+      }
+    }
+
+    // One-shot for an immediate first position.
     Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
             accuracy: LocationAccuracy.high,
@@ -63,7 +75,23 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
             () => _currentPosition = LatLng(pos.latitude, pos.longitude),
           );
         })
-        .catchError((_) {});
+        .catchError((_) {
+          if (mounted) setState(() => _locationDenied = true);
+        });
+
+    // Live stream — updates polyline every 10 m of movement on mobile.
+    _positionSub =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 10,
+          ),
+        ).listen((pos) {
+          if (!mounted) return;
+          setState(
+            () => _currentPosition = LatLng(pos.latitude, pos.longitude),
+          );
+        }, onError: (_) {});
   }
 
   Future<void> _openNavigation(String address) async {
@@ -153,7 +181,10 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
             child: Stack(
               children: [
                 GoogleMap(
-                  onMapCreated: (c) => _mapController = c,
+                  onMapCreated: (c) {
+                    _mapController = c;
+                    if (mounted) setState(() => _mapReady = true);
+                  },
                   mapId: MapsConstants.mapId,
                   initialCameraPosition: CameraPosition(
                     target: destLatLng,
@@ -214,7 +245,9 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
                             ),
                             const SizedBox(width: Spacing.xs),
                             Text(
-                              _currentPosition != null
+                              _locationDenied
+                                  ? 'Location denied'
+                                  : _currentPosition != null
                                   ? 'Live route'
                                   : 'Locating…',
                               style: textTheme.labelSmall?.copyWith(

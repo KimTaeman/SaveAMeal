@@ -1,14 +1,18 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:saveameal/core/utils/distance_utils.dart';
 import 'package:saveameal/features/donor/domain/entities/batch_item.dart';
 import 'package:saveameal/features/donor/domain/entities/beneficiary.dart';
 import 'package:saveameal/features/donor/domain/entities/food_category.dart';
 import 'package:saveameal/features/donor/presentation/providers/batch_session_provider.dart';
+import 'package:saveameal/features/donor/presentation/providers/donor_account_provider.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
+import 'package:saveameal/features/donor/presentation/widgets/beneficiary_destination_card.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 import 'package:saveameal/shared/widgets/donor_brand_title.dart';
@@ -98,8 +102,10 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
+    // ignore: unused_local_variable
     final ac = Theme.of(context).extension<AppColors>()!;
     final beneficiariesAsync = ref.watch(beneficiariesProvider);
+    final currentUserAsync = ref.watch(currentUserProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -198,30 +204,62 @@ class _LogSurplusFormScreenState extends ConsumerState<LogSurplusFormScreen> {
               color: cs.onSurfaceVariant,
             ),
             beneficiariesAsync.when(
-              data: (items) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DropdownButtonFormField<Beneficiary>(
-                    // ignore: deprecated_member_use
-                    value: _beneficiary,
-                    decoration: const InputDecoration(
-                      hintText: 'Select destination',
+              data: (items) {
+                if (items.isEmpty) {
+                  return Text(
+                    'No destinations currently accepting food.',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: cs.onSurfaceVariant,
                     ),
-                    items: items
-                        .map(
-                          (b) =>
-                              DropdownMenuItem(value: b, child: Text(b.name)),
-                        )
-                        .toList(),
-                    onChanged: (v) => setState(() => _beneficiary = v),
+                  );
+                }
+                final donorProfile = currentUserAsync.asData?.value;
+                final donorLat = donorProfile?.latitude;
+                final donorLng = donorProfile?.longitude;
+                return FormField<Beneficiary>(
+                  validator: (_) => _beneficiary == null
+                      ? 'Please select a destination'
+                      : null,
+                  builder: (field) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ...items.map((b) {
+                        final double? dist =
+                            (donorLat != null &&
+                                donorLng != null &&
+                                b.latitude != null &&
+                                b.longitude != null)
+                            ? haversineKm(
+                                donorLat,
+                                donorLng,
+                                b.latitude!,
+                                b.longitude!,
+                              )
+                            : null;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: Spacing.sm),
+                          child: BeneficiaryDestinationCard(
+                            beneficiary: b,
+                            distanceKm: dist,
+                            isSelected: _beneficiary?.id == b.id,
+                            onTap: () => setState(() => _beneficiary = b),
+                          ),
+                        );
+                      }),
+                      if (field.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(top: Spacing.xs),
+                          child: Text(
+                            field.errorText!,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: cs.error,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  const SizedBox(height: Spacing.xs),
-                  Text(
-                    _beneficiary?.address ?? 'Details of destination...',
-                    style: textTheme.bodySmall?.copyWith(color: ac.warning),
-                  ),
-                ],
-              ),
+                );
+              },
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text(
                 'Could not load beneficiaries',
@@ -290,11 +328,7 @@ class _PhotoPicker extends StatelessWidget {
         child: photo != null
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  File(photo!.path),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
+                child: _PhotoPreview(photo: photo!),
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -310,6 +344,50 @@ class _PhotoPicker extends StatelessWidget {
                 ],
               ),
       ),
+    );
+  }
+}
+
+/// Renders a picked [XFile] as an image preview.
+///
+/// On Flutter Web [Image.file] is not supported (the `dart:io` [File] API is
+/// unavailable). Instead the raw bytes are read via [XFile.readAsBytes] and
+/// displayed with [Image.memory]. On native platforms [Image.file] is used
+/// directly so no extra copy is made.
+class _PhotoPreview extends StatelessWidget {
+  const _PhotoPreview({required this.photo});
+  final XFile photo;
+
+  @override
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return FutureBuilder<Uint8List>(
+        future: photo.readAsBytes(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Center(
+              child: Icon(
+                Icons.broken_image_outlined,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            );
+          }
+          return Image.memory(
+            snapshot.data!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+          );
+        },
+      );
+    }
+
+    return Image.file(
+      File(photo.path),
+      fit: BoxFit.cover,
+      width: double.infinity,
     );
   }
 }

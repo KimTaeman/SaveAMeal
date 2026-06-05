@@ -52,7 +52,7 @@ class _BeneficiaryOnboardingScreenState
   }
 
   Future<void> _handleSave() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     final uid = ref.read(authStateProvider).asData?.value?.uid ?? '';
     if (uid.isEmpty) return;
     setState(() => _saving = true);
@@ -69,6 +69,7 @@ class _BeneficiaryOnboardingScreenState
               missionStatement: _missionController.text.trim(),
             ),
           );
+      ref.invalidate(currentBeneficiaryProfileProvider);
       if (mounted) {
         context.go('/beneficiary');
       }
@@ -126,145 +127,172 @@ class _BeneficiaryOnboardingScreenState
           prefixIcon: prefixIcon,
         );
 
-    return PopScope(
-      canPop: false,
-      child: Scaffold(
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.lg,
-              vertical: Spacing.xl,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Center(child: SaveAMealLogo(size: 48)),
-                const SizedBox(height: Spacing.md),
-                const OnboardingStepIndicator(totalSteps: 2, currentStep: 2),
-                const SizedBox(height: Spacing.lg),
-                Text(
-                  'Set Up Your Organization',
-                  style: tt.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: cs.onSurface,
-                  ),
-                  textAlign: TextAlign.center,
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.lg,
+            vertical: Spacing.xl,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: 'Back to registration',
+                  onPressed: () => _confirmBack(context),
                 ),
-                const SizedBox(height: Spacing.xs),
-                Text(
-                  'Tell us about your organization so donors can find you.',
-                  style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-                  textAlign: TextAlign.center,
+              ),
+              const Center(child: SaveAMealLogo(size: 48)),
+              const SizedBox(height: Spacing.md),
+              const OnboardingStepIndicator(totalSteps: 2, currentStep: 2),
+              const SizedBox(height: Spacing.lg),
+              Text(
+                'Set Up Your Organization',
+                style: tt.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
                 ),
-                const SizedBox(height: Spacing.xl),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Organization Name
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: fieldDecoration(
-                          labelText: 'Organization Name',
-                        ),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Organization name is required'
-                            : null,
-                        textInputAction: TextInputAction.next,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: Spacing.xs),
+              Text(
+                'Tell us about your organization so donors can find you.',
+                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: Spacing.xl),
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Organization Name
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: fieldDecoration(
+                        labelText: 'Organization Name',
                       ),
-                      const SizedBox(height: Spacing.md),
-                      // Organization Type
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedType,
-                        decoration: fieldDecoration(
-                          labelText: 'Organization Type',
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Organization name is required'
+                          : null,
+                      textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    // Organization Type
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedType,
+                      decoration: fieldDecoration(
+                        labelText: 'Organization Type',
+                      ),
+                      hint: const Text('Select type'),
+                      items: _orgTypes
+                          .map(
+                            (t) => DropdownMenuItem(value: t, child: Text(t)),
+                          )
+                          .toList(),
+                      onChanged: (v) => setState(() => _selectedType = v),
+                      validator: (v) =>
+                          v == null ? 'Organization type is required' : null,
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    // Headquarters Address
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: fieldDecoration(
+                        labelText: 'Headquarters Address',
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Address is required'
+                          : null,
+                      textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    // Primary Contact Email
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: fieldDecoration(
+                        labelText: 'Primary Contact Email',
+                      ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Email is required';
+                        }
+                        if (!v.contains('@')) {
+                          return 'Enter a valid email address';
+                        }
+                        return null;
+                      },
+                      textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: Spacing.md),
+                    // Mission Statement
+                    TextFormField(
+                      controller: _missionController,
+                      maxLines: 5,
+                      minLines: 4,
+                      decoration: fieldDecoration(
+                        labelText: 'Mission Statement / Bio (optional)',
+                      ),
+                      textInputAction: TextInputAction.done,
+                    ),
+                    const SizedBox(height: Spacing.xl),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 52),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        hint: const Text('Select type'),
-                        items: _orgTypes
-                            .map(
-                              (t) => DropdownMenuItem(value: t, child: Text(t)),
+                      ),
+                      onPressed: _saving ? null : _handleSave,
+                      child: _saving
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: cs.onPrimary,
+                              ),
                             )
-                            .toList(),
-                        onChanged: (v) => setState(() => _selectedType = v),
-                        validator: (v) =>
-                            v == null ? 'Organization type is required' : null,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // Headquarters Address
-                      TextFormField(
-                        controller: _addressController,
-                        decoration: fieldDecoration(
-                          labelText: 'Headquarters Address',
-                        ),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Address is required'
-                            : null,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // Primary Contact Email
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: fieldDecoration(
-                          labelText: 'Primary Contact Email',
-                        ),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Email is required';
-                          }
-                          if (!v.contains('@')) {
-                            return 'Enter a valid email address';
-                          }
-                          return null;
-                        },
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: Spacing.md),
-                      // Mission Statement
-                      TextFormField(
-                        controller: _missionController,
-                        maxLines: 5,
-                        minLines: 4,
-                        decoration: fieldDecoration(
-                          labelText: 'Mission Statement / Bio (optional)',
-                        ),
-                        textInputAction: TextInputAction.done,
-                      ),
-                      const SizedBox(height: Spacing.xl),
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 52),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: _saving ? null : _handleSave,
-                        child: _saving
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: cs.onPrimary,
-                                ),
-                              )
-                            : const Text('Complete Setup'),
-                      ),
-                      const SizedBox(height: Spacing.sm),
-                      TextButton(
-                        onPressed: () => context.go('/beneficiary'),
-                        child: const Text('Skip for now'),
-                      ),
-                    ],
-                  ),
+                          : const Text('Complete Setup'),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _confirmBack(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Go back to registration?'),
+        content: const Text(
+          'You will be signed out and returned to the registration page.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Go Back'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ref.read(signOutUsecaseProvider).call();
+      if (!context.mounted) return;
+      context.go('/register');
+    }
   }
 }
