@@ -7,6 +7,7 @@ import 'package:saveameal/features/donor/presentation/providers/donor_provider.d
 import 'package:saveameal/features/donor/presentation/widgets/donor_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/utils/batch_id_formatter.dart';
 
 enum _HistoryFilter { all, completed, inProgress }
 
@@ -74,9 +75,7 @@ class _DonorHistoryScreenState extends ConsumerState<DonorHistoryScreen> {
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       filtered = filtered.where((b) {
-        final shortId = b.id
-            .substring(0, b.id.length.clamp(0, 4))
-            .toLowerCase();
+        final shortId = formatBatchId(b.id).toLowerCase();
         final dateStr = b.createdAt != null
             ? _formatDate(b.createdAt!).toLowerCase()
             : '';
@@ -358,9 +357,7 @@ class _BatchHistoryCard extends StatelessWidget {
     final ac = Theme.of(context).extension<AppColors>()!;
     final textTheme = Theme.of(context).textTheme;
     final accent = _accentColor(batch.status, ac, cs);
-    final shortId = batch.id
-        .substring(0, batch.id.length.clamp(0, 4))
-        .toUpperCase();
+    final shortId = formatBatchId(batch.id);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: Spacing.sm),
@@ -396,7 +393,7 @@ class _BatchHistoryCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '#$shortId',
+                          shortId,
                           style: textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),

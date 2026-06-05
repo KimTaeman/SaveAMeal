@@ -60,7 +60,6 @@ class DriverRepositoryImpl implements DriverRepository {
     pickupWindowStart: m.pickupWindowStart,
     pickupWindowEnd: m.pickupWindowEnd,
     specialInstructions: m.specialInstructions,
-    donorContact: m.donorContact,
     items: m.items,
   );
 }

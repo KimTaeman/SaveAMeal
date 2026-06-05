@@ -9,7 +9,7 @@ import 'package:saveameal/features/driver/presentation/providers/driver_state.da
 import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
 
 const _fakeBatch = BatchSummary(
-  id: 'batch_001',
+  id: '3f2c1a7b-e5d4-4c8a-9b2f-1234567890ab',
   donorName: 'Central Bakery',
   pickupAddress: '123 Baker St',
   beneficiaryAddress: '1200 Greenway Blvd',
@@ -78,7 +78,7 @@ void main() {
   ) async {
     await tester.pumpWidget(_wrapWithBatch());
     await tester.pump();
-    expect(find.text('Batch #001'), findsOneWidget);
+    expect(find.text('Batch #3F2C1A7B'), findsOneWidget);
     expect(find.text('38 Portions'), findsOneWidget);
   });
 }

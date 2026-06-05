@@ -1,10 +1,9 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:saveameal/core/models/batch_item_model.dart';
+import 'package:saveameal/shared/domain/entities/batch_status.dart';
 
 part 'batch_model.freezed.dart';
 part 'batch_model.g.dart';
-
-enum BatchStatus { open, claimed, pickedUp, delivered, closed, cancelled }
 
 @freezed
 sealed class BatchModel with _$BatchModel {
@@ -23,7 +22,6 @@ sealed class BatchModel with _$BatchModel {
     String? beneficiaryAddress,
     // Donor display info
     String? donorName,
-    String? donorContact,
     // Scheduling
     String? pickupWindowStart,
     String? pickupWindowEnd,

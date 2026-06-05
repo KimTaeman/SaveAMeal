@@ -81,11 +81,6 @@ class JobDetailScreen extends ConsumerWidget {
                         icon: Icons.info_outline,
                         text: batch.specialInstructions!,
                       ),
-                    if (batch.donorContact != null)
-                      _DetailRow(
-                        icon: Icons.person_outline,
-                        text: batch.donorContact!,
-                      ),
                   ],
                 ),
               ),

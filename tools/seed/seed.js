@@ -218,7 +218,6 @@ const BATCHES = [
   // ── OPEN (4) ──────────────────────────────────────────────────────────────
   {
     id: 'batch_001', donorId: 'donor_001', donorName: 'Sri Silom Restaurant',
-    donorContact: '+66812345601',
     pickupAddress: '28/4 Silom Rd, Bang Rak, Bangkok 10500',
     pickupLat: 13.7247, pickupLng: 100.5199,
     beneficiaryId: 'ben_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
@@ -230,7 +229,7 @@ const BATCHES = [
       { name: 'Jasmine Rice',              category: 'other',   weightKg: 5.0, expiryTime: hoursFrom(8), photoUrl: null },
       { name: 'Stir-Fried Vegetables',     category: 'produce', weightKg: 2.5, expiryTime: hoursFrom(5), photoUrl: null },
     ],
-    driverId: null, qrCode: 'batch_001', claimedAt: null, pickedUpAt: null,
+    driverId: null, qrCode: 'saveameal://batch/batch_001', claimedAt: null, pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: iso(now), updatedAt: iso(now),
@@ -250,7 +249,7 @@ const BATCHES = [
       { name: 'Salad Station Assorted', category: 'produce', weightKg: 2.0, expiryTime: hoursFrom(3), photoUrl: null },
       { name: 'Fruit Platter',          category: 'produce', weightKg: 2.5, expiryTime: hoursFrom(6), photoUrl: null },
     ],
-    driverId: null, qrCode: 'batch_002', claimedAt: null, pickedUpAt: null,
+    driverId: null, qrCode: 'saveameal://batch/batch_002', claimedAt: null, pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: iso(now), updatedAt: iso(now),
@@ -270,7 +269,7 @@ const BATCHES = [
       { name: 'Packaged Sandwiches ×20', category: 'other',     weightKg: 4.0, expiryTime: hoursFrom(6),  photoUrl: null },
       { name: 'Fruit Juice ×12',        category: 'beverages', weightKg: 6.0, expiryTime: hoursFrom(72), photoUrl: null },
     ],
-    driverId: null, qrCode: 'batch_003', claimedAt: null, pickedUpAt: null,
+    driverId: null, qrCode: 'saveameal://batch/batch_003', claimedAt: null, pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: iso(now), updatedAt: iso(now),
@@ -833,6 +832,9 @@ async function main() {
   } else {
     console.log('\nMode    : seed (merge into existing)\n');
   }
+
+  // Stamp updatedAt on driver locations at write time so the value is current.
+  const stampedDriverLocations = DRIVER_LOCATIONS.map((d) => ({ ...d, updatedAt: iso(new Date()) }));
 
   console.log('Writing seed data...');
   await writeAll('beneficiaries', BENEFICIARIES);

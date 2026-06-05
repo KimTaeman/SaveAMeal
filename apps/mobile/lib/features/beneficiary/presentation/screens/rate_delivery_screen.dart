@@ -7,6 +7,7 @@ import 'package:saveameal/features/beneficiary/presentation/providers/confirm_re
 import 'package:saveameal/features/beneficiary/presentation/widgets/beneficiary_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/utils/batch_id_formatter.dart';
 
 class ConfirmReceiptScreen extends ConsumerStatefulWidget {
   const ConfirmReceiptScreen({super.key, required this.batchId});
@@ -103,7 +104,7 @@ class _ConfirmReceiptScreenState extends ConsumerState<ConfirmReceiptScreen> {
                           ),
                         ),
                         Text(
-                          '#${widget.batchId.substring(0, widget.batchId.length.clamp(0, 8)).toUpperCase()}',
+                          formatBatchId(widget.batchId),
                           style: textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),

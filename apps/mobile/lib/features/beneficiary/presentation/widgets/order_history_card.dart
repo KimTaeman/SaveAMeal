@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/order_history_entry.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/utils/batch_id_formatter.dart';
 
 class OrderHistoryCard extends StatelessWidget {
   const OrderHistoryCard({required this.entry, super.key});
@@ -50,7 +51,7 @@ class OrderHistoryCard extends StatelessWidget {
                     ),
                     SizedBox(height: Spacing.xs),
                     Text(
-                      'Order #${entry.displayId}',
+                      'Order ${formatBatchId(entry.id)}',
                       style: textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: cs.onSurface,

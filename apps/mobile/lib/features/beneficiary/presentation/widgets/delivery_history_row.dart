@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/recent_delivery.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/utils/batch_id_formatter.dart';
 
 /// Single card row in the delivery history list.
 /// Tapping navigates to /beneficiary/delivery/:batchId.
@@ -21,8 +22,7 @@ class DeliveryHistoryRow extends StatelessWidget {
     final formattedDate = DateFormat(
       'MMM dd, yyyy',
     ).format(delivery.deliveredAt);
-    final orderRef =
-        '#${delivery.batchId.substring(0, delivery.batchId.length.clamp(0, 8)).toUpperCase()}';
+    final orderRef = formatBatchId(delivery.batchId);
 
     return Padding(
       padding: const EdgeInsets.symmetric(

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:saveameal/core/constants/firestore_constants.dart';
 import 'package:saveameal/core/exceptions/batch_exceptions.dart';
 import 'package:saveameal/core/models/batch_model.dart';
+import 'package:saveameal/shared/domain/entities/batch_status.dart';
 import 'package:saveameal/core/models/beneficiary_model.dart';
 import 'package:saveameal/core/models/driver_location_model.dart';
 import 'package:saveameal/core/models/impact_metrics_model.dart';

@@ -5,7 +5,6 @@ import 'package:saveameal/features/beneficiary/domain/entities/order_history_ent
 class OrderHistoryEntryModel {
   const OrderHistoryEntryModel({
     required this.id,
-    required this.displayId,
     required this.status,
     required this.itemDescription,
     required this.donorName,
@@ -15,7 +14,6 @@ class OrderHistoryEntryModel {
   });
 
   final String id;
-  final String displayId;
   final String status; // raw Firestore status string
   final String itemDescription;
   final String donorName;
@@ -25,7 +23,6 @@ class OrderHistoryEntryModel {
 
   OrderHistoryEntry toDomain() => OrderHistoryEntry(
     id: id,
-    displayId: displayId,
     status: OrderHistoryEntryStatus.values.firstWhere(
       (s) => s.name == status,
       orElse: () => OrderHistoryEntryStatus.closed,

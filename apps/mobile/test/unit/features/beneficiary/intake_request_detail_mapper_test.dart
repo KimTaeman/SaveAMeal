@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:saveameal/core/models/batch_item_model.dart';
 import 'package:saveameal/core/models/batch_model.dart';
+import 'package:saveameal/features/donor/domain/entities/batch.dart' show BatchStatus;
 import 'package:saveameal/features/beneficiary/data/models/intake_request_model.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
 
