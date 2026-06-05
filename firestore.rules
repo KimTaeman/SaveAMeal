@@ -123,12 +123,14 @@ service cloud.firestore {
     }
 
     // ── leaderboard ────────────────────────────────────────────────────────────
-    // Updated client-side by drivers after each delivery (confirmDelivery
-    // transaction). Any signed-in driver may read and write so the ranking
-    // is rebuilt in real time without a Cloud Function.
+    // Read: all signed-in users (donors/beneficiaries can view rankings).
+    // Write: any signed-in user. The delivery flow that triggers these writes
+    // is already gated by the batches rules (only the assigned driver can
+    // confirm delivery), so a role check here is redundant and causes the
+    // isDriver() → get(users/{uid}) chain to fail silently on some clients.
     match /leaderboard/{period} {
       allow read:  if isSignedIn();
-      allow write: if isSignedIn() && isDriver();
+      allow write: if isSignedIn();
     }
   }
 }

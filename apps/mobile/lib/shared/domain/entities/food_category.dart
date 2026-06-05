@@ -11,8 +11,6 @@ enum FoodCategory {
 
   /// Parses a raw string (e.g. from Firestore) into a [FoodCategory].
   /// Falls back to [FoodCategory.other] for unrecognised values.
-  static FoodCategory fromString(String value) => FoodCategory.values.firstWhere(
-    (e) => e.name == value,
-    orElse: () => FoodCategory.other,
-  );
+  static FoodCategory fromString(String value) => FoodCategory.values
+      .firstWhere((e) => e.name == value, orElse: () => FoodCategory.other);
 }

@@ -124,9 +124,7 @@ class _ClaimRescueScreenState extends ConsumerState<ClaimRescueScreen> {
         ? batch?.pickupAddress ?? '—'
         : batch?.beneficiaryAddress ?? '—';
     final contactLabel = isPickup ? 'Pick-up Contact' : 'Drop-off Contact';
-    final contact = isPickup
-        ? 'Ask for staff'
-        : 'Ask for shelter staff';
+    final contact = isPickup ? 'Ask for staff' : 'Ask for shelter staff';
     final cta = isPickup ? 'Arrived at Pick-up' : 'Arrived at Drop-off';
     final description = batch != null && batch.items.isNotEmpty
         ? '${batch.totalPortions}x ${batch.items.first.name}'
