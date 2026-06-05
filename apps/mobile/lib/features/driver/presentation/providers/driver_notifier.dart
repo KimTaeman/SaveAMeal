@@ -5,10 +5,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:saveameal/core/logging/app_logger.dart';
+import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/domain/usecases/update_batch_eta_usecase.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
+import 'package:saveameal/shared/domain/entities/batch_status.dart';
 
 part 'driver_notifier.g.dart';
 
@@ -36,6 +38,19 @@ class DriverNotifier extends _$DriverNotifier {
     _repo = ref.read(driverRepositoryProvider);
     _etaUsecase = ref.read(updateBatchEtaUsecaseProvider);
     ref.onDispose(_stopTracking);
+
+    final uid = ref.watch(authStateProvider).asData?.value?.uid;
+    if (uid != null) {
+      // Rehydrate delivery state after login or app restart. The listener fires
+      // whenever the active-batch stream emits a new value; the guard inside
+      // prevents overwriting an already-active state.
+      ref.listen(activeBatchForDriverProvider(uid), (_, next) {
+        if (state.step != DriverStep.browsing) return;
+        final batch = next.asData?.value;
+        if (batch != null) _rehydrateFromBatch(batch, uid);
+      });
+    }
+
     return const DriverState();
   }
 
@@ -140,6 +155,39 @@ class DriverNotifier extends _$DriverNotifier {
   // that confirmPickup correctly switches from pickup to beneficiary coordinates.
   @visibleForTesting
   (double?, double?) get etaDestinationForTest => (_destLat, _destLng);
+
+  void _rehydrateFromBatch(BatchSummary batch, String uid) {
+    final isPickedUp = batch.status == BatchStatus.pickedUp;
+
+    _activeBatchId = batch.id;
+    _beneficiaryLat = batch.beneficiaryLat;
+    _beneficiaryLng = batch.beneficiaryLng;
+    _destLat = isPickedUp ? batch.beneficiaryLat : batch.lat;
+    _destLng = isPickedUp ? batch.beneficiaryLng : batch.lng;
+    _lastEtaMinutes = null;
+
+    _activeBatchSub?.cancel();
+    _activeBatchSub = _repo.getActiveBatch(uid).listen((b) {
+      if (b != null && b.beneficiaryLat != null && b.beneficiaryLng != null) {
+        _beneficiaryLat = b.beneficiaryLat;
+        _beneficiaryLng = b.beneficiaryLng;
+      }
+    });
+
+    state = state.copyWith(
+      step: isPickedUp ? DriverStep.pickedUp : DriverStep.claimed,
+      rescuePhase: isPickedUp
+          ? ClaimRescuePhase.enRouteBeneficiary
+          : ClaimRescuePhase.enRoutePickup,
+      activeBatch: batch,
+    );
+
+    unawaited(_startTracking(uid));
+    AppLogger.info(
+      '[Rehydrate] Restored active delivery from Firestore — '
+      'batch: ${batch.id}, step: ${isPickedUp ? 'pickedUp' : 'claimed'}',
+    );
+  }
 
   Future<void> _startTracking(String driverId) async {
     try {

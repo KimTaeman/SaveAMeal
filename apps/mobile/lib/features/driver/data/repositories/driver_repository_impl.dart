@@ -57,6 +57,7 @@ class DriverRepositoryImpl implements DriverRepository {
     beneficiaryLat: m.beneficiaryLat,
     beneficiaryLng: m.beneficiaryLng,
     foodCategory: m.items.isNotEmpty ? m.items.first.category : 'local_dining',
+    status: m.status,
     pickupWindowStart: m.pickupWindowStart,
     pickupWindowEnd: m.pickupWindowEnd,
     specialInstructions: m.specialInstructions,

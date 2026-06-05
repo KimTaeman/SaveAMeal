@@ -7,6 +7,7 @@ import 'package:saveameal/features/driver/presentation/providers/driver_notifier
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
 import 'package:saveameal/features/driver/presentation/screens/verify_delivery_screen.dart';
+import 'package:saveameal/shared/domain/entities/batch_status.dart';
 
 const _fakeBatch = BatchSummary(
   id: '3f2c1a7b-e5d4-4c8a-9b2f-1234567890ab',
@@ -18,6 +19,7 @@ const _fakeBatch = BatchSummary(
   lat: 13.7,
   lng: 100.5,
   foodCategory: 'local_pizza',
+  status: BatchStatus.pickedUp,
 );
 
 class _FakeNotifier extends DriverNotifier {

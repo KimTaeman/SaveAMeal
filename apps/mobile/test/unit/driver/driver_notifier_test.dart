@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:saveameal/core/exceptions/batch_exceptions.dart';
 import 'package:saveameal/core/models/batch_model.dart';
+import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/driver/data/datasources/driver_remote_datasource.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
+import 'package:saveameal/shared/domain/entities/batch_status.dart';
 
 class _FakeRepo implements DriverRepository {
   bool claimShouldThrow = false;
@@ -91,6 +93,8 @@ class _FakeDatasource implements DriverRemoteDatasource {
 
 ProviderContainer _makeContainer(_FakeRepo repo) => ProviderContainer(
   overrides: [
+    // Stub auth so DriverNotifier.build() doesn't reach Firebase in tests.
+    authStateProvider.overrideWith((_) => const Stream.empty()),
     driverRepositoryProvider.overrideWithValue(repo),
     driverRemoteDatasourceProvider.overrideWithValue(_FakeDatasource()),
   ],
@@ -151,6 +155,7 @@ void main() {
         lat: pickupLat,
         lng: pickupLng,
         foodCategory: 'grain',
+        status: BatchStatus.open,
       );
 
       final repo =
@@ -195,6 +200,7 @@ void main() {
         beneficiaryLat: benLat,
         beneficiaryLng: benLng,
         foodCategory: 'grain',
+        status: BatchStatus.open,
       );
 
       final controller = StreamController<BatchSummary?>.broadcast();

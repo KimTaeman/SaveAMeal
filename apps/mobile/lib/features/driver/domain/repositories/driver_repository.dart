@@ -1,5 +1,6 @@
 // Pure Dart interface — no Flutter or backend imports.
 import 'package:saveameal/core/models/batch_item_model.dart';
+import 'package:saveameal/shared/domain/entities/batch_status.dart';
 
 class BatchSummary {
   const BatchSummary({
@@ -12,6 +13,7 @@ class BatchSummary {
     required this.lat,
     required this.lng,
     required this.foodCategory,
+    required this.status,
     this.beneficiaryLat,
     this.beneficiaryLng,
     this.pickupWindowStart,
@@ -31,6 +33,7 @@ class BatchSummary {
   final double? beneficiaryLat;
   final double? beneficiaryLng;
   final String foodCategory;
+  final BatchStatus status;
   final String? pickupWindowStart;
   final String? pickupWindowEnd;
   final String? specialInstructions;

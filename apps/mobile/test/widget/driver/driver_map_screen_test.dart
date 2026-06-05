@@ -6,6 +6,7 @@ import 'package:saveameal/features/driver/presentation/providers/driver_notifier
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
 import 'package:saveameal/features/driver/presentation/screens/driver_map_screen.dart';
+import 'package:saveameal/shared/domain/entities/batch_status.dart';
 
 // The codegen strips "Notifier" from the class name:
 // @riverpod class DriverNotifier → driverProvider (not driverNotifierProvider)
@@ -61,6 +62,7 @@ void main() {
       lat: 13.7,
       lng: 100.5,
       foodCategory: 'local_pizza',
+      status: BatchStatus.open,
     );
     container.read(driverProvider.notifier).selectBatch(fakeBatch);
     await tester.pump();

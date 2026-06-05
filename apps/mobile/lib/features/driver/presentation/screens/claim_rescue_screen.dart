@@ -396,7 +396,8 @@ class _DriverBottomNav extends StatelessWidget {
     return NavigationBar(
       selectedIndex: currentIndex,
       onDestinationSelected: (i) {
-        if (i == 0) context.go('/driver');
+        // Home tab stays on the rescue screen during an active delivery.
+        if (i == 0) context.go('/driver/rescue');
         if (i == 1) context.go('/driver/impact');
         if (i == 2) context.go('/driver/account');
       },

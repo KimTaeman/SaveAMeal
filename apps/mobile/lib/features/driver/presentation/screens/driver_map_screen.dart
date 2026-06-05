@@ -6,6 +6,7 @@ import 'package:saveameal/features/driver/domain/repositories/driver_repository.
 import 'package:saveameal/core/constants/maps_constants.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
+import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 // import 'package:saveameal/shared/widgets/logout_button.dart';
 
@@ -20,6 +21,19 @@ class DriverMapScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final driverState = ref.watch(driverProvider);
+
+    // Guard: redirect whenever this screen renders with an active delivery.
+    // Handles tab navigation back to home AND post-login rehydration.
+    // Returning early before watching openBatchesProvider prevents Firestore
+    // batch-list updates from causing redundant background rebuilds.
+    if (driverState.step == DriverStep.claimed ||
+        driverState.step == DriverStep.pickedUp) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) context.go('/driver/rescue');
+      });
+      return const Scaffold(body: SizedBox.shrink());
+    }
+
     final batchesAsync = ref.watch(openBatchesProvider);
     final batches = batchesAsync.asData?.value ?? [];
     final markers = _buildMarkers(batches, ref);
