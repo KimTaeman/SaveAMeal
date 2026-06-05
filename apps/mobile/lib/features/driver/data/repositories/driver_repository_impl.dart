@@ -50,11 +50,10 @@ class DriverRepositoryImpl implements DriverRepository {
     totalPortions: m.items.length,
     lat: m.pickupLat != 0.0 ? m.pickupLat : 13.7563,
     lng: m.pickupLng != 0.0 ? m.pickupLng : 100.5018,
-    foodCategory: m.items.isNotEmpty ? m.items.first.category : 'local_dining',
+    foodCategory: m.items.isNotEmpty ? m.items.first.category : 'other',
     pickupWindowStart: m.pickupWindowStart,
     pickupWindowEnd: m.pickupWindowEnd,
     specialInstructions: m.specialInstructions,
-    donorContact: m.donorContact,
     items: m.items,
   );
 }

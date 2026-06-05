@@ -33,7 +33,6 @@ final _testProfile = BeneficiaryProfile(
 final _testOrders = [
   OrderHistoryEntry(
     id: 'abc4092',
-    displayId: 'SH-4092',
     date: DateTime(2023, 10, 24),
     status: OrderHistoryEntryStatus.delivered,
     itemDescription: '50 Hot Meals',
@@ -43,7 +42,6 @@ final _testOrders = [
   ),
   OrderHistoryEntry(
     id: 'xyz4105',
-    displayId: 'SH-4105',
     date: DateTime(2023, 10, 26),
     status: OrderHistoryEntryStatus.inTransit,
     itemDescription: '120 Baked Goods',
@@ -125,8 +123,8 @@ void main() {
         _buildApp(OrderHistoryState(entries: _testOrders, hasMore: false)),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Order #SH-4092'), findsOneWidget);
-      expect(find.text('Order #SH-4105'), findsOneWidget);
+      expect(find.text('Order #ABC4092'), findsOneWidget);
+      expect(find.text('Order #XYZ4105'), findsOneWidget);
     });
 
     testWidgets('shows Delivered badge for delivered entry', (tester) async {

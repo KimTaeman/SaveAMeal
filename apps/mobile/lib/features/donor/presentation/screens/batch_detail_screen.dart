@@ -6,6 +6,7 @@ import 'package:saveameal/features/donor/domain/entities/batch_item.dart';
 import 'package:saveameal/features/donor/domain/entities/food_category.dart';
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/utils/batch_id_formatter.dart';
 
 class BatchDetailScreen extends ConsumerWidget {
   const BatchDetailScreen({super.key, required this.batchId});
@@ -113,10 +114,6 @@ class _BatchDetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final shortId = batchId
-        .substring(0, batchId.length.clamp(0, 4))
-        .toUpperCase();
-
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(
         horizontal: Spacing.md,
@@ -129,7 +126,7 @@ class _BatchDetailBody extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: Chip(
-              label: Text('Batch #$shortId'),
+              label: Text('Batch ${formatBatchId(batchId)}'),
               backgroundColor: cs.tertiaryContainer,
               labelStyle: TextStyle(color: cs.onTertiaryContainer),
             ),

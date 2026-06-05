@@ -81,32 +81,46 @@ const daysAgo   = (d) => iso(new Date(now - d * 86400000));
 // Fields: id (String), name (String), address (String?), lat (Number?), lng (Number?)
 const BENEFICIARIES = [
   {
-    id:      'ben_001',
-    name:    'Baan Saeng Tawan Shelter',
-    address: '12 Lat Phrao Soi 15, Chankasem, Chatuchak, Bangkok 10230',
-    lat:     13.8102,
-    lng:     100.5699,
+    id:           'ben_001',
+    name:         'Baan Saeng Tawan Shelter',
+    address:      '12 Lat Phrao Soi 15, Chankasem, Chatuchak, Bangkok 10230',
+    lat:          13.8102,
+    lng:          100.5699,
+    intakeStatus: 'accepting',
   },
   {
-    id:      'ben_002',
-    name:    'Klongtoey Community Center',
-    address: '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
-    lat:     13.7246,
-    lng:     100.5235,
+    id:           'ben_002',
+    name:         'Klongtoey Community Center',
+    address:      '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
+    lat:          13.7246,
+    lng:          100.5235,
+    intakeStatus: 'accepting',
   },
   {
-    id:      'ben_003',
-    name:    'Prateep Foundation Elderly Care',
-    address: '152/88 Sukhumvit Soi 26, Khlong Toei, Bangkok 10110',
-    lat:     13.7197,
-    lng:     100.5663,
+    id:           'ben_003',
+    name:         'Prateep Foundation Elderly Care',
+    address:      '152/88 Sukhumvit Soi 26, Khlong Toei, Bangkok 10110',
+    lat:          13.7197,
+    lng:          100.5663,
+    intakeStatus: 'accepting',
   },
   {
-    id:      'ben_004',
-    name:    'Bangkapi Community Kitchen',
-    address: '45 Ladprao Rd, Wang Thonglang, Bangkok 10310',
-    lat:     13.7814,
-    lng:     100.5956,
+    id:           'ben_004',
+    name:         'Bangkapi Community Kitchen',
+    address:      '45 Ladprao Rd, Wang Thonglang, Bangkok 10310',
+    lat:          13.7814,
+    lng:          100.5956,
+    intakeStatus: 'accepting',
+  },
+  // Beneficiary user document — keyed by user UID so watchActiveDeliveriesForBeneficiary()
+  // and watchIntakeAvailability() resolve correctly when bene_user_001 is logged in.
+  {
+    id:           'bene_user_001',
+    name:         'Baan Saeng Tawan Shelter',
+    address:      '12 Lat Phrao Soi 15, Chankasem, Chatuchak, Bangkok 10230',
+    lat:          13.8102,
+    lng:          100.5699,
+    intakeStatus: 'accepting',
   },
 ];
 
@@ -193,7 +207,6 @@ const BATCHES = [
   // ── open: Sri Silom → Baan Saeng Tawan ──────────────────────────────────
   {
     id: 'batch_001', donorId: 'donor_001', donorName: 'Sri Silom Restaurant',
-    donorContact: '+66812345601',
     pickupAddress: '28/4 Silom Rd, Bang Rak, Bangkok 10500',
     pickupLat: 13.7247, pickupLng: 100.5199,
     beneficiaryId: 'ben_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
@@ -201,12 +214,12 @@ const BATCHES = [
     status: 'open', pickupWindowStart: '14:00', pickupWindowEnd: '16:00',
     specialInstructions: 'Please bring insulated bags. Ask for Khun Somchai at reception.',
     items: [
-      { name: 'Pad Thai',          category: 'local_dining',  weightKg: 3.0, expiryTime: hoursFrom(6),  photoUrl: null },
-      { name: 'Tom Kha Soup',      category: 'local_dining',  weightKg: 2.5, expiryTime: hoursFrom(6),  photoUrl: null },
-      { name: 'Jasmine Rice',      category: 'local_dining',  weightKg: 4.0, expiryTime: hoursFrom(8),  photoUrl: null },
-      { name: 'Mango Sticky Rice', category: 'bakery_dining', weightKg: 1.5, expiryTime: hoursFrom(4),  photoUrl: null },
+      { name: 'Pad Thai',          category: 'other',  weightKg: 3.0, expiryTime: hoursFrom(6),  photoUrl: null },
+      { name: 'Tom Kha Soup',      category: 'other',  weightKg: 2.5, expiryTime: hoursFrom(6),  photoUrl: null },
+      { name: 'Jasmine Rice',      category: 'other',  weightKg: 4.0, expiryTime: hoursFrom(8),  photoUrl: null },
+      { name: 'Mango Sticky Rice', category: 'bakery', weightKg: 1.5, expiryTime: hoursFrom(4),  photoUrl: null },
     ],
-    driverId: null, qrCode: 'batch_001', claimedAt: null, pickedUpAt: null,
+    driverId: null, qrCode: 'saveameal://batch/batch_001', claimedAt: null, pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: iso(now), updatedAt: iso(now),
@@ -215,7 +228,6 @@ const BATCHES = [
   // ── open: Central Embassy → Klongtoey ────────────────────────────────────
   {
     id: 'batch_002', donorId: 'donor_002', donorName: 'Central Embassy Food Court',
-    donorContact: '+66812345602',
     pickupAddress: '1031 Ploenchit Rd, Lumphini, Pathumwan, Bangkok 10330',
     pickupLat: 13.7432, pickupLng: 100.5494,
     beneficiaryId: 'ben_002', beneficiaryName: 'Klongtoey Community Center',
@@ -223,11 +235,11 @@ const BATCHES = [
     status: 'open', pickupWindowStart: '21:00', pickupWindowEnd: '22:30',
     specialInstructions: 'Closing time pickup. Use staff entrance on the left side.',
     items: [
-      { name: 'Margherita Pizza ×6 slices', category: 'local_pizza',   weightKg: 1.8, expiryTime: hoursFrom(2),  photoUrl: null },
-      { name: 'Caesar Salad',               category: 'local_dining',  weightKg: 0.9, expiryTime: hoursFrom(2),  photoUrl: null },
-      { name: 'Croissant ×8',               category: 'bakery_dining', weightKg: 0.6, expiryTime: hoursFrom(18), photoUrl: null },
+      { name: 'Margherita Pizza ×6 slices', category: 'other',   weightKg: 1.8, expiryTime: hoursFrom(2),  photoUrl: null },
+      { name: 'Caesar Salad',               category: 'produce',  weightKg: 0.9, expiryTime: hoursFrom(2),  photoUrl: null },
+      { name: 'Croissant ×8',               category: 'bakery', weightKg: 0.6, expiryTime: hoursFrom(18), photoUrl: null },
     ],
-    driverId: null, qrCode: 'batch_002', claimedAt: null, pickedUpAt: null,
+    driverId: null, qrCode: 'saveameal://batch/batch_002', claimedAt: null, pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: iso(now), updatedAt: iso(now),
@@ -236,7 +248,6 @@ const BATCHES = [
   // ── open: Sri Silom → Klongtoey ──────────────────────────────────────────
   {
     id: 'batch_003', donorId: 'donor_001', donorName: 'Sri Silom Restaurant',
-    donorContact: '+66812345601',
     pickupAddress: '28/4 Silom Rd, Bang Rak, Bangkok 10500',
     pickupLat: 13.7247, pickupLng: 100.5199,
     beneficiaryId: 'ben_002', beneficiaryName: 'Klongtoey Community Center',
@@ -244,10 +255,10 @@ const BATCHES = [
     status: 'open', pickupWindowStart: '19:00', pickupWindowEnd: '20:30',
     specialInstructions: null,
     items: [
-      { name: 'Green Curry (large)',  category: 'local_dining', weightKg: 3.5, expiryTime: hoursFrom(6), photoUrl: null },
-      { name: 'Som Tum Salad',        category: 'local_dining', weightKg: 1.2, expiryTime: hoursFrom(4), photoUrl: null },
+      { name: 'Green Curry (large)',  category: 'other', weightKg: 3.5, expiryTime: hoursFrom(6), photoUrl: null },
+      { name: 'Som Tum Salad',        category: 'other', weightKg: 1.2, expiryTime: hoursFrom(4), photoUrl: null },
     ],
-    driverId: null, qrCode: 'batch_003', claimedAt: null, pickedUpAt: null,
+    driverId: null, qrCode: 'saveameal://batch/batch_003', claimedAt: null, pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: iso(now), updatedAt: iso(now),
@@ -256,17 +267,16 @@ const BATCHES = [
   // ── claimed: driver_001 en route to Central Embassy ──────────────────────
   {
     id: 'batch_004', donorId: 'donor_002', donorName: 'Central Embassy Food Court',
-    donorContact: '+66812345602',
     pickupAddress: '1031 Ploenchit Rd, Lumphini, Pathumwan, Bangkok 10330',
-    beneficiaryId: 'ben_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
+    beneficiaryId: 'bene_user_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
     beneficiaryAddress: '12 Lat Phrao Soi 15, Bangkok 10230',
     status: 'claimed', pickupWindowStart: '18:00', pickupWindowEnd: '19:00',
     specialInstructions: 'Handle with care — soup containers. Driver should call first.',
     items: [
-      { name: 'Tom Yum Soup ×10 portions', category: 'local_dining', weightKg: 5.0, expiryTime: hoursFrom(3), photoUrl: null },
-      { name: 'Khao Man Gai ×8 portions',  category: 'local_dining', weightKg: 4.0, expiryTime: hoursFrom(3), photoUrl: null },
+      { name: 'Tom Yum Soup ×10 portions', category: 'other', weightKg: 5.0, expiryTime: hoursFrom(3), photoUrl: null },
+      { name: 'Khao Man Gai ×8 portions',  category: 'other', weightKg: 4.0, expiryTime: hoursFrom(3), photoUrl: null },
     ],
-    driverId: 'driver_001', qrCode: 'batch_004', claimedAt: hoursAgo(0.5), pickedUpAt: null,
+    driverId: 'driver_001', qrCode: 'saveameal://batch/batch_004', claimedAt: hoursAgo(0.5), pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: daysAgo(1), updatedAt: hoursAgo(0.5),
@@ -275,18 +285,17 @@ const BATCHES = [
   // ── delivered: history (Sri Silom) ───────────────────────────────────────
   {
     id: 'batch_005', donorId: 'donor_001', donorName: 'Sri Silom Restaurant',
-    donorContact: '+66812345601',
     pickupAddress: '28/4 Silom Rd, Bang Rak, Bangkok 10500',
     beneficiaryId: 'ben_002', beneficiaryName: 'Klongtoey Community Center',
     beneficiaryAddress: '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
     status: 'delivered', pickupWindowStart: '14:00', pickupWindowEnd: '15:30',
     specialInstructions: null,
     items: [
-      { name: 'Fried Rice family size', category: 'local_dining', weightKg: 4.0, expiryTime: daysAgo(0.5), photoUrl: null },
-      { name: 'Spring Rolls ×12',       category: 'local_dining', weightKg: 1.0, expiryTime: daysAgo(0.5), photoUrl: null },
-      { name: 'Fruit Platter',          category: 'local_dining', weightKg: 2.0, expiryTime: daysAgo(0.5), photoUrl: null },
+      { name: 'Fried Rice family size', category: 'other', weightKg: 4.0, expiryTime: daysAgo(0.5), photoUrl: null },
+      { name: 'Spring Rolls ×12',       category: 'other', weightKg: 1.0, expiryTime: daysAgo(0.5), photoUrl: null },
+      { name: 'Fruit Platter',          category: 'other', weightKg: 2.0, expiryTime: daysAgo(0.5), photoUrl: null },
     ],
-    driverId: 'driver_002', qrCode: 'batch_005',
+    driverId: 'driver_002', qrCode: 'saveameal://batch/batch_005',
     claimedAt: daysAgo(1), pickedUpAt: daysAgo(1), deliveredAt: daysAgo(1),
     photoUrl: null, pickupPhotoUrl: 'https://placehold.co/600x400/png',
     deliveryNotes: 'All items delivered in good condition. Shelter staff confirmed.',
@@ -297,7 +306,6 @@ const BATCHES = [
   // ── open: Mövenpick Hotel → Prateep Foundation ───────────────────────────
   {
     id: 'batch_006', donorId: 'donor_003', donorName: 'Mövenpick Hotel Bangkok',
-    donorContact: '+66812345603',
     pickupAddress: '672 Wireless Rd, Lumphini, Pathumwan, Bangkok 10330',
     pickupLat: 13.7399, pickupLng: 100.5549,
     beneficiaryId: 'ben_003', beneficiaryName: 'Prateep Foundation Elderly Care',
@@ -305,13 +313,13 @@ const BATCHES = [
     status: 'open', pickupWindowStart: '22:00', pickupWindowEnd: '23:00',
     specialInstructions: 'After-dinner buffet leftovers. Use loading bay entrance on Soi 30.',
     items: [
-      { name: 'International Buffet Assorted', category: 'local_dining',  weightKg: 8.0, expiryTime: hoursFrom(3),  photoUrl: null },
-      { name: 'Bread Rolls ×20',               category: 'bakery_dining', weightKg: 2.0, expiryTime: hoursFrom(24), photoUrl: null },
-      { name: 'Fresh Salad Assorted',          category: 'local_dining',  weightKg: 1.5, expiryTime: hoursFrom(3),  photoUrl: null },
-      { name: 'Fruit Station Platter',         category: 'local_dining',  weightKg: 3.0, expiryTime: hoursFrom(6),  photoUrl: null },
-      { name: 'Cheese & Cold Cuts',            category: 'local_dining',  weightKg: 1.0, expiryTime: hoursFrom(4),  photoUrl: null },
+      { name: 'International Buffet Assorted', category: 'other',  weightKg: 8.0, expiryTime: hoursFrom(3),  photoUrl: null },
+      { name: 'Bread Rolls ×20',               category: 'bakery', weightKg: 2.0, expiryTime: hoursFrom(24), photoUrl: null },
+      { name: 'Fresh Salad Assorted',          category: 'other',  weightKg: 1.5, expiryTime: hoursFrom(3),  photoUrl: null },
+      { name: 'Fruit Station Platter',         category: 'other',  weightKg: 3.0, expiryTime: hoursFrom(6),  photoUrl: null },
+      { name: 'Cheese & Cold Cuts',            category: 'other',  weightKg: 1.0, expiryTime: hoursFrom(4),  photoUrl: null },
     ],
-    driverId: null, qrCode: 'batch_006', claimedAt: null, pickedUpAt: null,
+    driverId: null, qrCode: 'saveameal://batch/batch_006', claimedAt: null, pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: iso(now), updatedAt: iso(now),
@@ -320,7 +328,6 @@ const BATCHES = [
   // ── open: Anchana Bakery → Bangkapi Kitchen ──────────────────────────────
   {
     id: 'batch_007', donorId: 'donor_004', donorName: 'Anchana Bakery & Café',
-    donorContact: '+66812345604',
     pickupAddress: '55/3 Ramkhamhaeng Rd, Hua Mak, Bang Kapi, Bangkok 10240',
     pickupLat: 13.7575, pickupLng: 100.6239,
     beneficiaryId: 'ben_004', beneficiaryName: 'Bangkapi Community Kitchen',
@@ -328,12 +335,12 @@ const BATCHES = [
     status: 'open', pickupWindowStart: '18:30', pickupWindowEnd: '19:30',
     specialInstructions: 'End-of-day bakery surplus. Ring doorbell — ask for Khun Anchana.',
     items: [
-      { name: 'Sourdough Loaves ×4',   category: 'bakery_dining', weightKg: 2.4, expiryTime: hoursFrom(20), photoUrl: null },
-      { name: 'Almond Croissants ×10', category: 'bakery_dining', weightKg: 1.2, expiryTime: hoursFrom(18), photoUrl: null },
-      { name: 'Danish Pastries ×12',   category: 'bakery_dining', weightKg: 1.0, expiryTime: hoursFrom(18), photoUrl: null },
-      { name: 'Pain au Chocolat ×8',   category: 'bakery_dining', weightKg: 0.8, expiryTime: hoursFrom(18), photoUrl: null },
+      { name: 'Sourdough Loaves ×4',   category: 'bakery', weightKg: 2.4, expiryTime: hoursFrom(20), photoUrl: null },
+      { name: 'Almond Croissants ×10', category: 'bakery', weightKg: 1.2, expiryTime: hoursFrom(18), photoUrl: null },
+      { name: 'Danish Pastries ×12',   category: 'bakery', weightKg: 1.0, expiryTime: hoursFrom(18), photoUrl: null },
+      { name: 'Pain au Chocolat ×8',   category: 'bakery', weightKg: 0.8, expiryTime: hoursFrom(18), photoUrl: null },
     ],
-    driverId: null, qrCode: 'batch_007', claimedAt: null, pickedUpAt: null,
+    driverId: null, qrCode: 'saveameal://batch/batch_007', claimedAt: null, pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: iso(now), updatedAt: iso(now),
@@ -342,18 +349,17 @@ const BATCHES = [
   // ── claimed: driver_002 en route to Mövenpick Hotel ──────────────────────
   {
     id: 'batch_008', donorId: 'donor_003', donorName: 'Mövenpick Hotel Bangkok',
-    donorContact: '+66812345603',
     pickupAddress: '672 Wireless Rd, Lumphini, Pathumwan, Bangkok 10330',
-    beneficiaryId: 'ben_002', beneficiaryName: 'Klongtoey Community Center',
-    beneficiaryAddress: '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
+    beneficiaryId: 'bene_user_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
+    beneficiaryAddress: '12 Lat Phrao Soi 15, Bangkok 10230',
     status: 'claimed', pickupWindowStart: '15:00', pickupWindowEnd: '16:00',
     specialInstructions: 'Afternoon high-tea leftovers. Bring cooler box.',
     items: [
-      { name: 'Club Sandwiches ×12',  category: 'local_dining',  weightKg: 3.6, expiryTime: hoursFrom(2), photoUrl: null },
-      { name: 'Fresh Fruit Cups ×8',  category: 'local_dining',  weightKg: 1.6, expiryTime: hoursFrom(4), photoUrl: null },
-      { name: 'Cheesecake Slices ×6', category: 'bakery_dining', weightKg: 0.9, expiryTime: hoursFrom(3), photoUrl: null },
+      { name: 'Club Sandwiches ×12',  category: 'other',  weightKg: 3.6, expiryTime: hoursFrom(2), photoUrl: null },
+      { name: 'Fresh Fruit Cups ×8',  category: 'other',  weightKg: 1.6, expiryTime: hoursFrom(4), photoUrl: null },
+      { name: 'Cheesecake Slices ×6', category: 'bakery', weightKg: 0.9, expiryTime: hoursFrom(3), photoUrl: null },
     ],
-    driverId: 'driver_002', qrCode: 'batch_008', claimedAt: hoursAgo(1), pickedUpAt: null,
+    driverId: 'driver_002', qrCode: 'saveameal://batch/batch_008', claimedAt: hoursAgo(1), pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: daysAgo(1), updatedAt: hoursAgo(1),
@@ -362,19 +368,18 @@ const BATCHES = [
   // ── pickedUp: driver_001 in transit ──────────────────────────────────────
   {
     id: 'batch_009', donorId: 'donor_005', donorName: 'Bangkapi School Canteen',
-    donorContact: '+66812345605',
     pickupAddress: '182 Ladprao 122, Wang Thonglang, Bangkok 10310',
-    beneficiaryId: 'ben_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
+    beneficiaryId: 'bene_user_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
     beneficiaryAddress: '12 Lat Phrao Soi 15, Bangkok 10230',
     status: 'pickedUp', pickupWindowStart: '12:30', pickupWindowEnd: '13:30',
     specialInstructions: 'Lunch leftover. Use main canteen side door.',
     items: [
-      { name: 'Thai Basil Stir-Fry ×30', category: 'local_dining', weightKg: 6.0, expiryTime: hoursFrom(1),   photoUrl: null },
-      { name: 'Steamed Rice ×30',        category: 'local_dining', weightKg: 9.0, expiryTime: hoursFrom(2),   photoUrl: null },
-      { name: 'Clear Vegetable Soup',    category: 'local_dining', weightKg: 3.0, expiryTime: hoursFrom(1.5), photoUrl: null },
-      { name: 'Fresh Pineapple Chunks',  category: 'local_dining', weightKg: 2.0, expiryTime: hoursFrom(4),   photoUrl: null },
+      { name: 'Thai Basil Stir-Fry ×30', category: 'other', weightKg: 6.0, expiryTime: hoursFrom(1),   photoUrl: null },
+      { name: 'Steamed Rice ×30',        category: 'other', weightKg: 9.0, expiryTime: hoursFrom(2),   photoUrl: null },
+      { name: 'Clear Vegetable Soup',    category: 'other', weightKg: 3.0, expiryTime: hoursFrom(1.5), photoUrl: null },
+      { name: 'Fresh Pineapple Chunks',  category: 'other', weightKg: 2.0, expiryTime: hoursFrom(4),   photoUrl: null },
     ],
-    driverId: 'driver_001', qrCode: 'batch_009',
+    driverId: 'driver_001', qrCode: 'saveameal://batch/batch_009',
     claimedAt: hoursAgo(2), pickedUpAt: hoursAgo(0.5), deliveredAt: null,
     photoUrl: null, pickupPhotoUrl: 'https://placehold.co/600x400/png',
     deliveryNotes: null, rating: null, feedback: null,
@@ -384,18 +389,17 @@ const BATCHES = [
   // ── delivered: Anchana Bakery history ────────────────────────────────────
   {
     id: 'batch_010', donorId: 'donor_004', donorName: 'Anchana Bakery & Café',
-    donorContact: '+66812345604',
     pickupAddress: '55/3 Ramkhamhaeng Rd, Hua Mak, Bang Kapi, Bangkok 10240',
     beneficiaryId: 'ben_003', beneficiaryName: 'Prateep Foundation Elderly Care',
     beneficiaryAddress: '152/88 Sukhumvit Soi 26, Bangkok 10110',
     status: 'delivered', pickupWindowStart: '19:00', pickupWindowEnd: '20:00',
     specialInstructions: null,
     items: [
-      { name: 'Whole Wheat Loaves ×6', category: 'bakery_dining', weightKg: 3.6, expiryTime: daysAgo(0.5), photoUrl: null },
-      { name: 'Butter Cookies ×24',   category: 'bakery_dining', weightKg: 0.6, expiryTime: daysAgo(0.5), photoUrl: null },
-      { name: 'Banana Bread ×3',      category: 'bakery_dining', weightKg: 0.9, expiryTime: daysAgo(0.5), photoUrl: null },
+      { name: 'Whole Wheat Loaves ×6', category: 'bakery', weightKg: 3.6, expiryTime: daysAgo(0.5), photoUrl: null },
+      { name: 'Butter Cookies ×24',   category: 'bakery', weightKg: 0.6, expiryTime: daysAgo(0.5), photoUrl: null },
+      { name: 'Banana Bread ×3',      category: 'bakery', weightKg: 0.9, expiryTime: daysAgo(0.5), photoUrl: null },
     ],
-    driverId: 'driver_003', qrCode: 'batch_010',
+    driverId: 'driver_003', qrCode: 'saveameal://batch/batch_010',
     claimedAt: daysAgo(2), pickedUpAt: daysAgo(2), deliveredAt: daysAgo(2),
     photoUrl: null, pickupPhotoUrl: 'https://placehold.co/600x400/png',
     deliveryNotes: 'Delivered to Prateep Foundation. 12 elderly residents received bread.',
@@ -406,17 +410,16 @@ const BATCHES = [
   // ── delivered: 7-Eleven history ───────────────────────────────────────────
   {
     id: 'batch_011', donorId: 'donor_006', donorName: '7-Eleven Sukhumvit 11',
-    donorContact: '+66812345606',
     pickupAddress: '11 Sukhumvit Soi 11, Khlong Toei Nuea, Watthana, Bangkok 10110',
     beneficiaryId: 'ben_004', beneficiaryName: 'Bangkapi Community Kitchen',
     beneficiaryAddress: '45 Ladprao Rd, Wang Thonglang, Bangkok 10310',
     status: 'delivered', pickupWindowStart: '22:30', pickupWindowEnd: '23:30',
     specialInstructions: 'Near-expiry packaged foods. Supervisor: Khun Suphot.',
     items: [
-      { name: 'Sandwiches near-expiry ×15', category: 'local_dining', weightKg: 3.75, expiryTime: daysAgo(0.1), photoUrl: null },
-      { name: 'Onigiri ×20',               category: 'local_dining', weightKg: 2.0,  expiryTime: daysAgo(0.1), photoUrl: null },
+      { name: 'Sandwiches near-expiry ×15', category: 'other', weightKg: 3.75, expiryTime: daysAgo(0.1), photoUrl: null },
+      { name: 'Onigiri ×20',               category: 'other', weightKg: 2.0,  expiryTime: daysAgo(0.1), photoUrl: null },
     ],
-    driverId: 'driver_002', qrCode: 'batch_011',
+    driverId: 'driver_002', qrCode: 'saveameal://batch/batch_011',
     claimedAt: daysAgo(1), pickedUpAt: daysAgo(1), deliveredAt: daysAgo(1),
     photoUrl: null, pickupPhotoUrl: 'https://placehold.co/600x400/png',
     deliveryNotes: 'All items within expiry. Community kitchen confirmed 35 portions served.',
@@ -424,23 +427,57 @@ const BATCHES = [
     createdAt: daysAgo(1), updatedAt: daysAgo(1),
   },
 
+  // ── closed: beneficiary confirmed receipt ────────────────────────────────
+  {
+    id: 'batch_013', donorId: 'donor_001', donorName: 'Sri Silom Restaurant',
+    pickupAddress: '28/4 Silom Rd, Bang Rak, Bangkok 10500',
+    pickupLat: 13.7247, pickupLng: 100.5199,
+    beneficiaryId: 'bene_user_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
+    beneficiaryAddress: '12 Lat Phrao Soi 15, Bangkok 10230',
+    status: 'closed', pickupWindowStart: '13:00', pickupWindowEnd: '14:00',
+    specialInstructions: null,
+    items: [
+      { name: 'Khao Pad (Fried Rice) ×20', category: 'other',   weightKg: 4.0, expiryTime: daysAgo(3), photoUrl: null },
+      { name: 'Pineapple Chunks',          category: 'produce', weightKg: 1.5, expiryTime: daysAgo(3), photoUrl: null },
+      { name: 'Dinner Rolls ×10',          category: 'bakery',  weightKg: 0.8, expiryTime: daysAgo(3), photoUrl: null },
+    ],
+    driverId: 'driver_001', qrCode: 'saveameal://batch/batch_013',
+    claimedAt: daysAgo(3), pickedUpAt: daysAgo(3), deliveredAt: daysAgo(3),
+    photoUrl: null, pickupPhotoUrl: 'https://placehold.co/600x400/png',
+    deliveryNotes: 'Delivered in good condition. Shelter staff confirmed receipt.',
+    rating: 5, feedback: 'Great service!',
+    createdAt: daysAgo(3), updatedAt: daysAgo(3),
+  },
+
   // ── cancelled ─────────────────────────────────────────────────────────────
   {
     id: 'batch_012', donorId: 'donor_002', donorName: 'Central Embassy Food Court',
-    donorContact: '+66812345602',
     pickupAddress: '1031 Ploenchit Rd, Lumphini, Pathumwan, Bangkok 10330',
     beneficiaryId: 'ben_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
     beneficiaryAddress: '12 Lat Phrao Soi 15, Bangkok 10230',
     status: 'cancelled', pickupWindowStart: '22:00', pickupWindowEnd: '22:30',
     specialInstructions: null,
     items: [
-      { name: 'Sushi Platter ×4', category: 'local_dining', weightKg: 2.4, expiryTime: daysAgo(1), photoUrl: null },
-      { name: 'Miso Soup ×8',     category: 'local_dining', weightKg: 1.6, expiryTime: daysAgo(1), photoUrl: null },
+      { name: 'Sushi Platter ×4', category: 'other', weightKg: 2.4, expiryTime: daysAgo(1), photoUrl: null },
+      { name: 'Miso Soup ×8',     category: 'other', weightKg: 1.6, expiryTime: daysAgo(1), photoUrl: null },
     ],
-    driverId: null, qrCode: 'batch_012', claimedAt: null, pickedUpAt: null,
+    driverId: null, qrCode: 'saveameal://batch/batch_012', claimedAt: null, pickedUpAt: null,
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: daysAgo(2), updatedAt: daysAgo(1),
+  },
+];
+
+// Collection: driverLocations/{driverId}
+// Fields match DriverLocationModel — used by beneficiary tracking screen.
+// driver_001 is seeded in-transit (batch_009 is pickedUp) roughly between
+// Bangkapi School (13.7575, 100.6239) and Baan Saeng Tawan (13.8102, 100.5699).
+const DRIVER_LOCATIONS = [
+  {
+    driverId:  'driver_001',
+    lat:       13.7850,
+    lng:       100.5920,
+    updatedAt: null, // populated at write time
   },
 ];
 
@@ -576,7 +613,6 @@ async function setupDemo() {
     id:                  batchId,
     donorId:             uids.donor,
     donorName:           'FreshMart Supermarket',
-    donorContact:        null,
     pickupAddress:       '1031 Ploenchit Rd, Lumphini, Pathumwan, Bangkok 10330',
     pickupLat:           13.7432,
     pickupLng:           100.5494,
@@ -597,7 +633,7 @@ async function setupDemo() {
       },
     ],
     driverId:        null,
-    qrCode:          batchId,
+    qrCode:          `saveameal://batch/${batchId}`,
     claimedAt:       null,
     pickedUpAt:      null,
     deliveredAt:     null,
@@ -740,22 +776,28 @@ async function main() {
     await clearCollection('batches');
     await clearCollection('beneficiaries');
     await clearCollection('impactMetrics');
+    await clearCollection('driverLocations');
     console.log();
   }
 
+  // Stamp updatedAt on driver locations at write time so the value is current.
+  const stampedDriverLocations = DRIVER_LOCATIONS.map((d) => ({ ...d, updatedAt: iso(new Date()) }));
+
   console.log('Writing seed data...');
-  await writeAll('beneficiaries', BENEFICIARIES);
-  await writeAll('users',         USERS,          'uid');
-  await writeAll('batches',       BATCHES);
-  await writeAll('impactMetrics', IMPACT_METRICS);
+  await writeAll('beneficiaries',   BENEFICIARIES);
+  await writeAll('users',           USERS,                  'uid');
+  await writeAll('batches',         BATCHES);
+  await writeAll('impactMetrics',   IMPACT_METRICS);
+  await writeAll('driverLocations', stampedDriverLocations, 'driverId');
   await db.collection('leaderboard').doc('thisMonth').set(LEADERBOARD.thisMonth);
-  console.log(`  ✓  leaderboard       1 document  (thisMonth)`);
+  console.log(`  ✓  leaderboard         1 document  (thisMonth)`);
 
   console.log('\nSummary:');
-  console.log(`  beneficiaries  : ${BENEFICIARIES.length}`);
+  console.log(`  beneficiaries  : ${BENEFICIARIES.length}  (4 org docs + 1 user-UID doc)`);
   console.log(`  users          : ${USERS.length}  (6 donors · 3 drivers · 1 beneficiary)`);
-  console.log(`  batches        : ${BATCHES.length}  (5 open · 2 claimed · 1 pickedUp · 3 delivered · 1 cancelled)`);
+  console.log(`  batches        : ${BATCHES.length}  (5 open · 2 claimed · 1 pickedUp · 3 delivered · 1 closed · 1 cancelled)`);
   console.log(`  impactMetrics  : ${IMPACT_METRICS.length}`);
+  console.log(`  driverLocations: ${DRIVER_LOCATIONS.length}`);
   console.log(`  leaderboard    : 1  (thisMonth)`);
   console.log('\nDone.\n');
 }

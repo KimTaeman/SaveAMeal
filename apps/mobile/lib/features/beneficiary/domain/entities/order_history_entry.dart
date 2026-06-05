@@ -5,7 +5,6 @@ enum OrderHistoryEntryStatus { inTransit, delivered, closed }
 class OrderHistoryEntry {
   const OrderHistoryEntry({
     required this.id,
-    required this.displayId,
     required this.status,
     required this.itemDescription,
     required this.donorName,
@@ -15,7 +14,6 @@ class OrderHistoryEntry {
   });
 
   final String id; // Firestore batch document ID
-  final String displayId; // 'SH-' + id.substring(id.length - 4).toUpperCase()
   final OrderHistoryEntryStatus status; // inTransit | delivered | closed
   final String itemDescription; // first item name, or comma-joined item names
   final String donorName; // from BatchModel.donorName (denormalised)

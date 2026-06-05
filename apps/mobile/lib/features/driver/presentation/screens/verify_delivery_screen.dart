@@ -5,6 +5,7 @@ import 'package:saveameal/features/auth/presentation/providers/auth_provider.dar
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/utils/batch_id_formatter.dart';
 
 const _handoverItems = [
   'Food batch handed over securely to shelter staff',
@@ -77,7 +78,7 @@ class _VerifyDeliveryScreenState extends ConsumerState<VerifyDeliveryScreen> {
                           ),
                         ),
                         Text(
-                          'Batch #${batch.id.split('_').last}',
+                          'Batch ${formatBatchId(batch.id)}',
                           style: textTheme.titleMedium,
                         ),
                       ],

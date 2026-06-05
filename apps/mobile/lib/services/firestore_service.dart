@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:saveameal/core/constants/firestore_constants.dart';
 import 'package:saveameal/core/exceptions/batch_exceptions.dart';
 import 'package:saveameal/core/models/batch_model.dart';
+import 'package:saveameal/shared/domain/entities/batch_status.dart';
 import 'package:saveameal/core/models/beneficiary_model.dart';
 import 'package:saveameal/core/models/driver_location_model.dart';
 import 'package:saveameal/core/models/impact_metrics_model.dart';
@@ -121,7 +122,7 @@ class FirestoreService {
       .snapshots()
       .map(
         (qs) => qs.docs
-            .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+            .map((d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})))
             .toList(),
       );
 
@@ -173,7 +174,7 @@ class FirestoreService {
             .snapshots()
             .listen((qs) {
               pendingBatches = qs.docs
-                  .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+                  .map((d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})))
                   .toList();
               emit();
             });
@@ -185,7 +186,7 @@ class FirestoreService {
             .snapshots()
             .listen((qs) {
               myBatches = qs.docs
-                  .map((d) => BatchModel.fromJson({...d.data(), 'id': d.id}))
+                  .map((d) => BatchModel.fromJson(_normalise({...d.data(), 'id': d.id})))
                   .toList();
               emit();
             });
@@ -403,7 +404,7 @@ class FirestoreService {
             name: (orgName != null && orgName.isNotEmpty)
                 ? orgName
                 : (name ?? 'Unknown'),
-            address: data['address'] as String?,
+            address: data['streetAddress'] as String?,
           );
         }).toList(),
       );

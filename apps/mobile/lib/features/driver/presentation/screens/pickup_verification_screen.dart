@@ -34,9 +34,18 @@ class _PickupVerificationScreenState
     _validateAndNavigate(raw);
   }
 
+  /// Extracts the raw batch ID from either a bare ID or the full URI scheme.
+  /// Accepts both `batch_001` and `saveameal://batch/batch_001`.
+  static String _extractBatchId(String raw) {
+    const prefix = 'saveameal://batch/';
+    final trimmed = raw.trim();
+    return trimmed.startsWith(prefix) ? trimmed.substring(prefix.length) : trimmed;
+  }
+
   Future<void> _validateAndNavigate(String scannedBatchId) async {
+    final batchId = _extractBatchId(scannedBatchId);
     final activeBatch = ref.read(driverProvider).activeBatch;
-    if (activeBatch == null || activeBatch.id != scannedBatchId) {
+    if (activeBatch == null || activeBatch.id != batchId) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Wrong QR code — try again.')),
@@ -58,7 +67,11 @@ class _PickupVerificationScreenState
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: 'e.g. batch_001'),
+            decoration: const InputDecoration(
+              labelText: 'Batch ID',
+              hintText: 'e.g. batch_001',
+              helperText: 'Also accepts saveameal://batch/… links',
+            ),
             onChanged: (_) => setDialogState(() {}),
           ),
           actions: [

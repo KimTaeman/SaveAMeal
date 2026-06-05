@@ -883,3 +883,135 @@ Outcome: All 4 tests fixed. 456/456 pass. flutter analyze clean.
 Decisions: Failures 1-3 were straightforward display name updates (Produce -> Fruits & Veggies). Failure 4 was more subtle: the original diagnosis about Stream.empty() vs Stream.value(null) was partially correct, but the real root cause was that _seedNotifications() used yesterday.add(Duration(hours: 1)) which crosses midnight when tests run late at night (e.g., 23:xx), placing item 5 in "today" and producing TODAY (4)/YESTERDAY (1) instead of TODAY (3)/YESTERDAY (2). Fixed by computing yesterdayNoon = DateTime(now.year, now.month, now.day - 1, 12) so both yesterday items are reliably on the previous calendar day regardless of test execution time.
 Handoff: No production code changed. Only test files modified.
 Review: PENDING
+
+---
+Date: 2026-06-05 00:00
+Member: chotiya
+Agent: qa-engineer
+Task: Review feature/batch-schema-consistency branch
+Prompt: Review the feature/batch-schema-consistency branch (18 files, ~96 insertions / 43 deletions). Audit coverage gaps, formatBatchId edge cases, search regression, test assertion correctness, convention violations, and pickupWindowStart/End typing.
+Outcome: Completed QA review of feature/batch-schema-consistency. CHANGES REQUESTED verdict. 9 findings (2 BLOCKING, 4 HIGH, 2 MEDIUM, 1 LOW, 1 INFO). Report written to docs/agent-runs/2026-06-05-qa-batch-schema.md.
+Decisions: Verified formatBatchId('abc4092') trace manually — 7-char clean string returns '#ABC4092', test assertions are correct. Search regression assessed as non-breaking for common prefix queries but test coverage is inadequate for UUID-format IDs.
+Handoff: Flutter engineer must add: test/unit/shared/utils/batch_id_formatter_test.dart, test/unit/shared/domain/entities/food_category_test.dart, data-layer mapping test for _toBatch/_fromBatch covering all 12 new fields, and at least one FirestoreService unit test per fixed normalise path. All findings documented in the QA report.
+Review: N/A (QA review session — no production code written)
+Files:
+  ~ apps/mobile/lib/core/models/batch_model.dart
+  ~ apps/mobile/lib/features/beneficiary/data/models/order_history_entry_model.dart
+  ~ apps/mobile/lib/features/beneficiary/domain/entities/order_history_entry.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/rate_delivery_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/delivery_history_row.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/order_history_card.dart
+  ~ apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart
+  ~ apps/mobile/lib/features/donor/domain/entities/batch.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_detail_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_summary_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_dashboard_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_history_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+  ~ apps/mobile/lib/shared/domain/entities/food_category.dart
+  ~ apps/mobile/test/unit/features/beneficiary/intake_request_detail_mapper_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_order_history_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_org_profile_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_personal_information_screen_test.dart
+  ? apps/mobile/lib/shared/utils/ (untracked)
+Summary:  18 files changed, 96 insertions(+), 43 deletions(-)
+
+Files:
+  ~ apps/mobile/lib/core/models/batch_model.dart
+  ~ apps/mobile/lib/features/beneficiary/data/models/order_history_entry_model.dart
+  ~ apps/mobile/lib/features/beneficiary/domain/entities/order_history_entry.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/rate_delivery_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/delivery_history_row.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/order_history_card.dart
+  ~ apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart
+  ~ apps/mobile/lib/features/donor/domain/entities/batch.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_detail_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_summary_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_dashboard_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_history_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+  ~ apps/mobile/lib/shared/domain/entities/food_category.dart
+  ~ apps/mobile/test/unit/features/beneficiary/intake_request_detail_mapper_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_order_history_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_org_profile_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_personal_information_screen_test.dart
+  ? apps/mobile/lib/shared/utils/ (untracked)
+Summary:  18 files changed, 96 insertions(+), 43 deletions(-)
+
+
+
+---
+Date: 2026-06-05 00:00
+Member: chotiya
+Agent: qa-engineer
+Task: Third-pass QA review of feature/batch-schema-consistency (v3)
+Prompt: Verify all v2 blocking fixes are resolved. Check _extractBatchId coverage, Batch round-trip tests, getBeneficiaries field rename test, _normalise regression tests, pickupWindowStart/End format, convention violations. Run full test suite.
+Outcome: All 5 previously blocking findings confirmed resolved. 468 tests pass. Three medium-priority follow-up items identified: (1) stale 'baked_goods'/'hot_meals' category strings in order_history_card.dart icon helpers — dead code since FoodCategory enum now uses 'bakery' etc.; (2) _extractBatchId has no unit test; (3) no BatchModel 27-field round-trip test. One low: stale console.log in seed.js demo setup prints old bare-ID QR format.
+Decisions: Classified stale category strings as MEDIUM (not BLOCKING) because no user-facing crash results — only wrong icon/colour for bakery orders. Classified _extractBatchId gap as MEDIUM rather than LOW because it has two branches that interact with the new URI scheme change and are not covered anywhere.
+Handoff: Branch is mergeable. Three MEDIUM items should be filed as follow-up tickets: (1) fix OrderHistoryCard category string comparisons to use FoodCategory.name values ('bakery' not 'baked_goods'); (2) extract _extractBatchId to a testable top-level function; (3) add BatchModel round-trip test. Fix seed.js console.log (LOW).
+Review: APPROVED by qa-engineer
+Files:
+  ~ apps/mobile/lib/core/models/batch_model.dart
+  ~ apps/mobile/lib/features/beneficiary/data/models/order_history_entry_model.dart
+  ~ apps/mobile/lib/features/beneficiary/domain/entities/order_history_entry.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/rate_delivery_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/delivery_history_row.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/order_history_card.dart
+  ~ apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart
+  ~ apps/mobile/lib/features/donor/domain/entities/batch.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_detail_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_summary_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_dashboard_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_history_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/pickup_verification_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+  ~ apps/mobile/lib/shared/domain/entities/food_category.dart
+  ~ apps/mobile/test/unit/features/beneficiary/intake_request_detail_mapper_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_order_history_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_org_profile_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_personal_information_screen_test.dart
+  ? apps/mobile/lib/shared/domain/entities/batch_status.dart (untracked)
+  ? apps/mobile/lib/shared/utils/ (untracked)
+  ? apps/mobile/test/unit/shared/ (untracked)
+Summary:  19 files changed, 110 insertions(+), 46 deletions(-)
+---
+Date: 2026-06-05 00:00
+Member: chotiya
+Agent: qa-engineer
+Task: Fourth and final QA review pass of feature/batch-schema-consistency
+Prompt: Run all 468 tests, confirm verify_delivery_screen fix is consistent, audit driver_repository_impl fallback, audit donorContact removal, audit order_history_card stale category strings, summarise coverage gaps.
+Outcome: 467 passed, 1 failed. Blocking regression found: verify_delivery_screen_test.dart was not updated when production code switched from batch.id.split('_').last to formatBatchId(batch.id). Test fixture uses underscore-format ID producing wrong expected string. All v1–v3 blockers confirmed resolved. High finding: order_history_card.dart switches on stale strings 'hot_meals'/'baked_goods' that no current code path produces — icons always fall through to default. donorContact fully absent. flutter analyze clean.
+Decisions: Classified the test regression as Critical (blocks merge) because it is a deterministic failure on every run introduced by this PR. Classified order_history_card stale strings as High (cosmetic, no crash, no test failure) — does not block merge on its own.
+Handoff: Flutter engineer must (1) update verify_delivery_screen_test.dart fixture to a UUID-format ID and fix the assertion to match formatBatchId output; (2) fix order_history_card.dart switch/comparison strings to match FoodCategory enum names before release. No other changes needed.
+Review: CHANGES REQUESTED by qa-engineer
+
+Files:
+  ~ apps/mobile/lib/core/models/batch_model.dart
+  ~ apps/mobile/lib/features/beneficiary/data/models/order_history_entry_model.dart
+  ~ apps/mobile/lib/features/beneficiary/domain/entities/order_history_entry.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/screens/rate_delivery_screen.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/delivery_history_row.dart
+  ~ apps/mobile/lib/features/beneficiary/presentation/widgets/order_history_card.dart
+  ~ apps/mobile/lib/features/donor/data/repositories/donor_repository_impl.dart
+  ~ apps/mobile/lib/features/donor/domain/entities/batch.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_detail_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/batch_summary_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_dashboard_screen.dart
+  ~ apps/mobile/lib/features/donor/presentation/screens/donor_history_screen.dart
+  ~ apps/mobile/lib/features/driver/data/repositories/driver_repository_impl.dart
+  ~ apps/mobile/lib/features/driver/domain/repositories/driver_repository.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/claim_rescue_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/job_detail_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/pickup_verification_screen.dart
+  ~ apps/mobile/lib/features/driver/presentation/screens/verify_delivery_screen.dart
+  ~ apps/mobile/lib/services/firestore_service.dart
+  ~ apps/mobile/lib/shared/domain/entities/food_category.dart
+  ~ apps/mobile/test/unit/features/beneficiary/intake_request_detail_mapper_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_order_history_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_org_profile_screen_test.dart
+  ~ apps/mobile/test/widget/features/beneficiary/beneficiary_personal_information_screen_test.dart
+  ? apps/mobile/lib/shared/domain/entities/batch_status.dart (untracked)
+  ? apps/mobile/lib/shared/utils/ (untracked)
+  ? apps/mobile/test/unit/shared/ (untracked)
+Summary:  24 files changed, 110 insertions(+), 58 deletions(-)
+

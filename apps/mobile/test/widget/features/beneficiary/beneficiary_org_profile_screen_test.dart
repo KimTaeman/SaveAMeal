@@ -41,7 +41,6 @@ final _testProfile = BeneficiaryProfile(
 final _testOrders = [
   OrderHistoryEntry(
     id: 'abc4092',
-    displayId: 'SH-4092',
     date: DateTime(2023, 10, 24),
     status: OrderHistoryEntryStatus.delivered,
     itemDescription: '50 Hot Meals',

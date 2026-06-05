@@ -13,6 +13,7 @@ import 'package:saveameal/features/donor/presentation/providers/donor_account_pr
 import 'package:saveameal/features/donor/presentation/providers/donor_provider.dart';
 import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
+import 'package:saveameal/shared/utils/batch_id_formatter.dart';
 import 'package:uuid/uuid.dart';
 
 class BatchSummaryScreen extends ConsumerStatefulWidget {
@@ -26,8 +27,7 @@ class _BatchSummaryScreenState extends ConsumerState<BatchSummaryScreen> {
   final String _batchId = const Uuid().v4();
   bool _submitting = false;
 
-  String get _shortBatchLabel =>
-      'Batch #${_batchId.replaceAll('-', '').substring(0, 4).toUpperCase()}';
+  String get _shortBatchLabel => 'Batch ${formatBatchId(_batchId)}';
 
   Future<void> _submit(List<BatchItem> items, String donorId) async {
     if (items.isEmpty || _submitting) return;

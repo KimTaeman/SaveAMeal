@@ -15,7 +15,6 @@ class BatchSummary {
     this.pickupWindowStart,
     this.pickupWindowEnd,
     this.specialInstructions,
-    this.donorContact,
     this.items = const [],
   });
 
@@ -31,7 +30,6 @@ class BatchSummary {
   final String? pickupWindowStart;
   final String? pickupWindowEnd;
   final String? specialInstructions;
-  final String? donorContact;
   final List<BatchItemModel> items;
 }
 
