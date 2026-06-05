@@ -8,7 +8,9 @@ import 'package:saveameal/features/auth/domain/entities/app_user.dart';
 import 'package:saveameal/features/auth/domain/repositories/auth_repository.dart';
 import 'package:saveameal/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:saveameal/features/beneficiary/domain/entities/beneficiary_impact.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/intake_request.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_impact_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_provider.dart';
 import 'package:saveameal/features/beneficiary/domain/entities/beneficiary_profile.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_account_provider.dart';
@@ -33,6 +35,14 @@ final _testProfile = BeneficiaryProfile(
   joinedAt: DateTime(2023, 3, 1),
   orgName: 'Haven Shelter',
   orgType: 'Shelter',
+);
+
+final _testImpact = BeneficiaryImpact(
+  totalMeals: 450,
+  totalKg: 180,
+  totalCo2e: 450,
+  totalDeliveries: 12,
+  byCategory: const {},
 );
 
 // ── Fakes ──────────────────────────────────────────────────────────────────────
@@ -114,6 +124,9 @@ void main() {
             currentBeneficiaryProfileProvider.overrideWith(
               (ref) => Stream.value(_testProfile),
             ),
+            beneficiaryImpactProvider(
+              'test-uid',
+            ).overrideWith((ref) => Stream.value(_testImpact)),
             signOutUsecaseProvider.overrideWithValue(
               SignOutUsecase(fakeAuthRepo),
             ),
@@ -171,6 +184,9 @@ void main() {
             currentBeneficiaryProfileProvider.overrideWith(
               (ref) => Stream.value(_testProfile),
             ),
+            beneficiaryImpactProvider(
+              'test-uid',
+            ).overrideWith((ref) => Stream.value(_testImpact)),
             signOutUsecaseProvider.overrideWithValue(
               SignOutUsecase(fakeAuthRepo),
             ),
@@ -201,6 +217,9 @@ void main() {
             currentBeneficiaryProfileProvider.overrideWith(
               (ref) => Stream.value(_testProfile),
             ),
+            beneficiaryImpactProvider(
+              'test-uid',
+            ).overrideWith((ref) => Stream.value(_testImpact)),
             signOutUsecaseProvider.overrideWithValue(
               SignOutUsecase(fakeAuthRepo),
             ),
@@ -231,6 +250,9 @@ void main() {
             currentBeneficiaryProfileProvider.overrideWith(
               (ref) => Stream.value(_testProfile),
             ),
+            beneficiaryImpactProvider(
+              'test-uid',
+            ).overrideWith((ref) => Stream.value(_testImpact)),
             signOutUsecaseProvider.overrideWithValue(
               SignOutUsecase(fakeAuthRepo),
             ),
