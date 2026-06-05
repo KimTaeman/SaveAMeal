@@ -12,6 +12,8 @@ class BatchSummary {
     required this.lat,
     required this.lng,
     required this.foodCategory,
+    this.beneficiaryLat,
+    this.beneficiaryLng,
     this.pickupWindowStart,
     this.pickupWindowEnd,
     this.specialInstructions,
@@ -26,6 +28,8 @@ class BatchSummary {
   final int totalPortions;
   final double lat;
   final double lng;
+  final double? beneficiaryLat;
+  final double? beneficiaryLng;
   final String foodCategory;
   final String? pickupWindowStart;
   final String? pickupWindowEnd;
@@ -41,5 +45,6 @@ abstract class DriverRepository {
   Future<void> confirmDelivery(String batchId, String? notes);
   Future<void> upsertLocation(String driverId, double lat, double lng);
   Future<void> deleteLocation(String driverId);
+  Future<void> updateBatchEta(String batchId, int eta);
   Stream<int> watchPoints(String uid);
 }

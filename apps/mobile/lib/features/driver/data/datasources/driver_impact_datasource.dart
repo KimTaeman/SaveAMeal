@@ -15,17 +15,40 @@ class DriverImpactDatasourceImpl implements DriverImpactDatasource {
 
   @override
   Future<DriverImpactModel> fetchDriverImpact(String uid) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
-    final data = doc.data() ?? {};
+    // Read user stats and leaderboard in parallel.
+    final results = await Future.wait([
+      _firestore.collection('users').doc(uid).get(),
+      _firestore.collection('leaderboard').doc('thisMonth').get(),
+    ]);
+
+    final userSnap = results[0] as DocumentSnapshot;
+    final leaderboardSnap = results[1] as DocumentSnapshot;
+    final userData = (userSnap.data() as Map<String, dynamic>?) ?? {};
+    final leaderboardData = leaderboardSnap.data() as Map<String, dynamic>?;
+
+    // Compute rank from live leaderboard entries.
+    final entries = List<Map<String, dynamic>>.from(
+      ((leaderboardData?['entries'] as List<dynamic>?) ?? []).map(
+        (e) => Map<String, dynamic>.from(e as Map),
+      ),
+    );
+    entries.sort(
+      (a, b) =>
+          ((b['score'] as int?) ?? 0).compareTo((a['score'] as int?) ?? 0),
+    );
+    final driverIdx = entries.indexWhere((e) => e['uid'] == uid);
+    final rank = driverIdx >= 0 ? driverIdx + 1 : 0;
+    final totalDrivers = entries.length;
+
     return DriverImpactModel.fromJson({
-      'rank': data['rank'] ?? 0,
-      'totalDrivers': data['totalDrivers'] ?? 0,
-      'mealsSaved': data['mealsSaved'] ?? 0,
-      'sproutPoints': data['sproutPoints'] ?? 0,
-      'rankProgressCurrent': data['rankProgressCurrent'] ?? 0,
-      'rankProgressTarget': data['rankProgressTarget'] ?? 100,
-      'currentRankName': data['currentRankName'] ?? 'Bronze',
-      'nextRankName': data['nextRankName'] ?? 'Silver',
+      'rank': rank,
+      'totalDrivers': totalDrivers,
+      'mealsSaved': userData['mealsSaved'] ?? 0,
+      'sproutPoints': userData['sproutPoints'] ?? 0,
+      'rankProgressCurrent': userData['rankProgressCurrent'] ?? 0,
+      'rankProgressTarget': userData['rankProgressTarget'] ?? 100,
+      'currentRankName': userData['currentRankName'] ?? 'Bronze',
+      'nextRankName': userData['nextRankName'] ?? 'Silver',
     });
   }
 
@@ -34,10 +57,19 @@ class DriverImpactDatasourceImpl implements DriverImpactDatasource {
     required String period,
   }) async {
     final doc = await _firestore.collection('leaderboard').doc(period).get();
-    final entries = (doc.data()?['entries'] as List<dynamic>?) ?? [];
-    return entries
-        .cast<Map<String, dynamic>>()
-        .map(LeaderboardEntryModel.fromJson)
-        .toList();
+    final entries = List<Map<String, dynamic>>.from(
+      ((doc.data()?['entries'] as List<dynamic>?) ?? []).map(
+        (e) => Map<String, dynamic>.from(e as Map),
+      ),
+    );
+    // Ensure sorted by score and ranks are sequential.
+    entries.sort(
+      (a, b) =>
+          ((b['score'] as int?) ?? 0).compareTo((a['score'] as int?) ?? 0),
+    );
+    for (var i = 0; i < entries.length; i++) {
+      entries[i]['rank'] = i + 1;
+    }
+    return entries.map(LeaderboardEntryModel.fromJson).toList();
   }
 }

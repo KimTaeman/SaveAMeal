@@ -39,6 +39,10 @@ class DriverRepositoryImpl implements DriverRepository {
       _datasource.deleteLocation(driverId);
 
   @override
+  Future<void> updateBatchEta(String batchId, int eta) =>
+      _datasource.updateBatchEta(batchId, eta);
+
+  @override
   Stream<int> watchPoints(String uid) => _datasource.watchPoints(uid);
 
   BatchSummary _toSummary(BatchModel m) => BatchSummary(
@@ -50,7 +54,9 @@ class DriverRepositoryImpl implements DriverRepository {
     totalPortions: m.items.length,
     lat: m.pickupLat != 0.0 ? m.pickupLat : 13.7563,
     lng: m.pickupLng != 0.0 ? m.pickupLng : 100.5018,
-    foodCategory: m.items.isNotEmpty ? m.items.first.category : 'other',
+    beneficiaryLat: m.beneficiaryLat,
+    beneficiaryLng: m.beneficiaryLng,
+    foodCategory: m.items.isNotEmpty ? m.items.first.category : 'local_dining',
     pickupWindowStart: m.pickupWindowStart,
     pickupWindowEnd: m.pickupWindowEnd,
     specialInstructions: m.specialInstructions,

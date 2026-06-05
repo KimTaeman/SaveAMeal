@@ -52,10 +52,19 @@ service cloud.firestore {
         (isDriver() && resource.data.status == 'open'
           && request.resource.data.driverId == uid()) ||
 
-        // Driver can advance their own claimed batch through pickup → delivered
-        // Status values match the Dart enum serialisation: 'pickedUp' not 'picked_up'
+        // Driver can advance their own claimed batch and update ETA.
+        // Field allowlist prevents writes to immutable fields (donorId, items, etc.).
+        // ETA is validated to a realistic 1–600 minute range.
         (isDriver() && resource.data.driverId == uid()
-          && resource.data.status in ['claimed', 'pickedUp']) ||
+          && resource.data.status in ['claimed', 'pickedUp']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+               'status', 'pickedUpAt', 'deliveredAt', 'deliveryNotes',
+               'pickupPhotoUrl', 'estimatedArrivalMinutes', 'updatedAt'
+             ])
+          && (!('estimatedArrivalMinutes' in request.resource.data.diff(resource.data).affectedKeys())
+              || (request.resource.data.estimatedArrivalMinutes is int
+                  && request.resource.data.estimatedArrivalMinutes >= 1
+                  && request.resource.data.estimatedArrivalMinutes <= 600))) ||
 
         // Beneficiary can add rating/feedback and close their own batch.
         // diff().affectedKeys() checks only the fields being changed, not
@@ -102,10 +111,12 @@ service cloud.firestore {
     }
 
     // ── leaderboard ────────────────────────────────────────────────────────────
-    // Written by Cloud Functions / seed script; all signed-in drivers may read.
+    // Updated client-side by drivers after each delivery (confirmDelivery
+    // transaction). Any signed-in driver may read and write so the ranking
+    // is rebuilt in real time without a Cloud Function.
     match /leaderboard/{period} {
-      allow read:  if isSignedIn() && isDriver();
-      allow write: if false;
+      allow read:  if isSignedIn();
+      allow write: if isSignedIn() && isDriver();
     }
   }
 }

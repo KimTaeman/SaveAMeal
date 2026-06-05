@@ -44,11 +44,26 @@ void main() async {
     Hive.openBox<dynamic>('notification_prefs'),
   ]);
 
+  // Suppress known google_maps_flutter_web 0.6.2+1 assertion crash that fires
+  // when the GoogleMap widget is disposed before its JS map finishes loading.
+  // This is a package bug; the app continues functioning normally.
+  bool isMapsNotBuiltError(Object error) =>
+      kIsWeb &&
+      error.toString().contains(
+        'Maps cannot be retrieved before calling buildView',
+      );
+
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
     PlatformDispatcher.instance.onError = (error, stack) {
+      if (isMapsNotBuiltError(error)) return true;
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
+    };
+  } else {
+    PlatformDispatcher.instance.onError = (error, stack) {
+      if (isMapsNotBuiltError(error)) return true;
+      return false;
     };
   }
 
