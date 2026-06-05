@@ -29,12 +29,16 @@ describe('writeNotificationsForDrivers', () => {
       batchId: 'b1',
       donorName: 'Supermart',
       totalKg: 10,
+      category: 'bread',
     });
 
     const addMock = (db as any).__addMock as jest.Mock;
     expect(addMock).toHaveBeenCalledTimes(2);
     const firstCall = addMock.mock.calls[0][0];
     expect(firstCall.type).toBe('new_batch');
+    expect(firstCall.title).toBe('Pickup Alert');
+    expect(firstCall.body).toContain('Supermart');
+    expect(firstCall.body).toContain('bread');
     expect(firstCall.isRead).toBe(false);
     expect(firstCall.actionBatchId).toBe('b1');
   });
@@ -45,6 +49,7 @@ describe('writeNotificationsForDrivers', () => {
       batchId: 'b1',
       donorName: 'Supermart',
       totalKg: 10,
+      category: 'bread',
     });
 
     const addMock = (db as any).__addMock as jest.Mock;
