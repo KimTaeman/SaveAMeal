@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saveameal/core/logging/app_logger.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
@@ -9,6 +10,7 @@ import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
 import 'package:saveameal/shared/widgets/onboarding_step_indicator.dart';
 import 'package:saveameal/shared/widgets/save_a_meal_logo.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const List<String> _orgTypes = [
   'Shelter',
@@ -41,14 +43,133 @@ class _BeneficiaryOnboardingScreenState
 
   String? _selectedType;
   bool _saving = false;
+  bool _fetchingLocation = false;
+  double? _latitude;
+  double? _longitude;
+
+  @override
+  void initState() {
+    super.initState();
+    _addressController.addListener(_onAddressChanged);
+  }
 
   @override
   void dispose() {
+    _addressController.removeListener(_onAddressChanged);
     _nameController.dispose();
     _addressController.dispose();
     _emailController.dispose();
     _missionController.dispose();
     super.dispose();
+  }
+
+  void _onAddressChanged() {
+    if (_addressController.text.isEmpty) {
+      _latitude = null;
+      _longitude = null;
+    }
+    setState(() {});
+  }
+
+  Future<void> _fetchLocation() async {
+    if (!mounted) return;
+    setState(() => _fetchingLocation = true);
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (mounted) {
+        setState(() {
+          _latitude = position.latitude;
+          _longitude = position.longitude;
+          _addressController.text =
+              '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+        });
+      }
+    } on PermissionDeniedException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location permission denied. Please enter your address manually.',
+            ),
+          ),
+        );
+      }
+    } on LocationServiceDisabledException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location services are disabled. Please enable them in device settings.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _fetchingLocation = false);
+    }
+  }
+
+  Future<void> _openInMaps() async {
+    final Uri uri;
+    if (_latitude != null && _longitude != null) {
+      uri = Uri.parse('https://maps.google.com/?q=$_latitude,$_longitude');
+    } else {
+      final encoded = Uri.encodeComponent(_addressController.text.trim());
+      uri = Uri.parse('https://maps.google.com/?q=$encoded');
+    }
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open Maps.')));
+    }
+  }
+
+  Widget _buildAddressSuffixIcon(ColorScheme cs) {
+    final canOpenMaps = _addressController.text.isNotEmpty || _latitude != null;
+    return SizedBox(
+      width: 96,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_fetchingLocation)
+            Padding(
+              padding: const EdgeInsets.all(Spacing.sm + 2),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: cs.primary,
+                ),
+              ),
+            )
+          else
+            IconButton(
+              iconSize: 20,
+              icon: Icon(Icons.my_location, color: cs.primary),
+              tooltip: 'Use current location',
+              onPressed: () => _fetchLocation(),
+            ),
+          IconButton(
+            iconSize: 20,
+            icon: Icon(
+              Icons.map_outlined,
+              color: canOpenMaps
+                  ? cs.primary
+                  : cs.onSurface.withValues(alpha: 0.38),
+            ),
+            tooltip: 'Open in Maps',
+            onPressed: canOpenMaps ? () => _openInMaps() : null,
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleSave() async {
@@ -95,7 +216,11 @@ class _BeneficiaryOnboardingScreenState
     final ac = Theme.of(context).extension<AppColors>()!;
     final tt = Theme.of(context).textTheme;
 
-    InputDecoration fieldDecoration({String? labelText, Widget? prefixIcon}) =>
+    InputDecoration fieldDecoration({
+      String? labelText,
+      Widget? prefixIcon,
+      Widget? suffixIcon,
+    }) =>
         InputDecoration(
           labelText: labelText,
           border: OutlineInputBorder(
@@ -125,6 +250,7 @@ class _BeneficiaryOnboardingScreenState
             vertical: Spacing.sm + Spacing.xs,
           ),
           prefixIcon: prefixIcon,
+          suffixIcon: suffixIcon,
         );
 
     return Scaffold(
@@ -203,6 +329,7 @@ class _BeneficiaryOnboardingScreenState
                       controller: _addressController,
                       decoration: fieldDecoration(
                         labelText: 'Headquarters Address',
+                        suffixIcon: _buildAddressSuffixIcon(cs),
                       ),
                       validator: (v) => (v == null || v.trim().isEmpty)
                           ? 'Address is required'
