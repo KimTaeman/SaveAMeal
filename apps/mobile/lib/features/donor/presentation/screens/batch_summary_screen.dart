@@ -29,15 +29,30 @@ class _BatchSummaryScreenState extends ConsumerState<BatchSummaryScreen> {
   String get _shortBatchLabel =>
       'Batch #${_batchId.replaceAll('-', '').substring(0, 4).toUpperCase()}';
 
+  static const _kRolePrefixes = {'donor', 'driver', 'beneficiary'};
+
+  String? _displayName(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    final parts = raw.trim().split(RegExp(r'\s+'));
+    if (parts.length > 1 &&
+        _kRolePrefixes.contains(parts.first.toLowerCase())) {
+      return parts.skip(1).join(' ');
+    }
+    return raw;
+  }
+
   Future<void> _submit(List<BatchItem> items, String donorId) async {
     if (items.isEmpty || _submitting) return;
     setState(() => _submitting = true);
 
     final beneficiary = ref.read(batchBeneficiaryProvider);
-    final profile = ref.read(currentUserProvider).asData?.value;
+    final profile = await ref.read(currentUserProvider.future);
     final batch = Batch(
       id: _batchId,
       donorId: donorId,
+      donorName: profile?.orgName?.isNotEmpty == true
+          ? profile!.orgName
+          : _displayName(profile?.name),
       items: items,
       pickupAddress: profile?.streetAddress ?? '',
       pickupLat: profile?.latitude ?? 0.0,

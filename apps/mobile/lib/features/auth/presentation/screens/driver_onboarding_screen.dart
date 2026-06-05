@@ -126,6 +126,10 @@ class _DriverOnboardingScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Keep the notifier alive while this screen is mounted so that setting
+    // state inside updateProfile() doesn't throw on a disposed provider.
+    ref.watch(driverProfileProvider);
+
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 

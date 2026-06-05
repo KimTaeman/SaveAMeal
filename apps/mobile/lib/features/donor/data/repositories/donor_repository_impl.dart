@@ -86,6 +86,7 @@ class DonorRepositoryImpl implements DonorRepository {
   domain.Batch _toBatch(bm.BatchModel m) => domain.Batch(
     id: m.id,
     donorId: m.donorId,
+    donorName: m.donorName,
     items: m.items.map(_toBatchItem).toList(),
     pickupAddress: m.pickupAddress,
     status: domain.BatchStatus.values.byName(m.status.name),
@@ -103,6 +104,7 @@ class DonorRepositoryImpl implements DonorRepository {
   bm.BatchModel _fromBatch(domain.Batch b) => bm.BatchModel(
     id: b.id,
     donorId: b.donorId,
+    donorName: b.donorName,
     items: b.items.map(_fromBatchItem).toList(),
     pickupAddress: b.pickupAddress,
     status: bm.BatchStatus.values.byName(b.status.name),

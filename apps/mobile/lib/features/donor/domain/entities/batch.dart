@@ -9,6 +9,7 @@ class Batch {
     required this.items,
     required this.pickupAddress,
     required this.status,
+    this.donorName,
     this.driverId,
     this.volunteerName,
     this.beneficiaryId,
@@ -27,6 +28,7 @@ class Batch {
   final List<BatchItem> items;
   final String pickupAddress;
   final BatchStatus status;
+  final String? donorName;
   final String? driverId;
   final String? volunteerName;
   final String? beneficiaryId;
