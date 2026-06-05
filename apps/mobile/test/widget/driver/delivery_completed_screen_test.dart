@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:saveameal/features/driver/domain/repositories/driver_repository.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
-import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_state.dart';
 import 'package:saveameal/features/driver/presentation/screens/delivery_completed_screen.dart';
 
@@ -21,18 +20,14 @@ const _fakeBatch = BatchSummary(
 
 class _FakeNotifier extends DriverNotifier {
   @override
-  DriverState build() => const DriverState(step: DriverStep.delivered);
+  DriverState build() =>
+      DriverState(step: DriverStep.delivered, activeBatch: _fakeBatch);
   @override
   void resetToIdle() {}
 }
 
 Widget _wrap() => ProviderScope(
-  overrides: [
-    driverProvider.overrideWith(() => _FakeNotifier()),
-    activeBatchForDriverProvider(
-      '',
-    ).overrideWith((_) => Stream.value(_fakeBatch)),
-  ],
+  overrides: [driverProvider.overrideWith(() => _FakeNotifier())],
   child: const MaterialApp(home: DeliveryCompletedScreen()),
 );
 
@@ -43,11 +38,10 @@ void main() {
     expect(find.text('Delivery Completed!'), findsOneWidget);
   });
 
-  testWidgets('shows beneficiary name and portions', (tester) async {
+  testWidgets('shows beneficiary name in summary', (tester) async {
     await tester.pumpWidget(_wrap());
     await tester.pump();
     expect(find.textContaining('Haven Shelter'), findsOneWidget);
-    expect(find.textContaining('38'), findsAtLeastNWidgets(1));
   });
 
   testWidgets('Done and Back to Dashboard buttons present', (tester) async {

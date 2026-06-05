@@ -1,32 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/driver/presentation/providers/driver_notifier.dart';
-import 'package:saveameal/features/driver/presentation/providers/driver_provider.dart';
-import 'package:saveameal/services/service_providers.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
-
-part 'delivery_completed_screen.g.dart';
-
-// Streams the driver's running points total from Firestore.
-// The Cloud Function updates users/{uid}.points after delivery.
-@riverpod
-Stream<int> _driverPoints(Ref ref, String uid) =>
-    ref.watch(firestoreServiceProvider).watchUserPoints(uid);
 
 class DeliveryCompletedScreen extends ConsumerWidget {
   const DeliveryCompletedScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final uid = ref.watch(authStateProvider).asData?.value?.uid ?? '';
-    final batchAsync = ref.watch(activeBatchForDriverProvider(uid));
-    final pointsAsync = ref.watch(_driverPointsProvider(uid));
+    // Read batch from driverProvider.activeBatch — it persists until
+    // resetToIdle() and is available even after the batch status becomes
+    // 'delivered' (activeBatchForDriverProvider queries status in
+    // ['claimed','pickedUp'] and returns null post-delivery).
+    final batch = ref.watch(driverProvider).activeBatch;
+    // Compute impact from the rescued batch items.
+    // CO2: ~2.5 kg CO2 per kg of food rescued (standard food-waste estimate).
+    // Meals: ~2 portions per kg (approximate).
+    // Points: same formula as confirmDelivery: max(10, items × 10).
+    final totalWeightKg = batch == null
+        ? 0.0
+        : batch.items.fold<double>(0, (s, e) => s + e.weightKg);
+    final co2Kg = (totalWeightKg * 2.5).toStringAsFixed(1);
+    final mealsCount = batch == null
+        ? 0
+        : (totalWeightKg * 2).round().clamp(1, 9999);
+    final earnedPoints = batch == null
+        ? 0
+        : (batch.items.isEmpty ? 10 : batch.items.length * 10);
 
-    final batch = batchAsync.asData?.value;
-    final points = pointsAsync.asData?.value ?? 0;
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -84,7 +86,7 @@ class DeliveryCompletedScreen extends ConsumerWidget {
               if (batch != null)
                 Text(
                   "You've successfully rescued and delivered "
-                  "${batch.totalPortions} portions of food to ${batch.beneficiaryName}.",
+                  "$mealsCount meals of food to ${batch.beneficiaryName}.",
                   style: textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -108,9 +110,7 @@ class DeliveryCompletedScreen extends ConsumerWidget {
                           Expanded(
                             child: _ImpactTile(
                               icon: Icons.cloud_outlined,
-                              value: batch != null
-                                  ? '${(batch.totalPortions * 0.4).toStringAsFixed(0)} kg'
-                                  : '—',
+                              value: '$co2Kg kg',
                               label: 'CO2 SAVED',
                             ),
                           ),
@@ -118,7 +118,7 @@ class DeliveryCompletedScreen extends ConsumerWidget {
                           Expanded(
                             child: _ImpactTile(
                               icon: Icons.restaurant,
-                              value: '${batch?.totalPortions ?? 0}',
+                              value: '$mealsCount',
                               label: 'MEALS PROVIDED',
                             ),
                           ),
@@ -144,7 +144,7 @@ class DeliveryCompletedScreen extends ConsumerWidget {
                     Icon(Icons.star, color: cs.tertiary, size: 18),
                     const SizedBox(width: Spacing.xs),
                     Text(
-                      '+$points Points Earned',
+                      '+$earnedPoints Points Earned',
                       style: textTheme.labelMedium?.copyWith(
                         color: cs.onTertiaryContainer,
                       ),
