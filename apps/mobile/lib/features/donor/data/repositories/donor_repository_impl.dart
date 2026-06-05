@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:saveameal/core/models/batch_item_model.dart';
 import 'package:saveameal/core/models/batch_model.dart' as bm;
@@ -26,8 +28,14 @@ class DonorRepositoryImpl implements DonorRepository {
     if (cached != null) {
       yield (cached as List)
           .map(
+            // jsonDecode(jsonEncode(m)) deep-converts Map<dynamic,dynamic>
+            // back to Map<String,dynamic> after Hive/IndexedDB retrieval on web,
+            // preventing the `as Map<String,dynamic>` cast error in the
+            // generated fromJson for nested objects like items[].
             (m) => _toBatch(
-              bm.BatchModel.fromJson(Map<String, dynamic>.from(m as Map)),
+              bm.BatchModel.fromJson(
+                jsonDecode(jsonEncode(m)) as Map<String, dynamic>,
+              ),
             ),
           )
           .toList();
@@ -52,7 +60,9 @@ class DonorRepositoryImpl implements DonorRepository {
     final cached = box.get(donorId);
     if (cached != null) {
       yield _toMetrics(
-        ImpactMetricsModel.fromJson(Map<String, dynamic>.from(cached as Map)),
+        ImpactMetricsModel.fromJson(
+          jsonDecode(jsonEncode(cached)) as Map<String, dynamic>,
+        ),
       );
     } else {
       yield DonorMetrics.empty;
