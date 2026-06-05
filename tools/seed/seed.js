@@ -118,6 +118,7 @@ const BENEFICIARIES = [
     lat: 13.7225, lng: 100.5275, intakeStatus: 'accepting',
     orgType: 'Food Bank', contactEmail: 'foodprogram@redcross.or.th',
     missionStatement: 'Emergency food assistance and daily nutrition support across Bangkok.',
+<<<<<<< HEAD
   },
   // Beneficiary user document — keyed by user UID so watchActiveDeliveriesForBeneficiary()
   // and watchIntakeAvailability() resolve correctly when bene_user_001 is logged in.
@@ -128,6 +129,8 @@ const BENEFICIARIES = [
     lat:          13.8102,
     lng:          100.5699,
     intakeStatus: 'accepting',
+=======
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
   },
 ];
 
@@ -295,7 +298,11 @@ const BATCHES = [
       { name: 'Almond Croissants ×12', category: 'bakery', weightKg: 1.4, expiryTime: hoursFrom(18), photoUrl: null },
       { name: 'Danish Pastries ×15',   category: 'bakery', weightKg: 1.2, expiryTime: hoursFrom(18), photoUrl: null },
     ],
+<<<<<<< HEAD
     driverId: null, qrCode: 'saveameal://batch/batch_004', claimedAt: null, pickedUpAt: null,
+=======
+    driverId: null, qrCode: 'batch_004', claimedAt: null, pickedUpAt: null,
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: iso(now), updatedAt: iso(now),
@@ -382,6 +389,10 @@ const BATCHES = [
   },
   {
     id: 'batch_009', donorId: 'donor_001', donorName: 'Sri Silom Restaurant',
+<<<<<<< HEAD
+=======
+    donorContact: '+66812345601',
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
     pickupAddress: '28/4 Silom Rd, Bang Rak, Bangkok 10500',
     pickupLat: 13.7247, pickupLng: 100.5199,
     beneficiaryId: 'bene_user_001', beneficiaryName: 'Klongtoey Community Center',
@@ -443,6 +454,10 @@ const BATCHES = [
   },
   {
     id: 'batch_012', donorId: 'donor_003', donorName: 'Mövenpick Hotel Bangkok',
+<<<<<<< HEAD
+=======
+    donorContact: '+66812345603',
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
     pickupAddress: '672 Wireless Rd, Lumphini, Pathumwan, Bangkok 10330',
     pickupLat: 13.7399, pickupLng: 100.5549,
     beneficiaryId: 'ben_003', beneficiaryName: 'Prateep Foundation Elderly Care',
@@ -463,6 +478,10 @@ const BATCHES = [
   },
   {
     id: 'batch_013', donorId: 'donor_004', donorName: 'Anchana Bakery & Café',
+<<<<<<< HEAD
+=======
+    donorContact: '+66812345604',
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
     pickupAddress: '55/3 Ramkhamhaeng Rd, Hua Mak, Bang Kapi, Bangkok 10240',
     pickupLat: 13.7575, pickupLng: 100.6239,
     beneficiaryId: 'ben_004', beneficiaryName: 'Bangkapi Community Kitchen',
@@ -585,6 +604,10 @@ const BATCHES = [
   // ── CANCELLED (1) ─────────────────────────────────────────────────────────
   {
     id: 'batch_019', donorId: 'donor_002', donorName: 'Central Embassy Food Court',
+<<<<<<< HEAD
+=======
+    donorContact: '+66812345602',
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
     pickupAddress: '1031 Ploenchit Rd, Lumphini, Pathumwan, Bangkok 10330',
     beneficiaryId: 'ben_001', beneficiaryName: 'Baan Saeng Tawan Shelter',
     beneficiaryAddress: '12 Lat Phrao Soi 15, Bangkok 10230',
@@ -594,11 +617,16 @@ const BATCHES = [
       { name: 'Cold Buffet Assorted', category: 'other', weightKg: 4.0, expiryTime: daysAgo(2), photoUrl: null },
       { name: 'Sushi Platter',        category: 'other', weightKg: 2.4, expiryTime: daysAgo(2), photoUrl: null },
     ],
+<<<<<<< HEAD
     driverId: null, qrCode: 'saveameal://batch/batch_019', claimedAt: null, pickedUpAt: null,
+=======
+    driverId: null, qrCode: 'batch_x01', claimedAt: null, pickedUpAt: null,
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
     deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
     deliveryNotes: null, rating: null, feedback: null,
     createdAt: daysAgo(3), updatedAt: daysAgo(2),
   },
+<<<<<<< HEAD
 
   // ── closed: beneficiary confirmed receipt ────────────────────────────────
   {
@@ -636,6 +664,10 @@ const DRIVER_LOCATIONS = [
   },
 ];
 
+=======
+];
+
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
 // Collection: impactMetrics/{id}
 // totalKg = sum of delivered batch item weights
 // totalMeals ≈ totalKg * 2, totalCO2e ≈ totalKg * 2.5
@@ -731,6 +763,7 @@ async function setupDemo() {
   const batchId  = 'demo_batch_001';
   const batchNow = new Date();
   await db.collection('batches').doc(batchId).set({
+<<<<<<< HEAD
     id:                  batchId,
     donorId:             uids.donor,
     donorName:           'FreshMart Supermarket',
@@ -743,12 +776,22 @@ async function setupDemo() {
     status:              'open',
     pickupWindowStart:   '21:00',
     pickupWindowEnd:     '22:30',
+=======
+    id: batchId, donorId: uids.donor, donorName: 'FreshMart Supermarket',
+    donorContact: null,
+    pickupAddress: '1031 Ploenchit Rd, Lumphini, Pathumwan, Bangkok 10330',
+    pickupLat: 13.7432, pickupLng: 100.5494,
+    beneficiaryId: uids.beneficiary, beneficiaryName: 'Sister Maria Shelter',
+    beneficiaryAddress: '88 Ratchadaphisek Rd, Khlong Toei, Bangkok 10110',
+    status: 'open', pickupWindowStart: '21:00', pickupWindowEnd: '22:30',
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
     specialInstructions: 'Demo batch. Ask for Khun Siriporn at the service entrance.',
     items: [
       { name: 'Fresh Produce Mix',     category: 'produce', weightKg: 5.0,  expiryTime: new Date(batchNow.getTime() + 24*3600000).toISOString(), photoUrl: null },
       { name: 'Bakery Assorted ×12',   category: 'bakery',  weightKg: 1.5,  expiryTime: new Date(batchNow.getTime() + 18*3600000).toISOString(), photoUrl: null },
       { name: 'Cooked Meal Boxes ×10', category: 'other',   weightKg: 8.0,  expiryTime: new Date(batchNow.getTime() +  6*3600000).toISOString(), photoUrl: null },
     ],
+<<<<<<< HEAD
     driverId:        null,
     qrCode:          `saveameal://batch/${batchId}`,
     claimedAt:       null,
@@ -761,6 +804,12 @@ async function setupDemo() {
     feedback:        null,
     createdAt:       batchNow.toISOString(),
     updatedAt:       batchNow.toISOString(),
+=======
+    driverId: null, qrCode: batchId, claimedAt: null, pickedUpAt: null,
+    deliveredAt: null, photoUrl: null, pickupPhotoUrl: null,
+    deliveryNotes: null, rating: null, feedback: null,
+    createdAt: batchNow.toISOString(), updatedAt: batchNow.toISOString(),
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
   });
   console.log(`  ✓  batches/${batchId}  (status: open, 3 items)`);
 
@@ -867,7 +916,10 @@ async function main() {
     await clearCollection('batches');
     await clearCollection('beneficiaries');
     await clearCollection('impactMetrics');
+<<<<<<< HEAD
     await clearCollection('driverLocations');
+=======
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
     await clearCollection('leaderboard');
     console.log();
   } else {
@@ -878,11 +930,18 @@ async function main() {
   const stampedDriverLocations = DRIVER_LOCATIONS.map((d) => ({ ...d, updatedAt: iso(new Date()) }));
 
   console.log('Writing seed data...');
+<<<<<<< HEAD
   await writeAll('beneficiaries',   BENEFICIARIES);
   await writeAll('users',           USERS,                  'uid');
   await writeAll('batches',         BATCHES);
   await writeAll('impactMetrics',   IMPACT_METRICS);
   await writeAll('driverLocations', stampedDriverLocations, 'driverId');
+=======
+  await writeAll('beneficiaries', BENEFICIARIES);
+  await writeAll('users',         USERS, 'uid');
+  await writeAll('batches',       BATCHES);
+  await writeAll('impactMetrics', IMPACT_METRICS);
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
   await db.collection('leaderboard').doc('thisMonth').set(LEADERBOARD.thisMonth);
   console.log(`  ✓  leaderboard       1 document  (thisMonth, 8 entries)`);
 
@@ -896,9 +955,14 @@ async function main() {
   console.log('\nSummary:');
   console.log(`  beneficiaries  : ${BENEFICIARIES.length}  (${BENEFICIARIES.filter(b=>b.intakeStatus==='accepting').length} accepting · ${BENEFICIARIES.filter(b=>b.intakeStatus==='full').length} full)`);
   console.log(`  users          : ${USERS.length}  (8 donors · 8 drivers · 1 beneficiary user)`);
+<<<<<<< HEAD
   console.log(`  batches        : ${BATCHES.length}  (${open} open · ${claimed} claimed · ${pickedUp} pickedUp · ${delivered} delivered · ${closed} closed · ${cancelled} cancelled)`);
   console.log(`  impactMetrics  : ${IMPACT_METRICS.length}`);
   console.log(`  driverLocations: ${DRIVER_LOCATIONS.length}`);
+=======
+  console.log(`  batches        : ${BATCHES.length}  (${open} open · ${claimed} claimed · ${pickedUp} pickedUp · ${delivered} delivered · ${cancelled} cancelled)`);
+  console.log(`  impactMetrics  : ${IMPACT_METRICS.length}`);
+>>>>>>> e192b2ef3a9c683f42a5a670b85030e0a54acc7c
   console.log(`  leaderboard    : 1  (thisMonth, 8 drivers)`);
   console.log('\nDone.\n');
 }
