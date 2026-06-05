@@ -28,6 +28,13 @@ class DriverProfileLocalDatasourceImpl implements DriverProfileLocalDatasource {
       vehicleType: map['vehicleType'] as String?,
       licensePlate: map['licensePlate'] as String?,
       emergencyContact: map['emergencyContact'] as String?,
+      joinDate: map['joinDate'] as String?,
+      totalPickups: map['totalPickups'] as int?,
+      vehicleColor: map['vehicleColor'] as String?,
+      cargoCapacity: map['cargoCapacity'] as String?,
+      refrigeratedStorage: map['refrigeratedStorage'] as bool?,
+      insurancePolicyNumber: map['insurancePolicyNumber'] as String?,
+      primaryLocation: map['primaryLocation'] as String?,
     );
   }
 
@@ -42,6 +49,13 @@ class DriverProfileLocalDatasourceImpl implements DriverProfileLocalDatasource {
       'vehicleType': profile.vehicleType,
       'licensePlate': profile.licensePlate,
       'emergencyContact': profile.emergencyContact,
+      'joinDate': profile.joinDate,
+      'totalPickups': profile.totalPickups,
+      'vehicleColor': profile.vehicleColor,
+      'cargoCapacity': profile.cargoCapacity,
+      'refrigeratedStorage': profile.refrigeratedStorage,
+      'insurancePolicyNumber': profile.insurancePolicyNumber,
+      'primaryLocation': profile.primaryLocation,
     });
   }
 }

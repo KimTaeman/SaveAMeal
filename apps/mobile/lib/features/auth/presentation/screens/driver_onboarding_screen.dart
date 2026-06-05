@@ -126,6 +126,11 @@ class _DriverOnboardingScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Keep the auto-dispose provider alive while this screen is mounted so
+    // that updateProfile() can assign state after the async Firestore call
+    // completes without hitting UnmountedRefException.
+    ref.watch(driverProfileProvider);
+
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
