@@ -29,12 +29,17 @@ class BeneficiaryAccountRemoteDatasourceImpl
   Stream<BeneficiaryProfileModel?> watchProfile(String uid) {
     UserModel? latestUser;
     BeneficiaryModel? latestBeneficiary;
+    bool beneficiaryStreamHasEmitted = false;
     StreamSubscription<UserModel?>? userSub;
     StreamSubscription<BeneficiaryModel?>? beneficiarySub;
     late StreamController<BeneficiaryProfileModel?> controller;
 
     void emit() {
-      if (latestUser == null) return;
+      // Wait until both streams have delivered at least one value before
+      // emitting a profile. This prevents a race where the user stream fires
+      // first (beneficiaryModel still null) and the role router incorrectly
+      // sends a returning beneficiary to the onboarding screen.
+      if (latestUser == null || !beneficiaryStreamHasEmitted) return;
       final joinedAt = FirebaseAuth.instance.currentUser?.metadata.creationTime;
       controller.add(
         BeneficiaryProfileModel(
@@ -58,6 +63,7 @@ class BeneficiaryAccountRemoteDatasourceImpl
         });
         beneficiarySub = _firestoreService.watchBeneficiaryDoc(uid).listen((b) {
           latestBeneficiary = b;
+          beneficiaryStreamHasEmitted = true;
           emit();
         });
       },

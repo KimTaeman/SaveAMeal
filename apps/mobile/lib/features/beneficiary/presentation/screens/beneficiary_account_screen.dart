@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saveameal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_account_provider.dart';
+import 'package:saveameal/features/beneficiary/presentation/providers/beneficiary_impact_provider.dart';
 import 'package:saveameal/features/beneficiary/presentation/widgets/beneficiary_bottom_nav.dart';
 import 'package:saveameal/shared/theme/app_colors.dart';
 import 'package:saveameal/shared/theme/spacing.dart';
@@ -45,6 +46,9 @@ class _BeneficiaryAccountScreenState
 
     final uid = ref.watch(authStateProvider).asData?.value?.uid ?? '';
     final profileAsync = ref.watch(currentBeneficiaryProfileProvider);
+    final impactAsync = uid.isEmpty
+        ? null
+        : ref.watch(beneficiaryImpactProvider(uid));
 
     if (uid.isEmpty || (profileAsync.isLoading && !profileAsync.hasValue)) {
       return Scaffold(
@@ -194,7 +198,7 @@ class _BeneficiaryAccountScreenState
                     ),
                     SizedBox(height: Spacing.xs),
                     Text(
-                      '${profile?.mealsReceived ?? 0}',
+                      '${impactAsync?.value?.totalMeals ?? 0}',
                       style: textTheme.displaySmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: cs.onSurface,

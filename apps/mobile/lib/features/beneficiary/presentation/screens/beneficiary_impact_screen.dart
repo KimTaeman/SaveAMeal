@@ -73,8 +73,7 @@ class BeneficiaryImpactScreen extends ConsumerWidget {
                     child: ImpactMetricTile(
                       icon: Icons.eco_outlined,
                       label: 'CO2 Diverted',
-                      value:
-                          '${(impact.totalCo2e / 1000).toStringAsFixed(1)} Tons',
+                      value: '${impact.totalCo2e.toStringAsFixed(1)} kg',
                     ),
                   ),
                   const SizedBox(width: Spacing.sm),
